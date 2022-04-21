@@ -31,7 +31,7 @@ const Node = ({
   const nodesDispatch = React.useContext(NodeDispatchContext);
   const stageState = React.useContext(StageContext);
   const uiEvents = React.useContext(UIEventsContext);
-  const currentNodeType = nodeTypes[type];
+  const currentNodeType = typeof type === "string" ? nodeTypes[type] : type;
   const { label, deletable, inputs = [], outputs = [] } = currentNodeType;
 
   const nodeWrapper = React.useRef();

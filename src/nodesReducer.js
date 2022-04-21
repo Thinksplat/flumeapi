@@ -366,12 +366,13 @@ const nodesReducer = (
 
     // Called when a node might change state outside of UI manipulation
     // and the node's visual might need to be updated
-    case "REFRESH_NODE": {
-      const { nodeId } = action;
+    case "UPDATE_TYPE": {
+      const { nodeId, type } = action;
       return {
         ...nodes,
         [nodeId]: {
-          ...nodes[nodeId]
+          ...nodes[nodeId],
+          type
         }
       }
     }

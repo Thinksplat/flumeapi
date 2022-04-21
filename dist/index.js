@@ -6062,7 +6062,7 @@ var Node = function Node(_ref) {
   var nodesDispatch = React__default.useContext(NodeDispatchContext);
   var stageState = React__default.useContext(StageContext);
   var uiEvents = React__default.useContext(UIEventsContext);
-  var currentNodeType = nodeTypes[type];
+  var currentNodeType = typeof type === "string" ? nodeTypes[type] : type;
   var label = currentNodeType.label,
       deletable = currentNodeType.deletable,
       _currentNodeType$inpu = currentNodeType.inputs,
@@ -7402,11 +7402,14 @@ var nodesReducer = function nodesReducer(nodes) {
 
     // Called when a node might change state outside of UI manipulation
     // and the node's visual might need to be updated
-    case "REFRESH_NODE":
+    case "UPDATE_TYPE":
       {
-        var _nodeId2 = action.nodeId;
+        var _nodeId2 = action.nodeId,
+            type = action.type;
 
-        return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2])));
+        return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2], {
+          type: type
+        })));
       }
 
     case "UPDATE_PROPERTIES":
@@ -7585,11 +7588,11 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "nodeId": id
       });
     },
-    refreshNode: function refreshNode(id) {
-      dispatchNodes({
-        "type": "REFRESH_NODE",
+    updateType: function updateType(id, type) {
+      dispatchNodes(defineProperty({
+        "type": "UPDATE_TYPE",
         "nodeId": id
-      });
+      }, "type", type));
     },
     updateProperties: function updateProperties(id, properties) {
       dispatchNodes({
