@@ -5638,7 +5638,7 @@ function useTransputs(transputsFn, transputType, nodeId, inputData, connections)
 
   var transputs = React__default.useMemo(function () {
     if (Array.isArray(transputsFn)) return transputsFn;
-    return transputsFn(inputData, connections, executionContext);
+    return transputsFn(inputData, connections, executionContext, nodeId);
   }, [transputsFn, inputData, connections, executionContext]);
   var prevTransputs = usePrevious$1(transputs);
 
