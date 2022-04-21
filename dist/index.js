@@ -5866,6 +5866,7 @@ var Port = function Port(_ref7) {
   var nodesDispatch = React__default.useContext(NodeDispatchContext);
   var stageState = React__default.useContext(StageContext);
   var editorId = React__default.useContext(EditorIdContext);
+  var uiEvents = React__default.useContext(UIEventsContext);
   var stageId = "" + STAGE_ID + editorId;
   var inputTypes = React__default.useContext(PortTypesContext);
 
@@ -5975,6 +5976,8 @@ var Port = function Port(_ref7) {
     e.stopPropagation();
     var startPort = port.current.getBoundingClientRect();
     var stage = document.getElementById(stageId).getBoundingClientRect();
+
+    uiEvents.portClicked && uiEvents.portClicked({ name: name, nodeId: nodeId, isInput: isInput });
 
     if (isInput) {
       lineInToPort.current = document.querySelector("[data-input-node-id=\"" + nodeId + "\"][data-input-port-name=\"" + name + "\"]");

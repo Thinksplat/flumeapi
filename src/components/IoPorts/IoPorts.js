@@ -6,7 +6,8 @@ import {
   ConnectionRecalculateContext,
   StageContext,
   ContextContext,
-  EditorIdContext
+  EditorIdContext,
+  UIEventsContext
 } from "../../context";
 import Control from "../Control/Control";
 import Connection from "../Connection/Connection";
@@ -215,6 +216,7 @@ const Port = ({
   const nodesDispatch = React.useContext(NodeDispatchContext);
   const stageState = React.useContext(StageContext);
   const editorId = React.useContext(EditorIdContext);
+  const uiEvents = React.useContext(UIEventsContext);
   const stageId = `${STAGE_ID}${editorId}`
   const inputTypes = React.useContext(PortTypesContext);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -335,6 +337,8 @@ const Port = ({
     const stage = document
       .getElementById(stageId)
       .getBoundingClientRect();
+
+    uiEvents.portClicked && uiEvents.portClicked({name, nodeId, isInput});
 
     if (isInput) {
       lineInToPort.current = document.querySelector(
