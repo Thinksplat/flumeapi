@@ -292,12 +292,13 @@ const nodesReducer = (
     }
 
     case "ADD_NODE": {
-      const { x, y, nodeType, id, defaultNode } = action;
+      const { x, y, nodeType, id, defaultNode, extraProperties } = action;
       const newNodeId = id || nanoid(10);
       const newNode = {
         id: newNodeId,
         x,
         y,
+        extraProperties: extraProperties,
         type: nodeType,
         width: nodeTypes[nodeType].initialWidth || 200,
         connections: {
@@ -359,6 +360,17 @@ const nodesReducer = (
         [nodeId]: {
           ...nodes[nodeId],
           inputData: newData
+        }
+      };
+    }
+
+    case "UPDATE_PROPERTIES": {
+      const { nodeId, properties } = action;
+      return {
+        ...nodes,
+        [nodeId]: {
+          ...nodes[nodeId],
+          extraProperties: properties
         }
       };
     }

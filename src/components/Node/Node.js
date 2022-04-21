@@ -4,7 +4,8 @@ import {
   NodeTypesContext,
   NodeDispatchContext,
   StageContext,
-  CacheContext
+  CacheContext,
+  UIEventsContext
 } from "../../context";
 import { getPortRect, calculateCurve } from "../../connectionCalculator";
 import { Portal } from "react-portal";
@@ -22,12 +23,14 @@ const Node = ({
   type,
   inputData,
   onDragStart,
-  renderNodeHeader
+  renderNodeHeader,
+  extraProperties={}
 }) => {
   const cache = React.useContext(CacheContext);
   const nodeTypes = React.useContext(NodeTypesContext);
   const nodesDispatch = React.useContext(NodeDispatchContext);
   const stageState = React.useContext(StageContext);
+  const uiEvents = React.useContext(UIEventsContext);
   const currentNodeType = nodeTypes[type];
   const { label, deletable, inputs = [], outputs = [] } = currentNodeType;
 
@@ -128,6 +131,10 @@ const Node = ({
     onDragStart();
   };
 
+  const mouseDown = e => {
+    uiEvents.nodeClicked && uiEvents.nodeClicked(id,e);
+  };
+
   const handleContextMenu = e => {
     e.preventDefault();
     e.stopPropagation();
@@ -164,6 +171,7 @@ const Node = ({
         width,
         transform: `translate(${x}px, ${y}px)`
       }}
+      onMouseDown={mouseDown}
       onDragStart={startDrag}
       onDrag={handleDrag}
       onDragEnd={stopDrag}
@@ -173,6 +181,7 @@ const Node = ({
       onContextMenu={handleContextMenu}
       stageState={stageState}
       stageRect={stageRect}
+      {...extraProperties}
     >
       {renderNodeHeader ? (
         renderNodeHeader(NodeHeader, currentNodeType, {

@@ -14,7 +14,8 @@ import {
   ContextContext,
   StageContext,
   CacheContext,
-  EditorIdContext
+  EditorIdContext,
+  UIEventsContext
 } from "./context";
 import { createConnections } from "./connectionCalculator";
 import nodesReducer, {
@@ -40,6 +41,7 @@ export let NodeEditor = (
     portTypes = {},
     defaultNodes = [],
     context = defaultContext,
+    uiEvents = {},
     onChange,
     onCommentsChange,
     initialScale,
@@ -131,7 +133,7 @@ export let NodeEditor = (
   }, [comments, previousComments, onCommentsChange]);
 
   React.useEffect(() => {
-    if(sideEffectToasts){
+    if (sideEffectToasts) {
       dispatchToasts(sideEffectToasts)
       setSideEffectToasts(null)
     }
@@ -149,77 +151,79 @@ export let NodeEditor = (
                     <RecalculateStageRectContext.Provider
                       value={recalculateStageRect}
                     >
-                      <Stage
-                        editorId={editorId}
-                        scale={stageState.scale}
-                        translate={stageState.translate}
-                        spaceToPan={spaceToPan}
-                        disablePan={disablePan}
-                        disableZoom={disableZoom}
-                        dispatchStageState={dispatchStageState}
-                        dispatchComments={dispatchComments}
-                        disableComments={disableComments || hideComments}
-                        stageRef={stage}
-                        numNodes={Object.keys(nodes).length}
-                        outerStageChildren={
-                          <React.Fragment>
-                            {debug && (
-                              <div className={styles.debugWrapper}>
-                                <button
-                                  className={styles.debugButton}
-                                  onClick={() => console.log(nodes)}
-                                >
-                                  Log Nodes
-                                </button>
-                                <button
-                                  className={styles.debugButton}
-                                  onClick={() =>
-                                    console.log(JSON.stringify(nodes))
-                                  }
-                                >
-                                  Export Nodes
-                                </button>
-                                <button
-                                  className={styles.debugButton}
-                                  onClick={() => console.log(comments)}
-                                >
-                                  Log Comments
-                                </button>
-                              </div>
-                            )}
-                            <Toaster
-                              toasts={toasts}
-                              dispatchToasts={dispatchToasts}
-                            />
-                          </React.Fragment>
-                        }
-                      >
-                        {!hideComments &&
-                          Object.values(comments).map(comment => (
-                            <Comment
-                              {...comment}
+                      <UIEventsContext.Provider value={uiEvents}>
+                        <Stage
+                          editorId={editorId}
+                          scale={stageState.scale}
+                          translate={stageState.translate}
+                          spaceToPan={spaceToPan}
+                          disablePan={disablePan}
+                          disableZoom={disableZoom}
+                          dispatchStageState={dispatchStageState}
+                          dispatchComments={dispatchComments}
+                          disableComments={disableComments || hideComments}
+                          stageRef={stage}
+                          numNodes={Object.keys(nodes).length}
+                          outerStageChildren={
+                            <React.Fragment>
+                              {debug && (
+                                <div className={styles.debugWrapper}>
+                                  <button
+                                    className={styles.debugButton}
+                                    onClick={() => console.log(nodes)}
+                                  >
+                                    Log Nodes
+                                  </button>
+                                  <button
+                                    className={styles.debugButton}
+                                    onClick={() =>
+                                      console.log(JSON.stringify(nodes))
+                                    }
+                                  >
+                                    Export Nodes
+                                  </button>
+                                  <button
+                                    className={styles.debugButton}
+                                    onClick={() => console.log(comments)}
+                                  >
+                                    Log Comments
+                                  </button>
+                                </div>
+                              )}
+                              <Toaster
+                                toasts={toasts}
+                                dispatchToasts={dispatchToasts}
+                              />
+                            </React.Fragment>
+                          }
+                        >
+                          {!hideComments &&
+                            Object.values(comments).map(comment => (
+                              <Comment
+                                {...comment}
+                                stageRect={stage}
+                                dispatch={dispatchComments}
+                                onDragStart={recalculateStageRect}
+                                key={comment.id}
+                              />
+                            ))}
+                          {Object.values(nodes).map(node => (
+                            <Node
+                              {...node}
                               stageRect={stage}
-                              dispatch={dispatchComments}
+                              onDragEnd={triggerRecalculation}
                               onDragStart={recalculateStageRect}
-                              key={comment.id}
+                              renderNodeHeader={renderNodeHeader}
+                              key={node.id}
                             />
                           ))}
-                        {Object.values(nodes).map(node => (
-                          <Node
-                            {...node}
-                            stageRect={stage}
-                            onDragEnd={triggerRecalculation}
-                            onDragStart={recalculateStageRect}
-                            renderNodeHeader={renderNodeHeader}
-                            key={node.id}
-                          />
-                        ))}
-                        <Connections nodes={nodes} editorId={editorId} />
-                        <div
-                          className={styles.dragWrapper}
-                          id={`${DRAG_CONNECTION_ID}${editorId}`}
-                        ></div>
-                      </Stage>
+                          <Connections nodes={nodes} editorId={editorId} />
+                          <div
+                            className={styles.dragWrapper}
+                            id={`${DRAG_CONNECTION_ID}${editorId}`}
+                          ></div>
+                        </Stage>
+                      </UIEventsContext.Provider>
                     </RecalculateStageRectContext.Provider>
                   </EditorIdContext.Provider>
                 </CacheContext.Provider>
@@ -235,4 +239,4 @@ NodeEditor = React.forwardRef(NodeEditor);
 export { FlumeConfig, Controls, Colors } from "./typeBuilders";
 export { RootEngine } from "./RootEngine";
 export const useRootEngine = (nodes, engine, context, options = {}) =>
-  Object.keys(nodes).length ? engine.resolveRootNode(nodes, {...options, context }) : {};
+  Object.keys(nodes).length ? engine.resolveRootNode(nodes, { ...options, context }) : {};
