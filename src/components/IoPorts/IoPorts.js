@@ -110,7 +110,6 @@ const Input = ({
   isConnected,
   inputData,
   hidePort,
-  extraProperties={}
 }) => {
   const { label: defaultLabel, color, controls: defaultControls = [] } =
     inputTypes[type] || {};
@@ -142,7 +141,6 @@ const Input = ({
           nodeId={nodeId}
           isInput
           triggerRecalculation={triggerRecalculation}
-          {...extraProperties}
         />
       ) : null}
       {(!controls.length || noControls || isConnected) && (
@@ -389,6 +387,8 @@ const Port = ({
     }
   };
 
+  var extra = type.extraProperties ? type.extraProperties : {};
+
   return (
     <React.Fragment>
       <div
@@ -406,6 +406,7 @@ const Port = ({
           e.stopPropagation();
         }}
         ref={port}
+        {...extra}
       />
       {isDragging && !isInput ? (
         <Portal

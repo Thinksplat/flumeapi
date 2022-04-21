@@ -5752,9 +5752,7 @@ var Input = function Input(_ref3) {
       updateNodeConnections = _ref3.updateNodeConnections,
       isConnected = _ref3.isConnected,
       inputData = _ref3.inputData,
-      hidePort = _ref3.hidePort,
-      _ref3$extraProperties = _ref3.extraProperties,
-      extraProperties = _ref3$extraProperties === undefined ? {} : _ref3$extraProperties;
+      hidePort = _ref3.hidePort;
 
   var _ref4 = inputTypes[type] || {},
       defaultLabel = _ref4.label,
@@ -5783,14 +5781,14 @@ var Input = function Input(_ref3) {
         e.stopPropagation();
       }
     },
-    !hidePort ? React__default.createElement(Port, _extends({
+    !hidePort ? React__default.createElement(Port, {
       type: type,
       color: color,
       name: name,
       nodeId: nodeId,
       isInput: true,
       triggerRecalculation: triggerRecalculation
-    }, extraProperties)) : null,
+    }) : null,
     (!controls.length || noControls || isConnected) && React__default.createElement(
       "label",
       { "data-flume-component": "port-label", className: styles$4.portLabel },
@@ -6010,10 +6008,12 @@ var Port = function Port(_ref7) {
     }
   };
 
+  var extra = type.extraProperties ? type.extraProperties : {};
+
   return React__default.createElement(
     React__default.Fragment,
     null,
-    React__default.createElement("div", {
+    React__default.createElement("div", _extends({
       style: { zIndex: 999 },
       onMouseDown: handleDragStart,
       className: styles$4.port,
@@ -6028,7 +6028,7 @@ var Port = function Port(_ref7) {
         e.stopPropagation();
       },
       ref: port
-    }),
+    }, extra)),
     isDragging && !isInput ? React__default.createElement(
       Portal$3,
       {
