@@ -370,9 +370,9 @@ const nodesReducer = (
         ...nodes,
         [nodeId]: {
           ...nodes[nodeId],
-          type
+          type: type
         }
-      }
+      };
     }
 
     case "UPDATE_PROPERTIES": {
