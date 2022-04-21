@@ -7403,10 +7403,10 @@ var nodesReducer = function nodesReducer(nodes) {
     case "UPDATE_TYPE":
       {
         var _nodeId2 = action.nodeId,
-            type = action.type;
+            newtype = action.newtype;
 
         return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2], {
-          type: type
+          type: newtype
         })));
       }
 
@@ -7586,11 +7586,12 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
                 "nodeId": id
             });
         },
-        updateType: function updateType(id, type) {
-            dispatchNodes(defineProperty({
+        updateType: function updateType(id, newtype) {
+            dispatchNodes({
                 "type": "UPDATE_TYPE",
-                "nodeId": id
-            }, "type", type));
+                "nodeId": id,
+                "newtype": newtype
+            });
         },
         updateProperties: function updateProperties(id, properties) {
             dispatchNodes({

@@ -365,12 +365,12 @@ const nodesReducer = (
     }
 
     case "UPDATE_TYPE": {
-      const { nodeId, type } = action;
+      const { nodeId, newtype } = action;
       return {
         ...nodes,
         [nodeId]: {
           ...nodes[nodeId],
-          type: type
+          type: newtype
         }
       };
     }

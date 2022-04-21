@@ -12,11 +12,11 @@ export function CreateAPI(dispatchNodes, dispatchToasts) {
                 "nodeId": id
             });
         },
-        updateType: (id, type) => {
+        updateType: (id, newtype) => {
             dispatchNodes({
                 "type": "UPDATE_TYPE",
                 "nodeId": id,
-                "type": type
+                "newtype": newtype
             })
         },
         updateProperties: (id, properties) => {
