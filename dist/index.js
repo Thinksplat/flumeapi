@@ -5789,7 +5789,7 @@ var Input = function Input(_ref3) {
       nodeId: nodeId,
       isInput: true,
       triggerRecalculation: triggerRecalculation,
-      extraProperties: true
+      extraProperties: extraProperties
     }) : null,
     (!controls.length || noControls || isConnected) && React__default.createElement(
       "label",

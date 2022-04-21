@@ -142,7 +142,7 @@ const Input = ({
           nodeId={nodeId}
           isInput
           triggerRecalculation={triggerRecalculation}
-          extraProperties
+          extraProperties={extraProperties}
         />
       ) : null}
       {(!controls.length || noControls || isConnected) && (
