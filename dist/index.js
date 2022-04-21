@@ -7400,8 +7400,6 @@ var nodesReducer = function nodesReducer(nodes) {
         })));
       }
 
-    // Called when a node might change state outside of UI manipulation
-    // and the node's visual might need to be updated
     case "UPDATE_TYPE":
       {
         var _nodeId2 = action.nodeId,
@@ -7576,67 +7574,67 @@ var styles$d = { "dragWrapper": "styles_dragWrapper__1P7RD", "debugWrapper": "st
 styleInject(css$d);
 
 function CreateAPI(dispatchNodes, dispatchToasts) {
-  return {
-    addNode: function addNode(info) {
-      dispatchNodes(_extends({
-        "type": "ADD_NODE"
-      }, info));
-    },
-    removeNode: function removeNode(id) {
-      dispatchNodes({
-        "type": "REMOVE_NODE",
-        "nodeId": id
-      });
-    },
-    updateType: function updateType(id, type) {
-      dispatchNodes(defineProperty({
-        "type": "UPDATE_TYPE",
-        "nodeId": id
-      }, "type", type));
-    },
-    updateProperties: function updateProperties(id, properties) {
-      dispatchNodes({
-        "type": "UPDATE_PROPERTIES",
-        "nodeId": id,
-        "properties": properties
-      });
-    },
-    addConnection: function addConnection(fromId, fromPort, toId, toPort) {
-      dispatchNodes({
-        "type": "ADD_CONNECTION",
-        "output": {
-          "nodeId": fromId,
-          "portName": fromPort
+    return {
+        addNode: function addNode(info) {
+            dispatchNodes(_extends({
+                "type": "ADD_NODE"
+            }, info));
         },
-        "input": {
-          "nodeId": toId,
-          "portName": toPort
-        }
-      });
-    },
-    removeConnection: function removeConnection(fromId, fromPort, toId, toPort) {
-      dispatchNodes({
-        "type": "REMOVE_CONNECTION",
-        "output": {
-          "nodeId": fromId,
-          "portName": fromPort
+        removeNode: function removeNode(id) {
+            dispatchNodes({
+                "type": "REMOVE_NODE",
+                "nodeId": id
+            });
         },
-        "input": {
-          "nodeId": toId,
-          "portName": toPort
+        updateType: function updateType(id, type) {
+            dispatchNodes(defineProperty({
+                "type": "UPDATE_TYPE",
+                "nodeId": id
+            }, "type", type));
+        },
+        updateProperties: function updateProperties(id, properties) {
+            dispatchNodes({
+                "type": "UPDATE_PROPERTIES",
+                "nodeId": id,
+                "properties": properties
+            });
+        },
+        addConnection: function addConnection(fromId, fromPort, toId, toPort) {
+            dispatchNodes({
+                "type": "ADD_CONNECTION",
+                "output": {
+                    "nodeId": fromId,
+                    "portName": fromPort
+                },
+                "input": {
+                    "nodeId": toId,
+                    "portName": toPort
+                }
+            });
+        },
+        removeConnection: function removeConnection(fromId, fromPort, toId, toPort) {
+            dispatchNodes({
+                "type": "REMOVE_CONNECTION",
+                "output": {
+                    "nodeId": fromId,
+                    "portName": fromPort
+                },
+                "input": {
+                    "nodeId": toId,
+                    "portName": toPort
+                }
+            });
+        },
+        showToast: function showToast(title, message, type, duration) {
+            dispatchToasts({
+                "type": "ADD_TOAST",
+                "title": title,
+                "message": message,
+                "toastType": type,
+                "duration": duration
+            });
         }
-      });
-    },
-    showToast: function showToast(title, message, type, duration) {
-      dispatchToasts({
-        "type": "ADD_TOAST",
-        "title": title,
-        "message": message,
-        "toastType": type,
-        "duration": duration
-      });
-    }
-  };
+    };
 }
 
 var LoopError = function (_Error) {

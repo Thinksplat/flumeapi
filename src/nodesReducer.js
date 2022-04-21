@@ -364,8 +364,6 @@ const nodesReducer = (
       };
     }
 
-    // Called when a node might change state outside of UI manipulation
-    // and the node's visual might need to be updated
     case "UPDATE_TYPE": {
       const { nodeId, type } = action;
       return {
