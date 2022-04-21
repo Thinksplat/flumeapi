@@ -30,6 +30,7 @@ import clamp from "lodash/clamp";
 import Cache from "./Cache";
 import { STAGE_ID, DRAG_CONNECTION_ID } from "./constants";
 import styles from "./styles.css";
+import { CreateAPI } from "./CreateAPI";
 
 const defaultContext = {};
 
@@ -52,7 +53,8 @@ export let NodeEditor = (
     disablePan = false,
     circularBehavior,
     renderNodeHeader,
-    debug
+    debug,
+    apiCallback,
   },
   ref
 ) => {
@@ -95,6 +97,12 @@ export let NodeEditor = (
       .getElementById(`${STAGE_ID}${editorId}`)
       .getBoundingClientRect();
   };
+
+  React.useEffect(() => {
+    if(apiCallback) {
+      apiCallback(CreateAPI(dispatchNodes,dispatchToasts))
+    }
+  }, [apiCallback]);
 
   React.useLayoutEffect(() => {
     if (shouldRecalculateConnections) {

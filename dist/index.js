@@ -7558,6 +7558,64 @@ var css$d = ".styles_dragWrapper__1P7RD{\r\n  z-index: 9999;\r\n  position: abso
 var styles$d = { "dragWrapper": "styles_dragWrapper__1P7RD", "debugWrapper": "styles_debugWrapper__2OSbY" };
 styleInject(css$d);
 
+function CreateAPI(dispatchNodes, dispatchToasts) {
+  return {
+    addNode: function addNode(info) {
+      dispatchNodes(_extends({
+        "type": "ADD_NODE"
+      }, info));
+    },
+    removeNode: function removeNode(id) {
+      dispatchNodes({
+        "type": "REMOVE_NODE",
+        "nodeId": id
+      });
+    },
+    setNodeStyle: function setNodeStyle(id, style) {
+      dispatchNodes({
+        "type": "SET_NODE_STYLE",
+        "nodeId": id,
+        "style": style
+      });
+    },
+    addConnection: function addConnection(fromId, fromPort, toId, toPort) {
+      dispatchNodes({
+        "type": "ADD_CONNECTION",
+        "output": {
+          "nodeId": fromId,
+          "portName": fromPort
+        },
+        "input": {
+          "nodeId": toId,
+          "portName": toPort
+        }
+      });
+    },
+    removeConnection: function removeConnection(fromId, fromPort, toId, toPort) {
+      dispatchNodes({
+        "type": "REMOVE_CONNECTION",
+        "output": {
+          "nodeId": fromId,
+          "portName": fromPort
+        },
+        "input": {
+          "nodeId": toId,
+          "portName": toPort
+        }
+      });
+    },
+    showToast: function showToast(title, message, type, duration) {
+      dispatchToasts({
+        "type": "ADD_TOAST",
+        "title": title,
+        "message": message,
+        "toastType": type,
+        "duration": duration
+      });
+    }
+  };
+}
+
 var LoopError = function (_Error) {
   inherits(LoopError, _Error);
 
@@ -7728,7 +7786,8 @@ exports.NodeEditor = function NodeEditor(_ref, ref) {
       disablePan = _ref$disablePan === undefined ? false : _ref$disablePan,
       circularBehavior = _ref.circularBehavior,
       renderNodeHeader = _ref.renderNodeHeader,
-      debug = _ref.debug;
+      debug = _ref.debug,
+      apiCallback = _ref.apiCallback;
 
   var editorId = useId();
   var cache = React__default.useRef(new Cache());
@@ -7780,6 +7839,12 @@ exports.NodeEditor = function NodeEditor(_ref, ref) {
   var recalculateStageRect = function recalculateStageRect() {
     stage.current = document.getElementById("" + STAGE_ID + editorId).getBoundingClientRect();
   };
+
+  React__default.useEffect(function () {
+    if (apiCallback) {
+      apiCallback(CreateAPI(dispatchNodes, dispatchToasts));
+    }
+  }, [apiCallback]);
 
   React__default.useLayoutEffect(function () {
     if (shouldRecalculateConnections) {
