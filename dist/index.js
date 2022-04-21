@@ -5752,7 +5752,8 @@ var Input = function Input(_ref3) {
       updateNodeConnections = _ref3.updateNodeConnections,
       isConnected = _ref3.isConnected,
       inputData = _ref3.inputData,
-      hidePort = _ref3.hidePort;
+      hidePort = _ref3.hidePort,
+      extraProperties = _ref3.extraProperties;
 
   var _ref4 = inputTypes[type] || {},
       defaultLabel = _ref4.label,
@@ -5787,7 +5788,8 @@ var Input = function Input(_ref3) {
       name: name,
       nodeId: nodeId,
       isInput: true,
-      triggerRecalculation: triggerRecalculation
+      triggerRecalculation: triggerRecalculation,
+      extraProperties: true
     }) : null,
     (!controls.length || noControls || isConnected) && React__default.createElement(
       "label",
@@ -5861,7 +5863,8 @@ var Port = function Port(_ref7) {
       type = _ref7.type,
       isInput = _ref7.isInput,
       nodeId = _ref7.nodeId,
-      triggerRecalculation = _ref7.triggerRecalculation;
+      triggerRecalculation = _ref7.triggerRecalculation,
+      extraProperties = _ref7.extraProperties;
 
   var nodesDispatch = React__default.useContext(NodeDispatchContext);
   var stageState = React__default.useContext(StageContext);
@@ -6008,7 +6011,7 @@ var Port = function Port(_ref7) {
     }
   };
 
-  var extra = type.extraProperties ? type.extraProperties : {};
+  var extra = extraProperties ? extraProperties : {};
 
   return React__default.createElement(
     React__default.Fragment,

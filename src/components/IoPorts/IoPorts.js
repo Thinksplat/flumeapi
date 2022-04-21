@@ -110,6 +110,7 @@ const Input = ({
   isConnected,
   inputData,
   hidePort,
+  extraProperties
 }) => {
   const { label: defaultLabel, color, controls: defaultControls = [] } =
     inputTypes[type] || {};
@@ -141,6 +142,7 @@ const Input = ({
           nodeId={nodeId}
           isInput
           triggerRecalculation={triggerRecalculation}
+          extraProperties
         />
       ) : null}
       {(!controls.length || noControls || isConnected) && (
@@ -211,7 +213,8 @@ const Port = ({
   type,
   isInput,
   nodeId,
-  triggerRecalculation
+  triggerRecalculation,
+  extraProperties
 }) => {
   const nodesDispatch = React.useContext(NodeDispatchContext);
   const stageState = React.useContext(StageContext);
@@ -387,7 +390,7 @@ const Port = ({
     }
   };
 
-  var extra = type.extraProperties ? type.extraProperties : {};
+  var extra = extraProperties ? extraProperties : {};
 
   return (
     <React.Fragment>
