@@ -5752,7 +5752,9 @@ var Input = function Input(_ref3) {
       updateNodeConnections = _ref3.updateNodeConnections,
       isConnected = _ref3.isConnected,
       inputData = _ref3.inputData,
-      hidePort = _ref3.hidePort;
+      hidePort = _ref3.hidePort,
+      _ref3$extraProperties = _ref3.extraProperties,
+      extraProperties = _ref3$extraProperties === undefined ? {} : _ref3$extraProperties;
 
   var _ref4 = inputTypes[type] || {},
       defaultLabel = _ref4.label,
@@ -5781,14 +5783,14 @@ var Input = function Input(_ref3) {
         e.stopPropagation();
       }
     },
-    !hidePort ? React__default.createElement(Port, {
+    !hidePort ? React__default.createElement(Port, _extends({
       type: type,
       color: color,
       name: name,
       nodeId: nodeId,
       isInput: true,
       triggerRecalculation: triggerRecalculation
-    }) : null,
+    }, extraProperties)) : null,
     (!controls.length || noControls || isConnected) && React__default.createElement(
       "label",
       { "data-flume-component": "port-label", className: styles$4.portLabel },
@@ -7398,12 +7400,21 @@ var nodesReducer = function nodesReducer(nodes) {
         })));
       }
 
+    // Called when a node might change state outside of UI manipulation
+    // and the node's visual might need to be updated
+    case "REFRESH_NODE":
+      {
+        var _nodeId2 = action.nodeId;
+
+        return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2])));
+      }
+
     case "UPDATE_PROPERTIES":
       {
-        var _nodeId2 = action.nodeId,
+        var _nodeId3 = action.nodeId,
             properties = action.properties;
 
-        return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2], {
+        return _extends({}, nodes, defineProperty({}, _nodeId3, _extends({}, nodes[_nodeId3], {
           extraProperties: properties
         })));
       }
@@ -7412,9 +7423,9 @@ var nodesReducer = function nodesReducer(nodes) {
       {
         var _x4 = action.x,
             _y = action.y,
-            _nodeId3 = action.nodeId;
+            _nodeId4 = action.nodeId;
 
-        return _extends({}, nodes, defineProperty({}, _nodeId3, _extends({}, nodes[_nodeId3], {
+        return _extends({}, nodes, defineProperty({}, _nodeId4, _extends({}, nodes[_nodeId4], {
           x: _x4,
           y: _y
         })));
@@ -7571,6 +7582,12 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
     removeNode: function removeNode(id) {
       dispatchNodes({
         "type": "REMOVE_NODE",
+        "nodeId": id
+      });
+    },
+    refreshNode: function refreshNode(id) {
+      dispatchNodes({
+        "type": "REFRESH_NODE",
         "nodeId": id
       });
     },

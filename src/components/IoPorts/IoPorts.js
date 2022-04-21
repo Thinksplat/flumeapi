@@ -109,7 +109,8 @@ const Input = ({
   updateNodeConnections,
   isConnected,
   inputData,
-  hidePort
+  hidePort,
+  extraProperties={}
 }) => {
   const { label: defaultLabel, color, controls: defaultControls = [] } =
     inputTypes[type] || {};
@@ -141,6 +142,7 @@ const Input = ({
           nodeId={nodeId}
           isInput
           triggerRecalculation={triggerRecalculation}
+          {...extraProperties}
         />
       ) : null}
       {(!controls.length || noControls || isConnected) && (
