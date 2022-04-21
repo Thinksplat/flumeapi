@@ -7564,11 +7564,11 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "nodeId": id
       });
     },
-    setNodeStyle: function setNodeStyle(id, style) {
+    updateProperties: function updateProperties(id, properties) {
       dispatchNodes({
-        "type": "SET_NODE_STYLE",
+        "type": "UPDATE_PROPERTIES",
         "nodeId": id,
-        "style": style
+        "properties": properties
       });
     },
     addConnection: function addConnection(fromId, fromPort, toId, toPort) {
