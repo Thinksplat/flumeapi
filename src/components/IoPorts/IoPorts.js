@@ -181,7 +181,8 @@ const Output = ({
   nodeId,
   type,
   inputTypes,
-  triggerRecalculation
+  triggerRecalculation,
+  extraProperties
 }) => {
   const { label: defaultLabel, color } = inputTypes[type] || {};
 
@@ -202,6 +203,7 @@ const Output = ({
         color={color}
         nodeId={nodeId}
         triggerRecalculation={triggerRecalculation}
+        extraProperties={extraProperties}
       />
     </div>
   );

@@ -5823,7 +5823,8 @@ var Output = function Output(_ref5) {
       nodeId = _ref5.nodeId,
       type = _ref5.type,
       inputTypes = _ref5.inputTypes,
-      triggerRecalculation = _ref5.triggerRecalculation;
+      triggerRecalculation = _ref5.triggerRecalculation,
+      extraProperties = _ref5.extraProperties;
 
   var _ref6 = inputTypes[type] || {},
       defaultLabel = _ref6.label,
@@ -5850,7 +5851,8 @@ var Output = function Output(_ref5) {
       name: name,
       color: color,
       nodeId: nodeId,
-      triggerRecalculation: triggerRecalculation
+      triggerRecalculation: triggerRecalculation,
+      extraProperties: extraProperties
     })
   );
 };
