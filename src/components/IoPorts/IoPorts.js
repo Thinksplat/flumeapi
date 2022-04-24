@@ -294,9 +294,9 @@ const Port = ({
         } = e.target.dataset;
         const isNotSameNode = outputNodeId !== connectToNodeId;
         if (isNotSameNode && connectToTransputType !== "output") {
-          if (uiEvents.onPortConnectRequest) {
+          if (uiEvents.portConnectRequest) {
             // Do the connection through the uiEvents callback
-            uiEvents.onPortConnect(outputNodeId, outputPortName, connectToNodeId, connectToPortName);
+            uiEvents.portConnectRequest(outputNodeId, outputPortName, connectToNodeId, connectToPortName);
           } else {
             // Do the connection ourselves
             const inputWillAcceptConnection = inputTypes[

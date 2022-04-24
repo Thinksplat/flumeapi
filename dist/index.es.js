@@ -5932,9 +5932,9 @@ var Port = function Port(_ref7) {
 
         var isNotSameNode = outputNodeId !== connectToNodeId;
         if (isNotSameNode && connectToTransputType !== "output") {
-          if (uiEvents.onPortConnectRequest) {
+          if (uiEvents.portConnectRequest) {
             // Do the connection through the uiEvents callback
-            uiEvents.onPortConnect(outputNodeId, outputPortName, connectToNodeId, connectToPortName);
+            uiEvents.portConnectRequest(outputNodeId, outputPortName, connectToNodeId, connectToPortName);
           } else {
             // Do the connection ourselves
             var inputWillAcceptConnection = inputTypes[connectToPortType].acceptTypes.includes(type);
