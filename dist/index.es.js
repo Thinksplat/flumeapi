@@ -5932,13 +5932,19 @@ var Port = function Port(_ref7) {
 
         var isNotSameNode = outputNodeId !== connectToNodeId;
         if (isNotSameNode && connectToTransputType !== "output") {
-          var inputWillAcceptConnection = inputTypes[connectToPortType].acceptTypes.includes(type);
-          if (inputWillAcceptConnection) {
-            nodesDispatch({
-              type: "ADD_CONNECTION",
-              input: { nodeId: connectToNodeId, portName: connectToPortName },
-              output: { nodeId: outputNodeId, portName: outputPortName }
-            });
+          if (uiEvents.onPortConnectRequest) {
+            // Do the connection through the uiEvents callback
+            uiEvents.onPortConnect(outputNodeId, outputPortName, connectToNodeId, connectToPortName);
+          } else {
+            // Do the connection ourselves
+            var inputWillAcceptConnection = inputTypes[connectToPortType].acceptTypes.includes(type);
+            if (inputWillAcceptConnection) {
+              nodesDispatch({
+                type: "ADD_CONNECTION",
+                input: { nodeId: connectToNodeId, portName: connectToPortName },
+                output: { nodeId: outputNodeId, portName: outputPortName }
+              });
+            }
           }
         }
       }

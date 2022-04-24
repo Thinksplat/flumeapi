@@ -16,7 +16,7 @@ import usePrevious from "../../hooks/usePrevious";
 import { calculateCurve, getPortRect } from "../../connectionCalculator";
 import { STAGE_ID, DRAG_CONNECTION_ID } from '../../constants'
 
-function useTransputs (transputsFn, transputType, nodeId, inputData, connections) {
+function useTransputs(transputsFn, transputType, nodeId, inputData, connections) {
   const nodesDispatch = React.useContext(NodeDispatchContext);
   const executionContext = React.useContext(ContextContext);
 
@@ -55,7 +55,7 @@ const IoPorts = ({
   const triggerRecalculation = React.useContext(ConnectionRecalculateContext);
   const resolvedInputs = useTransputs(inputs, 'input', nodeId, inputData, connections);
   const resolvedOutputs = useTransputs(outputs, 'output', nodeId, inputData, connections);
-  
+
   return (
     <div className={styles.wrapper} data-flume-component="ports">
       {resolvedInputs.length ? (
@@ -153,20 +153,20 @@ const Input = ({
           <div className={styles.controls}>
             {
               controls.map(control => (
-                  <Control
-                    {...control}
-                    nodeId={nodeId}
-                    portName={name}
-                    triggerRecalculation={triggerRecalculation}
-                    updateNodeConnections={updateNodeConnections}
-                    inputLabel={label}
-                    data={data[control.name]}
-                    allData={data}
-                    key={control.name}
-                    inputData={inputData}
-                    isMonoControl={controls.length === 1}
-                  />
-                ))
+                <Control
+                  {...control}
+                  nodeId={nodeId}
+                  portName={name}
+                  triggerRecalculation={triggerRecalculation}
+                  updateNodeConnections={updateNodeConnections}
+                  inputLabel={label}
+                  data={data[control.name]}
+                  allData={data}
+                  key={control.name}
+                  inputData={inputData}
+                  isMonoControl={controls.length === 1}
+                />
+              ))
             }
           </div>
         )
@@ -294,15 +294,21 @@ const Port = ({
         } = e.target.dataset;
         const isNotSameNode = outputNodeId !== connectToNodeId;
         if (isNotSameNode && connectToTransputType !== "output") {
-          const inputWillAcceptConnection = inputTypes[
-            connectToPortType
-          ].acceptTypes.includes(type);
-          if (inputWillAcceptConnection) {
-            nodesDispatch({
-              type: "ADD_CONNECTION",
-              input: { nodeId: connectToNodeId, portName: connectToPortName },
-              output: { nodeId: outputNodeId, portName: outputPortName }
-            });
+          if (uiEvents.onPortConnectRequest) {
+            // Do the connection through the uiEvents callback
+            uiEvents.onPortConnect(outputNodeId, outputPortName, connectToNodeId, connectToPortName);
+          } else {
+            // Do the connection ourselves
+            const inputWillAcceptConnection = inputTypes[
+              connectToPortType
+            ].acceptTypes.includes(type);
+            if (inputWillAcceptConnection) {
+              nodesDispatch({
+                type: "ADD_CONNECTION",
+                input: { nodeId: connectToNodeId, portName: connectToPortName },
+                output: { nodeId: outputNodeId, portName: outputPortName }
+              });
+            }
           }
         }
       }
@@ -343,7 +349,7 @@ const Port = ({
       .getElementById(stageId)
       .getBoundingClientRect();
 
-    uiEvents.portClicked && uiEvents.portClicked({name, nodeId, isInput});
+    uiEvents.portClicked && uiEvents.portClicked({ name, nodeId, isInput });
 
     if (isInput) {
       lineInToPort.current = document.querySelector(
