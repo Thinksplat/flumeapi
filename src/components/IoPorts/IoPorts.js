@@ -314,24 +314,29 @@ const Port = ({
       }
     } else {
       if (droppedOnPort) {
-        const {
-          portName: inputPortName,
-          nodeId: inputNodeId,
-          portType: inputNodeType,
-          portTransputType: inputTransputType
-        } = e.target.dataset;
-        const isNotSameNode = inputNodeId !== nodeId;
-        if (isNotSameNode && inputTransputType !== "output") {
-          const inputWillAcceptConnection = inputTypes[
-            inputNodeType
-          ].acceptTypes.includes(type);
-          if (inputWillAcceptConnection) {
-            nodesDispatch({
-              type: "ADD_CONNECTION",
-              output: { nodeId, portName: name },
-              input: { nodeId: inputNodeId, portName: inputPortName }
-            });
-            triggerRecalculation();
+        if (uiEvents.portConnectRequest) {
+          // Do the connection through the uiEvents callback
+          uievents.portConnectRequest(nodeId, name, inputNodeId, inputPortName);
+        } else {
+          const {
+            portName: inputPortName,
+            nodeId: inputNodeId,
+            portType: inputNodeType,
+            portTransputType: inputTransputType
+          } = e.target.dataset;
+          const isNotSameNode = inputNodeId !== nodeId;
+          if (isNotSameNode && inputTransputType !== "output") {
+            const inputWillAcceptConnection = inputTypes[
+              inputNodeType
+            ].acceptTypes.includes(type);
+            if (inputWillAcceptConnection) {
+              nodesDispatch({
+                type: "ADD_CONNECTION",
+                output: { nodeId, portName: name },
+                input: { nodeId: inputNodeId, portName: inputPortName }
+              });
+              triggerRecalculation();
+            }
           }
         }
       }

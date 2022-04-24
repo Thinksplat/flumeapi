@@ -5913,14 +5913,14 @@ var Port = function Port(_ref7) {
 
     if (isInput) {
       var _lineInToPort$current = lineInToPort.current.dataset,
-          inputNodeId = _lineInToPort$current.inputNodeId,
-          inputPortName = _lineInToPort$current.inputPortName,
+          _inputNodeId = _lineInToPort$current.inputNodeId,
+          _inputPortName = _lineInToPort$current.inputPortName,
           outputNodeId = _lineInToPort$current.outputNodeId,
           outputPortName = _lineInToPort$current.outputPortName;
 
       nodesDispatch({
         type: "REMOVE_CONNECTION",
-        input: { nodeId: inputNodeId, portName: inputPortName },
+        input: { nodeId: _inputNodeId, portName: _inputPortName },
         output: { nodeId: outputNodeId, portName: outputPortName }
       });
       if (droppedOnPort) {
@@ -5950,22 +5950,27 @@ var Port = function Port(_ref7) {
       }
     } else {
       if (droppedOnPort) {
-        var _e$target$dataset2 = e.target.dataset,
-            _inputPortName = _e$target$dataset2.portName,
-            _inputNodeId = _e$target$dataset2.nodeId,
-            inputNodeType = _e$target$dataset2.portType,
-            inputTransputType = _e$target$dataset2.portTransputType;
+        if (uiEvents.portConnectRequest) {
+          // Do the connection through the uiEvents callback
+          uievents.portConnectRequest(nodeId, name, inputNodeId, inputPortName);
+        } else {
+          var _e$target$dataset2 = e.target.dataset,
+              _inputPortName2 = _e$target$dataset2.portName,
+              _inputNodeId2 = _e$target$dataset2.nodeId,
+              inputNodeType = _e$target$dataset2.portType,
+              inputTransputType = _e$target$dataset2.portTransputType;
 
-        var _isNotSameNode = _inputNodeId !== nodeId;
-        if (_isNotSameNode && inputTransputType !== "output") {
-          var _inputWillAcceptConnection = inputTypes[inputNodeType].acceptTypes.includes(type);
-          if (_inputWillAcceptConnection) {
-            nodesDispatch({
-              type: "ADD_CONNECTION",
-              output: { nodeId: nodeId, portName: name },
-              input: { nodeId: _inputNodeId, portName: _inputPortName }
-            });
-            triggerRecalculation();
+          var _isNotSameNode = _inputNodeId2 !== nodeId;
+          if (_isNotSameNode && inputTransputType !== "output") {
+            var _inputWillAcceptConnection = inputTypes[inputNodeType].acceptTypes.includes(type);
+            if (_inputWillAcceptConnection) {
+              nodesDispatch({
+                type: "ADD_CONNECTION",
+                output: { nodeId: nodeId, portName: name },
+                input: { nodeId: _inputNodeId2, portName: _inputPortName2 }
+              });
+              triggerRecalculation();
+            }
           }
         }
       }
