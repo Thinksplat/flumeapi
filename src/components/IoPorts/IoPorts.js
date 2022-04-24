@@ -280,11 +280,21 @@ const Port = ({
         outputNodeId,
         outputPortName
       } = lineInToPort.current.dataset;
-      nodesDispatch({
-        type: "REMOVE_CONNECTION",
-        input: { nodeId: inputNodeId, portName: inputPortName },
-        output: { nodeId: outputNodeId, portName: outputPortName }
-      });
+      if (uiEvents.portDisconnectRequest) {
+        // Perform the disconnect through the uiEvents object
+        uiEvents.portDisconnectRequest(
+          outputNodeId,
+          outputPortName,
+          inputNodeId,
+          inputPortName
+        );
+      } else {
+        nodesDispatch({
+          type: "REMOVE_CONNECTION",
+          input: { nodeId: inputNodeId, portName: inputPortName },
+          output: { nodeId: outputNodeId, portName: outputPortName }
+        });
+      }
       if (droppedOnPort) {
         const {
           portName: connectToPortName,

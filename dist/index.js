@@ -5925,11 +5925,16 @@ var Port = function Port(_ref7) {
           outputNodeId = _lineInToPort$current.outputNodeId,
           outputPortName = _lineInToPort$current.outputPortName;
 
-      nodesDispatch({
-        type: "REMOVE_CONNECTION",
-        input: { nodeId: inputNodeId, portName: inputPortName },
-        output: { nodeId: outputNodeId, portName: outputPortName }
-      });
+      if (uiEvents.portDisconnectRequest) {
+        // Perform the disconnect through the uiEvents object
+        uiEvents.portDisconnectRequest(outputNodeId, outputPortName, inputNodeId, inputPortName);
+      } else {
+        nodesDispatch({
+          type: "REMOVE_CONNECTION",
+          input: { nodeId: inputNodeId, portName: inputPortName },
+          output: { nodeId: outputNodeId, portName: outputPortName }
+        });
+      }
       if (droppedOnPort) {
         var _e$target$dataset = e.target.dataset,
             connectToPortName = _e$target$dataset.portName,
