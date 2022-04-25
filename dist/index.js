@@ -4414,6 +4414,8 @@ var Stage = function Stage(_ref) {
       spaceIsPressed = _React$useState6[0],
       setSpaceIsPressed = _React$useState6[1];
 
+  var uiEvents = React__default.useContext(UIEventsContext);
+
   var setStageRect = React__default.useCallback(function () {
     stageRef.current = wrapper.current.getBoundingClientRect();
   }, []);
@@ -4473,6 +4475,7 @@ var Stage = function Stage(_ref) {
   };
 
   var handleDragStart = function handleDragStart(e) {
+    uiEvents.onStageClick && uiEvents.onStageClick(e);
     e.preventDefault();
     dragData.current = {
       x: e.clientX,
@@ -4535,12 +4538,16 @@ var Stage = function Stage(_ref) {
         y: y
       });
     } else {
-      dispatchNodes({
-        type: "ADD_NODE",
-        x: x,
-        y: y,
-        nodeType: node.type
-      });
+      if (uiEvents.addNodeRequest) {
+        uiEvents.addNodeRequest(node.type, x, y);
+      } else {
+        dispatchNodes({
+          type: "ADD_NODE",
+          x: x,
+          y: y,
+          nodeType: node.type
+        });
+      }
     }
   };
 

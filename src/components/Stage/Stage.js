@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./Stage.css";
 import { Portal } from "react-portal";
 import ContextMenu from "../ContextMenu/ContextMenu";
-import { NodeTypesContext, NodeDispatchContext } from "../../context";
+import { NodeTypesContext, NodeDispatchContext, UIEventsContext } from "../../context";
 import Draggable from "../Draggable/Draggable";
 import orderBy from "lodash/orderBy";
 import clamp from "lodash/clamp";
@@ -31,6 +31,7 @@ const Stage = ({
   const [menuCoordinates, setMenuCoordinates] = React.useState({ x: 0, y: 0 });
   const dragData = React.useRef({ x: 0, y: 0 });
   const [spaceIsPressed, setSpaceIsPressed] = React.useState(false);
+  const uiEvents = React.useContext(UIEventsContext);
 
   const setStageRect = React.useCallback(() => {
     stageRef.current = wrapper.current.getBoundingClientRect();
@@ -89,6 +90,7 @@ const Stage = ({
   };
 
   const handleDragStart = e => {
+    uiEvents.onStageClick && uiEvents.onStageClick(e);
     e.preventDefault();
     dragData.current = {
       x: e.clientX,
@@ -149,12 +151,16 @@ const Stage = ({
         y
       });
     } else {
-      dispatchNodes({
-        type: "ADD_NODE",
-        x,
-        y,
-        nodeType: node.type
-      });
+      if (uiEvents.addNodeRequest) {
+        uiEvents.addNodeRequest(node.type, x, y);
+      } else {
+        dispatchNodes({
+          type: "ADD_NODE",
+          x,
+          y,
+          nodeType: node.type
+        });
+      }
     }
   };
 
