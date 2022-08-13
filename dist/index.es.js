@@ -3,6 +3,24 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { randomFillSync } from 'crypto';
 
+function _extends() {
+  _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  return _extends.apply(this, arguments);
+}
+
 function styleInject(css, ref) {
   if ( ref === void 0 ) ref = {};
   var insertAt = ref.insertAt;
@@ -1117,7 +1135,7 @@ const Draggable = ({
     document.addEventListener("mousemove", checkDragDelay);
   };
 
-  return /*#__PURE__*/React.createElement("div", babelHelpers.extends({
+  return /*#__PURE__*/React.createElement("div", _extends({
     onMouseDown: e => {
       if (!disabled) {
         startDragDelay(e);
@@ -6088,7 +6106,7 @@ const Control = ({
 
     switch (type) {
       case "select":
-        return /*#__PURE__*/React.createElement(Select, babelHelpers.extends({}, commonProps, {
+        return /*#__PURE__*/React.createElement(Select, _extends({}, commonProps, {
           options: getOptions ? getOptions(inputData, executionContext) : options,
           placeholder: placeholder,
           __self: undefined,
@@ -6100,7 +6118,7 @@ const Control = ({
         }));
 
       case "text":
-        return /*#__PURE__*/React.createElement(TextInput, babelHelpers.extends({}, commonProps, {
+        return /*#__PURE__*/React.createElement(TextInput, _extends({}, commonProps, {
           placeholder: placeholder,
           __self: undefined,
           __source: {
@@ -6111,7 +6129,7 @@ const Control = ({
         }));
 
       case "number":
-        return /*#__PURE__*/React.createElement(TextInput, babelHelpers.extends({}, commonProps, {
+        return /*#__PURE__*/React.createElement(TextInput, _extends({}, commonProps, {
           step: step,
           type: "number",
           placeholder: placeholder,
@@ -6124,7 +6142,7 @@ const Control = ({
         }));
 
       case "checkbox":
-        return /*#__PURE__*/React.createElement(Checkbox, babelHelpers.extends({}, commonProps, {
+        return /*#__PURE__*/React.createElement(Checkbox, _extends({}, commonProps, {
           label: calculatedLabel,
           __self: undefined,
           __source: {
@@ -6135,7 +6153,7 @@ const Control = ({
         }));
 
       case "multiselect":
-        return /*#__PURE__*/React.createElement(Select, babelHelpers.extends({
+        return /*#__PURE__*/React.createElement(Select, _extends({
           allowMultiple: true
         }, commonProps, {
           options: getOptions ? getOptions(inputData, executionContext) : options,
@@ -6306,7 +6324,7 @@ const IoPorts = ({
       lineNumber: 62,
       columnNumber: 9
     }
-  }, resolvedInputs.map(input => /*#__PURE__*/React.createElement(Input, babelHelpers.extends({}, input, {
+  }, resolvedInputs.map(input => /*#__PURE__*/React.createElement(Input, _extends({}, input, {
     data: inputData[input.name] || {},
     isConnected: !!connections.inputs[input.name],
     triggerRecalculation: triggerRecalculation,
@@ -6330,7 +6348,7 @@ const IoPorts = ({
       lineNumber: 79,
       columnNumber: 9
     }
-  }, resolvedOutputs.map(output => /*#__PURE__*/React.createElement(Output, babelHelpers.extends({}, output, {
+  }, resolvedOutputs.map(output => /*#__PURE__*/React.createElement(Output, _extends({}, output, {
     triggerRecalculation: triggerRecalculation,
     inputTypes: inputTypes,
     nodeId: nodeId,
@@ -6419,7 +6437,7 @@ const Input = ({
       lineNumber: 153,
       columnNumber: 11
     }
-  }, controls.map(control => /*#__PURE__*/React.createElement(Control, babelHelpers.extends({}, control, {
+  }, controls.map(control => /*#__PURE__*/React.createElement(Control, _extends({}, control, {
     nodeId: nodeId,
     portName: name,
     triggerRecalculation: triggerRecalculation,
@@ -6687,7 +6705,7 @@ const Port = ({
       lineNumber: 420,
       columnNumber: 5
     }
-  }, /*#__PURE__*/React.createElement("div", babelHelpers.extends({
+  }, /*#__PURE__*/React.createElement("div", _extends({
     style: {
       zIndex: 999
     },
@@ -6871,7 +6889,7 @@ const Node = ({
     }
   };
 
-  return /*#__PURE__*/React.createElement(Draggable, babelHelpers.extends({
+  return /*#__PURE__*/React.createElement(Draggable, _extends({
     className: styles$b.wrapper,
     style: {
       width,
@@ -6951,7 +6969,7 @@ const NodeHeader = ({
   children,
   className = "",
   ...props
-}) => /*#__PURE__*/React.createElement("h2", babelHelpers.extends({}, props, {
+}) => /*#__PURE__*/React.createElement("h2", _extends({}, props, {
   className: styles$b.label + (className ? ` ${className}` : ""),
   "data-flume-component": "node-header",
   __self: undefined,
@@ -7623,7 +7641,7 @@ var Toaster = (({
       columnNumber: 5
     }
   }, toasts.map((toast, i) => {
-    return /*#__PURE__*/React.createElement(Toast, babelHelpers.extends({}, toast, {
+    return /*#__PURE__*/React.createElement(Toast, _extends({}, toast, {
       onHeightReceived: setHeight,
       onExitRequested: startExit,
       onRemoveRequested: removeToast,
@@ -8657,7 +8675,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 150,
+      lineNumber: 151,
       columnNumber: 5
     }
   }, /*#__PURE__*/React.createElement(NodeTypesContext.Provider, {
@@ -8665,7 +8683,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 151,
+      lineNumber: 152,
       columnNumber: 7
     }
   }, /*#__PURE__*/React.createElement(NodeDispatchContext.Provider, {
@@ -8673,7 +8691,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 152,
+      lineNumber: 153,
       columnNumber: 9
     }
   }, /*#__PURE__*/React.createElement(ConnectionRecalculateContext.Provider, {
@@ -8681,7 +8699,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 153,
+      lineNumber: 154,
       columnNumber: 11
     }
   }, /*#__PURE__*/React.createElement(ContextContext.Provider, {
@@ -8689,7 +8707,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 154,
+      lineNumber: 155,
       columnNumber: 13
     }
   }, /*#__PURE__*/React.createElement(StageContext.Provider, {
@@ -8697,7 +8715,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 155,
+      lineNumber: 156,
       columnNumber: 15
     }
   }, /*#__PURE__*/React.createElement(CacheContext.Provider, {
@@ -8705,7 +8723,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 156,
+      lineNumber: 157,
       columnNumber: 17
     }
   }, /*#__PURE__*/React.createElement(EditorIdContext.Provider, {
@@ -8713,7 +8731,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 157,
+      lineNumber: 158,
       columnNumber: 19
     }
   }, /*#__PURE__*/React.createElement(RecalculateStageRectContext.Provider, {
@@ -8721,7 +8739,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 158,
+      lineNumber: 159,
       columnNumber: 21
     }
   }, /*#__PURE__*/React.createElement(UIEventsContext.Provider, {
@@ -8729,7 +8747,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 161,
+      lineNumber: 162,
       columnNumber: 23
     }
   }, /*#__PURE__*/React.createElement(Stage, {
@@ -8748,7 +8766,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 175,
+        lineNumber: 176,
         columnNumber: 29
       }
     }, debug && /*#__PURE__*/React.createElement("div", {
@@ -8756,7 +8774,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 177,
+        lineNumber: 178,
         columnNumber: 33
       }
     }, /*#__PURE__*/React.createElement("button", {
@@ -8765,7 +8783,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 178,
+        lineNumber: 179,
         columnNumber: 35
       }
     }, "Log Nodes"), /*#__PURE__*/React.createElement("button", {
@@ -8774,7 +8792,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 184,
+        lineNumber: 185,
         columnNumber: 35
       }
     }, "Export Nodes"), /*#__PURE__*/React.createElement("button", {
@@ -8783,7 +8801,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 192,
+        lineNumber: 193,
         columnNumber: 35
       }
     }, "Log Comments")), /*#__PURE__*/React.createElement(Toaster, {
@@ -8792,17 +8810,17 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 200,
+        lineNumber: 201,
         columnNumber: 31
       }
     })),
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 162,
+      lineNumber: 163,
       columnNumber: 25
     }
-  }, !hideComments && Object.values(comments).map(comment => /*#__PURE__*/React.createElement(Comment, babelHelpers.extends({}, comment, {
+  }, !hideComments && Object.values(comments).map(comment => /*#__PURE__*/React.createElement(Comment, _extends({}, comment, {
     stageRect: stage,
     dispatch: dispatchComments,
     onDragStart: recalculateStageRect,
@@ -8810,10 +8828,10 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 209,
+      lineNumber: 210,
       columnNumber: 31
     }
-  }))), Object.values(nodes).map(node => /*#__PURE__*/React.createElement(Node, babelHelpers.extends({}, node, {
+  }))), Object.values(nodes).map(node => /*#__PURE__*/React.createElement(Node, _extends({}, node, {
     stageRect: stage,
     onDragEnd: triggerRecalculation,
     onDragStart: recalculateStageRect,
@@ -8822,7 +8840,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 218,
+      lineNumber: 219,
       columnNumber: 29
     }
   }))), /*#__PURE__*/React.createElement(Connections, {
@@ -8831,7 +8849,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 227,
+      lineNumber: 228,
       columnNumber: 27
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -8840,7 +8858,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 228,
+      lineNumber: 229,
       columnNumber: 27
     }
   }))))))))))));

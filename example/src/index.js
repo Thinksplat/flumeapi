@@ -14,8 +14,7 @@ const FormStyles = () => (
   <style>{`body{background: rgb(198, 203, 208);}`}</style>
 );
 
-const container = document.getElementById("root")
-const root = createRoot(container);
+const root = createRoot(document.getElementById("root"));
 root.render(
   <Router>
     <Routes>

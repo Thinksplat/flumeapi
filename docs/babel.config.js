@@ -1,4 +1,4 @@
 module.exports = {
   "presets": ["@babel/preset-react"],
-  "plugins": ["@babel/plugin-external-helpers"]
+  "plugins": ["@babel/plugin-transform-runtime"]
 };
