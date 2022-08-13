@@ -7,7 +7,7 @@ import Attributes from "./Attributes";
 import fieldsReducer from "./fieldsReducer";
 import designerReducer from "./designerReducer";
 import previewFieldsReducer from "./previewFieldsReducer";
-import { useParams, useHistory, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import decodeQuery from 'decode-query-string'
 import ls from "local-storage";
 import "./Form.css";
@@ -40,7 +40,7 @@ const initialDesignerState = {
 const Form = () => {
   const location = useLocation();
   const { formId } = useParams();
-  const history = useHistory();
+  const history = useNavigate();
   const [{ fields, fieldsOrder }, dispatchFields] = React.useReducer(
     fieldsReducer,
     {

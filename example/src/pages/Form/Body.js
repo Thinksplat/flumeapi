@@ -1,6 +1,6 @@
 import React from "react";
 import axios from 'axios'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router'
 import Field from "./Field";
 import PreviewField from './PreviewField';
 import { DesignerDispatchContext, DesignerStateContext, BASE_URL } from './Form'
@@ -20,7 +20,7 @@ const Body = ({
 }) => {
   const designerDispatch = React.useContext(DesignerDispatchContext)
   const designerState = React.useContext(DesignerStateContext)
-  const history = useHistory()
+  const history = useNavigate()
 
   const startWizardEdit = () => {
     designerDispatch({

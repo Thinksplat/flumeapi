@@ -1,6 +1,6 @@
 import React from "react";
 
-export default ({
+const Draggable = ({
   children,
   stageState,
   stageRect,
@@ -149,3 +149,5 @@ export default ({
     </div>
   );
 };
+
+export default Draggable;

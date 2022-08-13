@@ -1,195 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import ReactDOM from 'react-dom';
-
-/**
- * Copyright (c) 2014-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-/**
- * Similar to invariant but only logs a warning if the condition is not met.
- * This can be used to log issues in development environments in critical
- * paths. Removing the logging code for production environments will keep the
- * same logic and follow the same code paths.
- */
-
-var __DEV__ = process.env.NODE_ENV !== 'production';
-
-/* eslint-disable no-restricted-globals, eqeqeq  */
-/**
- * React currently throws a warning when using useLayoutEffect on the server.
- * To get around it, we can conditionally useEffect on the server (no-op) and
- * useLayoutEffect in the browser. We occasionally need useLayoutEffect to
- * ensure we don't get a render flash for certain operations, but we may also
- * need affected components to render on the server. One example is when setting
- * a component's descendants to retrieve their index values.
- *
- * Important to note that using this hook as an escape hatch will break the
- * eslint dependency warnings unless you rename the import to `useLayoutEffect`.
- * Use sparingly only when the effect won't effect the rendered HTML to avoid
- * any server/client mismatch.
- *
- * If a useLayoutEffect is needed and the result would create a mismatch, it's
- * likely that the component in question shouldn't be rendered on the server at
- * all, so a better approach would be to lazily render those in a parent
- * component after client-side hydration.
- *
- * TODO: We are calling useLayoutEffect in a couple of places that will likely
- * cause some issues for SSR users, whether the warning shows or not. Audit and
- * fix these.
- *
- * https://gist.github.com/gaearon/e7d97cdf38a2907924ea12e4ebdf3c85
- * https://github.com/reduxjs/react-redux/blob/master/src/utils/useIsomorphicLayoutEffect.js
- *
- * @param effect
- * @param deps
- */
-
-var useIsomorphicLayoutEffect = /*#__PURE__*/canUseDOM() ? React.useLayoutEffect : React.useEffect;
-
-if (process.env.NODE_ENV !== "production") {
-  // In CJS files, process.env.NODE_ENV is stripped from our build, but we need
-  // it to prevent style checks from clogging up user logs while testing.
-  // This is a workaround until we can tweak the build a bit to accommodate.
-  var _ref = typeof process !== "undefined" ? process : {
-    env: {
-      NODE_ENV: "development"
-    }
-  },
-      env = _ref.env;
-}
-/**
- * Ponyfill for the global object in some environments.
- *
- * @link https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
- */
-
-var ponyfillGlobal = typeof window != "undefined" && window.Math == Math ? window : typeof self != "undefined" && self.Math == Math ? self :
-/*#__PURE__*/
-// eslint-disable-next-line no-new-func
-Function("return this")();
-function canUseDOM() {
-  return !!(typeof window !== "undefined" && window.document && window.document.createElement);
-}
-
-if (process.env.NODE_ENV !== "production") ;
-
-if (process.env.NODE_ENV !== "production") ;
-
-if (process.env.NODE_ENV !== "production") ;
-
-/*
- * Welcome to @reach/auto-id!
-
- * Let's see if we can make sense of why this hook exists and its
- * implementation.
- *
- * Some background:
- *   1. Accessibiliy APIs rely heavily on element IDs
- *   2. Requiring developers to put IDs on every element in Reach UI is both
- *      cumbersome and error-prone
- *   3. With a component model, we can generate IDs for them!
- *
- * Solution 1: Generate random IDs.
- *
- * This works great as long as you don't server render your app. When React (in
- * the client) tries to reuse the markup from the server, the IDs won't match
- * and React will then recreate the entire DOM tree.
- *
- * Solution 2: Increment an integer
- *
- * This sounds great. Since we're rendering the exact same tree on the server
- * and client, we can increment a counter and get a deterministic result between
- * client and server. Also, JS integers can go up to nine-quadrillion. I'm
- * pretty sure the tab will be closed before an app never needs
- * 10 quadrillion IDs!
- *
- * Problem solved, right?
- *
- * Ah, but there's a catch! React's concurrent rendering makes this approach
- * non-deterministic. While the client and server will end up with the same
- * elements in the end, depending on suspense boundaries (and possibly some user
- * input during the initial render) the incrementing integers won't always match
- * up.
- *
- * Solution 3: Don't use IDs at all on the server; patch after first render.
- *
- * What we've done here is solution 2 with some tricks. With this approach, the
- * ID returned is an empty string on the first render. This way the server and
- * client have the same markup no matter how wild the concurrent rendering may
- * have gotten.
- *
- * After the render, we patch up the components with an incremented ID. This
- * causes a double render on any components with `useId`. Shouldn't be a problem
- * since the components using this hook should be small, and we're only updating
- * the ID attribute on the DOM, nothing big is happening.
- *
- * It doesn't have to be an incremented number, though--we could do generate
- * random strings instead, but incrementing a number is probably the cheapest
- * thing we can do.
- *
- * Additionally, we only do this patchup on the very first client render ever.
- * Any calls to `useId` that happen dynamically in the client will be
- * populated immediately with a value. So, we only get the double render after
- * server hydration and never again, SO BACK OFF ALRIGHT?
- */
-var serverHandoffComplete = false;
-var id = 0;
-
-var genId = function genId() {
-  return ++id;
-};
-/**
- * useId
- *
- * Autogenerate IDs to facilitate WAI-ARIA and server rendering.
- *
- * Note: The returned ID will initially be `null` and will update after a
- * component mounts. Users may need to supply their own ID if they need
- * consistent values for SSR.
- *
- * @see Docs https://reacttraining.com/reach-ui/auto-id
- */
-
-
-var useId = function useId(idFromProps) {
-  /*
-   * If this instance isn't part of the initial render, we don't have to do the
-   * double render/patch-up dance. We can just generate the ID and return it.
-   */
-  var initialId = idFromProps || (serverHandoffComplete ? genId() : null);
-
-  var _useState = useState(initialId),
-      id = _useState[0],
-      setId = _useState[1];
-
-  useIsomorphicLayoutEffect(function () {
-    if (id === null) {
-      /*
-       * Patch the ID after render. We do this in `useLayoutEffect` to avoid any
-       * rendering flicker, though it'll make the first render slower (unlikely
-       * to matter, but you're welcome to measure your app and let us know if
-       * it's a problem).
-       */
-      setId(genId());
-    } // eslint-disable-next-line react-hooks/exhaustive-deps
-
-  }, []);
-  useEffect(function () {
-    if (serverHandoffComplete === false) {
-      /*
-       * Flag all future uses of `useId` to skip the update dance. This is in
-       * `useEffect` because it goes after `useLayoutEffect`, ensuring we don't
-       * accidentally bail out of the patch-up dance prematurely.
-       */
-      serverHandoffComplete = true;
-    }
-  }, []);
-  return id != null ? String(id) : undefined;
-};
+import PropTypes from 'prop-types';
+import { randomFillSync } from 'crypto';
 
 function styleInject(css, ref) {
   if ( ref === void 0 ) ref = {};
@@ -218,30 +30,30 @@ function styleInject(css, ref) {
   }
 }
 
-var css = ".Stage_wrapper__1X5K_ {\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  background-color: rgb(26, 28, 29);\n  background-image: linear-gradient(\n      0deg,\n      transparent 24%,\n      rgba(255, 255, 255, 0.04) 25%,\n      rgba(255, 255, 255, 0.04) 26%,\n      transparent 27%,\n      transparent 74%,\n      rgba(255, 255, 255, 0.04) 75%,\n      rgba(255, 255, 255, 0.04) 76%,\n      transparent 77%,\n      transparent\n    ),\n    linear-gradient(\n      90deg,\n      transparent 24%,\n      rgba(255, 255, 255, 0.04) 25%,\n      rgba(255, 255, 255, 0.04) 26%,\n      transparent 27%,\n      transparent 74%,\n      rgba(255, 255, 255, 0.04) 75%,\n      rgba(255, 255, 255, 0.04) 76%,\n      transparent 77%,\n      transparent\n    );\n  color: #000;\n  background-size: 30px 30px;\n  position: relative;\n  overflow: hidden;\n  -webkit-overflow-scrolling: touch;\n  font-family: Helvetica, sans-serif;\n  text-align: left;\n  line-height: 1;\n  outline: none !important;\n}\n.Stage_wrapper__1X5K_ * {\n  box-sizing: border-box;\n}\n.Stage_wrapper__1X5K_ input,\ntextarea,\nselect {\n  font-family: Helvetica, sans-serif;\n}\n.Stage_transformWrapper__3CfIp {\n  transform-origin: center center;\n  position: absolute;\n  left: 50%;\n  top: 50%;\n  width: 0px;\n  height: 0px;\n}\n.Stage_scaleWrapper__2Y7Ck {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  width: 0px;\n  height: 0px;\n}\n";
-var styles = { "wrapper": "Stage_wrapper__1X5K_", "transformWrapper": "Stage_transformWrapper__3CfIp", "scaleWrapper": "Stage_scaleWrapper__2Y7Ck" };
-styleInject(css);
+var css_248z$d = ".Stage_wrapper__1-MnH {\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  background-color: rgb(26, 28, 29);\n  background-image: linear-gradient(\n      0deg,\n      transparent 24%,\n      rgba(255, 255, 255, 0.04) 25%,\n      rgba(255, 255, 255, 0.04) 26%,\n      transparent 27%,\n      transparent 74%,\n      rgba(255, 255, 255, 0.04) 75%,\n      rgba(255, 255, 255, 0.04) 76%,\n      transparent 77%,\n      transparent\n    ),\n    linear-gradient(\n      90deg,\n      transparent 24%,\n      rgba(255, 255, 255, 0.04) 25%,\n      rgba(255, 255, 255, 0.04) 26%,\n      transparent 27%,\n      transparent 74%,\n      rgba(255, 255, 255, 0.04) 75%,\n      rgba(255, 255, 255, 0.04) 76%,\n      transparent 77%,\n      transparent\n    );\n  color: #000;\n  background-size: 30px 30px;\n  position: relative;\n  overflow: hidden;\n  -webkit-overflow-scrolling: touch;\n  font-family: Helvetica, sans-serif;\n  text-align: left;\n  line-height: 1;\n  outline: none !important;\n}\n.Stage_wrapper__1-MnH * {\n  box-sizing: border-box;\n}\n.Stage_wrapper__1-MnH input,\ntextarea,\nselect {\n  font-family: Helvetica, sans-serif;\n}\n.Stage_transformWrapper__15k8U {\n  transform-origin: center center;\n  position: absolute;\n  left: 50%;\n  top: 50%;\n  width: 0px;\n  height: 0px;\n}\n.Stage_scaleWrapper__Svldl {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  width: 0px;\n  height: 0px;\n}\n";
+var styles$d = {"wrapper":"Stage_wrapper__1-MnH","transformWrapper":"Stage_transformWrapper__15k8U","scaleWrapper":"Stage_scaleWrapper__Svldl"};
+styleInject(css_248z$d);
 
-var canUseDOM$1 = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
+var canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass$2 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck$2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+function _possibleConstructorReturn$2(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits$2(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Portal = function (_React$Component) {
-  _inherits(Portal, _React$Component);
+var Portal$3 = function (_React$Component) {
+  _inherits$2(Portal, _React$Component);
 
   function Portal() {
-    _classCallCheck(this, Portal);
+    _classCallCheck$2(this, Portal);
 
-    return _possibleConstructorReturn(this, (Portal.__proto__ || Object.getPrototypeOf(Portal)).apply(this, arguments));
+    return _possibleConstructorReturn$2(this, (Portal.__proto__ || Object.getPrototypeOf(Portal)).apply(this, arguments));
   }
 
-  _createClass(Portal, [{
+  _createClass$2(Portal, [{
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
       if (this.defaultNode) {
@@ -252,7 +64,7 @@ var Portal = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      if (!canUseDOM$1) {
+      if (!canUseDOM) {
         return null;
       }
       if (!this.props.node && !this.defaultNode) {
@@ -266,7 +78,7 @@ var Portal = function (_React$Component) {
   return Portal;
 }(React.Component);
 
-Portal.propTypes = {
+Portal$3.propTypes = {
   children: PropTypes.node.isRequired,
   node: PropTypes.any
 };
@@ -279,7 +91,7 @@ function _possibleConstructorReturn$1(self, call) { if (!self) { throw new Refer
 
 function _inherits$1(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Portal$1 = function (_React$Component) {
+var Portal$2 = function (_React$Component) {
   _inherits$1(Portal, _React$Component);
 
   function Portal() {
@@ -335,40 +147,40 @@ var Portal$1 = function (_React$Component) {
 }(React.Component);
 
 
-Portal$1.propTypes = {
+Portal$2.propTypes = {
   children: PropTypes.node.isRequired,
   node: PropTypes.any
 };
 
-var Portal$2 = void 0;
+var Portal = void 0;
 
 if (ReactDOM.createPortal) {
-  Portal$2 = Portal;
+  Portal = Portal$3;
 } else {
-  Portal$2 = Portal$1;
+  Portal = Portal$2;
 }
 
-var Portal$3 = Portal$2;
+var Portal$1 = Portal;
 
-var _createClass$2 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck$2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn$2(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits$2(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var KEYCODES = {
   ESCAPE: 27
 };
 
 var PortalWithState = function (_React$Component) {
-  _inherits$2(PortalWithState, _React$Component);
+  _inherits(PortalWithState, _React$Component);
 
   function PortalWithState(props) {
-    _classCallCheck$2(this, PortalWithState);
+    _classCallCheck(this, PortalWithState);
 
-    var _this = _possibleConstructorReturn$2(this, (PortalWithState.__proto__ || Object.getPrototypeOf(PortalWithState)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (PortalWithState.__proto__ || Object.getPrototypeOf(PortalWithState)).call(this, props));
 
     _this.portalNode = null;
     _this.state = { active: !!props.defaultOpen };
@@ -380,7 +192,7 @@ var PortalWithState = function (_React$Component) {
     return _this;
   }
 
-  _createClass$2(PortalWithState, [{
+  _createClass(PortalWithState, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
       if (this.props.closeOnEsc) {
@@ -428,7 +240,7 @@ var PortalWithState = function (_React$Component) {
         return null;
       }
       return React.createElement(
-        Portal$3,
+        Portal$1,
         {
           node: this.props.node,
           key: 'react-portal',
@@ -488,9 +300,11 @@ PortalWithState.defaultProps = {
   onClose: function onClose() {}
 };
 
-var css$1 = ".ContextMenu_menuWrapper__1BheJ{\n  position: fixed;\n  z-index: 9999;\n  background: rgba(29, 32, 34, 0.95);\n  border-radius: 5px;\n  box-shadow: 0px 6px 7px rgba(0,0,0,.3);\n  border: 1px solid rgba(0,0,0,.4);\n  font-size: 14px;\n  max-width: 300px;\n  min-width: 150px;\n  font-family: Helvetica, sans-serif;\n  line-height: 1.15;\n  outline: none;\n}\n@supports (backdrop-filter: blur(6px)){\n  .ContextMenu_menuWrapper__1BheJ{\n    backdrop-filter: blur(6px);\n    background: rgba(29, 32, 34, 0.8);\n  }\n}\n.ContextMenu_menuHeader__1Cw58{\n  padding: 5px;\n  border-bottom: 1px solid rgba(255,255,255,.1);\n  display: flex;\n  flex-direction: column;\n}\n.ContextMenu_menuLabel__158Pv{\n  margin: 0px;\n  color: #fff;\n  font-size: 16px;\n  font-weight: 600;\n}\n.ContextMenu_optionsWrapper__2YK_z{\n  max-height: 300px;\n  overflow-y: auto;\n  display: flex;\n  flex-direction: column;\n}\n.ContextMenu_menuFilter__1goBp{\n  border: none;\n  background: none;\n  height: 24px;\n  flex: 1 1 auto;\n  width: 100%;\n  outline: none;\n  color: #fff;\n}\n.ContextMenu_menuFilter__1goBp::placeholder{\n    font-style: italic;\n  }\n.ContextMenu_option__33MDL{\n  display: flex;\n  flex-direction: column;\n  flex-shrink: 0;\n  padding: 5px;\n  border-bottom: 1px solid rgba(255,255,255,.1);\n  color: #ffffff;\n}\n.ContextMenu_option__33MDL:last-child{\n    border-bottom: none;\n  }\n.ContextMenu_option__33MDL:hover{\n    background: rgba(255,255,255,.05);\n  }\n.ContextMenu_option__33MDL label{\n    margin-bottom: 5px;\n    user-select: none;\n  }\n.ContextMenu_option__33MDL label:last-child{\n      margin-bottom: 0px;\n    }\n.ContextMenu_option__33MDL p{\n    margin: 0px;\n    font-style: italic;\n    font-size: 12px;\n    color: rgb(182, 186, 194);\n    user-select: none;\n  }\n.ContextMenu_option__33MDL[data-selected=true]{\n    background: rgba(255,255,255,.05);\n  }\n.ContextMenu_emptyText__2rcXy{\n  color: #fff;\n  padding: 5px;\n}\n";
-var styles$1 = { "menuWrapper": "ContextMenu_menuWrapper__1BheJ", "menuHeader": "ContextMenu_menuHeader__1Cw58", "menuLabel": "ContextMenu_menuLabel__158Pv", "optionsWrapper": "ContextMenu_optionsWrapper__2YK_z", "menuFilter": "ContextMenu_menuFilter__1goBp", "option": "ContextMenu_option__33MDL", "emptyText": "ContextMenu_emptyText__2rcXy" };
-styleInject(css$1);
+var css_248z$c = ".ContextMenu_menuWrapper__Z9z6u{\n  position: fixed;\n  z-index: 9999;\n  background: rgba(29, 32, 34, 0.95);\n  border-radius: 5px;\n  box-shadow: 0px 6px 7px rgba(0,0,0,.3);\n  border: 1px solid rgba(0,0,0,.4);\n  font-size: 14px;\n  max-width: 300px;\n  min-width: 150px;\n  font-family: Helvetica, sans-serif;\n  line-height: 1.15;\n  outline: none;\n}\n@supports (backdrop-filter: blur(6px)){\n  .ContextMenu_menuWrapper__Z9z6u{\n    backdrop-filter: blur(6px);\n    background: rgba(29, 32, 34, 0.8);\n  }\n}\n.ContextMenu_menuHeader__YueK-{\n  padding: 5px;\n  border-bottom: 1px solid rgba(255,255,255,.1);\n  display: flex;\n  flex-direction: column;\n}\n.ContextMenu_menuLabel__s8v-E{\n  margin: 0px;\n  color: #fff;\n  font-size: 16px;\n  font-weight: 600;\n}\n.ContextMenu_optionsWrapper__KHbqz{\n  max-height: 300px;\n  overflow-y: auto;\n  display: flex;\n  flex-direction: column;\n}\n.ContextMenu_menuFilter__mcwO6{\n  border: none;\n  background: none;\n  height: 24px;\n  flex: 1 1 auto;\n  width: 100%;\n  outline: none;\n  color: #fff;\n}\n.ContextMenu_menuFilter__mcwO6::placeholder{\n    font-style: italic;\n  }\n.ContextMenu_option__vWtA9{\n  display: flex;\n  flex-direction: column;\n  flex-shrink: 0;\n  padding: 5px;\n  border-bottom: 1px solid rgba(255,255,255,.1);\n  color: #ffffff;\n}\n.ContextMenu_option__vWtA9:last-child{\n    border-bottom: none;\n  }\n.ContextMenu_option__vWtA9:hover{\n    background: rgba(255,255,255,.05);\n  }\n.ContextMenu_option__vWtA9 label{\n    margin-bottom: 5px;\n    user-select: none;\n  }\n.ContextMenu_option__vWtA9 label:last-child{\n      margin-bottom: 0px;\n    }\n.ContextMenu_option__vWtA9 p{\n    margin: 0px;\n    font-style: italic;\n    font-size: 12px;\n    color: rgb(182, 186, 194);\n    user-select: none;\n  }\n.ContextMenu_option__vWtA9[data-selected=true]{\n    background: rgba(255,255,255,.05);\n  }\n.ContextMenu_emptyText__lDw6a{\n  color: #fff;\n  padding: 5px;\n}\n";
+var styles$c = {"menuWrapper":"ContextMenu_menuWrapper__Z9z6u","menuHeader":"ContextMenu_menuHeader__YueK-","menuLabel":"ContextMenu_menuLabel__s8v-E","optionsWrapper":"ContextMenu_optionsWrapper__KHbqz","menuFilter":"ContextMenu_menuFilter__mcwO6","option":"ContextMenu_option__vWtA9","emptyText":"ContextMenu_emptyText__lDw6a"};
+styleInject(css_248z$c);
+
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 /**
  * The base implementation of `_.clamp` which doesn't coerce arguments.
@@ -501,7 +315,8 @@ styleInject(css$1);
  * @param {number} upper The upper bound.
  * @returns {number} Returns the clamped number.
  */
-function baseClamp(number, lower, upper) {
+
+function baseClamp$1(number, lower, upper) {
   if (number === number) {
     if (upper !== undefined) {
       number = number <= upper ? number : upper;
@@ -513,9 +328,10 @@ function baseClamp(number, lower, upper) {
   return number;
 }
 
-var _baseClamp = baseClamp;
+var _baseClamp = baseClamp$1;
 
 /** Used to match a single whitespace character. */
+
 var reWhitespace = /\s/;
 
 /**
@@ -526,14 +342,16 @@ var reWhitespace = /\s/;
  * @param {string} string The string to inspect.
  * @returns {number} Returns the index of the last non-whitespace character.
  */
-function trimmedEndIndex(string) {
+function trimmedEndIndex$1(string) {
   var index = string.length;
 
   while (index-- && reWhitespace.test(string.charAt(index))) {}
   return index;
 }
 
-var _trimmedEndIndex = trimmedEndIndex;
+var _trimmedEndIndex = trimmedEndIndex$1;
+
+var trimmedEndIndex = _trimmedEndIndex;
 
 /** Used to match leading whitespace. */
 var reTrimStart = /^\s+/;
@@ -545,13 +363,13 @@ var reTrimStart = /^\s+/;
  * @param {string} string The string to trim.
  * @returns {string} Returns the trimmed string.
  */
-function baseTrim(string) {
+function baseTrim$1(string) {
   return string
-    ? string.slice(0, _trimmedEndIndex(string) + 1).replace(reTrimStart, '')
+    ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, '')
     : string;
 }
 
-var _baseTrim = baseTrim;
+var _baseTrim = baseTrim$1;
 
 /**
  * Checks if `value` is the
@@ -578,52 +396,54 @@ var _baseTrim = baseTrim;
  * _.isObject(null);
  * // => false
  */
-function isObject(value) {
+
+function isObject$4(value) {
   var type = typeof value;
   return value != null && (type == 'object' || type == 'function');
 }
 
-var isObject_1 = isObject;
-
-var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
+var isObject_1 = isObject$4;
 
 /** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
-var _freeGlobal = freeGlobal;
+var freeGlobal$1 = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
+
+var _freeGlobal = freeGlobal$1;
+
+var freeGlobal = _freeGlobal;
 
 /** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
-var root = _freeGlobal || freeSelf || Function('return this')();
+var root$8 = freeGlobal || freeSelf || Function('return this')();
 
-var _root = root;
+var _root = root$8;
+
+var root$7 = _root;
 
 /** Built-in value references. */
-var Symbol$1 = _root.Symbol;
+var Symbol$4 = root$7.Symbol;
 
-var _Symbol = Symbol$1;
+var _Symbol = Symbol$4;
+
+var Symbol$3 = _Symbol;
 
 /** Used for built-in method references. */
-var objectProto = Object.prototype;
+var objectProto$b = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
+var hasOwnProperty$8 = objectProto$b.hasOwnProperty;
 
 /**
  * Used to resolve the
  * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
  * of values.
  */
-var nativeObjectToString = objectProto.toString;
+var nativeObjectToString$1 = objectProto$b.toString;
 
 /** Built-in value references. */
-var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
+var symToStringTag$1 = Symbol$3 ? Symbol$3.toStringTag : undefined;
 
 /**
  * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
@@ -632,36 +452,38 @@ var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
  * @param {*} value The value to query.
  * @returns {string} Returns the raw `toStringTag`.
  */
-function getRawTag(value) {
-  var isOwn = hasOwnProperty.call(value, symToStringTag),
-      tag = value[symToStringTag];
+function getRawTag$1(value) {
+  var isOwn = hasOwnProperty$8.call(value, symToStringTag$1),
+      tag = value[symToStringTag$1];
 
   try {
-    value[symToStringTag] = undefined;
+    value[symToStringTag$1] = undefined;
+    var unmasked = true;
   } catch (e) {}
 
-  var result = nativeObjectToString.call(value);
-  {
+  var result = nativeObjectToString$1.call(value);
+  if (unmasked) {
     if (isOwn) {
-      value[symToStringTag] = tag;
+      value[symToStringTag$1] = tag;
     } else {
-      delete value[symToStringTag];
+      delete value[symToStringTag$1];
     }
   }
   return result;
 }
 
-var _getRawTag = getRawTag;
+var _getRawTag = getRawTag$1;
 
 /** Used for built-in method references. */
-var objectProto$1 = Object.prototype;
+
+var objectProto$a = Object.prototype;
 
 /**
  * Used to resolve the
  * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
  * of values.
  */
-var nativeObjectToString$1 = objectProto$1.toString;
+var nativeObjectToString = objectProto$a.toString;
 
 /**
  * Converts `value` to a string using `Object.prototype.toString`.
@@ -670,18 +492,22 @@ var nativeObjectToString$1 = objectProto$1.toString;
  * @param {*} value The value to convert.
  * @returns {string} Returns the converted string.
  */
-function objectToString(value) {
-  return nativeObjectToString$1.call(value);
+function objectToString$1(value) {
+  return nativeObjectToString.call(value);
 }
 
-var _objectToString = objectToString;
+var _objectToString = objectToString$1;
+
+var Symbol$2 = _Symbol,
+    getRawTag = _getRawTag,
+    objectToString = _objectToString;
 
 /** `Object#toString` result references. */
 var nullTag = '[object Null]',
     undefinedTag = '[object Undefined]';
 
 /** Built-in value references. */
-var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
+var symToStringTag = Symbol$2 ? Symbol$2.toStringTag : undefined;
 
 /**
  * The base implementation of `getTag` without fallbacks for buggy environments.
@@ -690,16 +516,16 @@ var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
  * @param {*} value The value to query.
  * @returns {string} Returns the `toStringTag`.
  */
-function baseGetTag(value) {
+function baseGetTag$5(value) {
   if (value == null) {
     return value === undefined ? undefinedTag : nullTag;
   }
-  return (symToStringTag$1 && symToStringTag$1 in Object(value))
-    ? _getRawTag(value)
-    : _objectToString(value);
+  return (symToStringTag && symToStringTag in Object(value))
+    ? getRawTag(value)
+    : objectToString(value);
 }
 
-var _baseGetTag = baseGetTag;
+var _baseGetTag = baseGetTag$5;
 
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
@@ -725,14 +551,18 @@ var _baseGetTag = baseGetTag;
  * _.isObjectLike(null);
  * // => false
  */
-function isObjectLike(value) {
+
+function isObjectLike$5(value) {
   return value != null && typeof value == 'object';
 }
 
-var isObjectLike_1 = isObjectLike;
+var isObjectLike_1 = isObjectLike$5;
+
+var baseGetTag$4 = _baseGetTag,
+    isObjectLike$4 = isObjectLike_1;
 
 /** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
+var symbolTag$1 = '[object Symbol]';
 
 /**
  * Checks if `value` is classified as a `Symbol` primitive or object.
@@ -751,12 +581,16 @@ var symbolTag = '[object Symbol]';
  * _.isSymbol('abc');
  * // => false
  */
-function isSymbol(value) {
+function isSymbol$5(value) {
   return typeof value == 'symbol' ||
-    (isObjectLike_1(value) && _baseGetTag(value) == symbolTag);
+    (isObjectLike$4(value) && baseGetTag$4(value) == symbolTag$1);
 }
 
-var isSymbol_1 = isSymbol;
+var isSymbol_1 = isSymbol$5;
+
+var baseTrim = _baseTrim,
+    isObject$3 = isObject_1,
+    isSymbol$4 = isSymbol_1;
 
 /** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
@@ -796,28 +630,31 @@ var freeParseInt = parseInt;
  * _.toNumber('3.2');
  * // => 3.2
  */
-function toNumber(value) {
+function toNumber$1(value) {
   if (typeof value == 'number') {
     return value;
   }
-  if (isSymbol_1(value)) {
+  if (isSymbol$4(value)) {
     return NAN;
   }
-  if (isObject_1(value)) {
+  if (isObject$3(value)) {
     var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
-    value = isObject_1(other) ? (other + '') : other;
+    value = isObject$3(other) ? (other + '') : other;
   }
   if (typeof value != 'string') {
     return value === 0 ? value : +value;
   }
-  value = _baseTrim(value);
+  value = baseTrim(value);
   var isBinary = reIsBinary.test(value);
   return (isBinary || reIsOctal.test(value))
     ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
     : (reIsBadHex.test(value) ? NAN : +value);
 }
 
-var toNumber_1 = toNumber;
+var toNumber_1 = toNumber$1;
+
+var baseClamp = _baseClamp,
+    toNumber = toNumber_1;
 
 /**
  * Clamps `number` within the inclusive `lower` and `upper` bounds.
@@ -844,471 +681,378 @@ function clamp(number, lower, upper) {
     lower = undefined;
   }
   if (upper !== undefined) {
-    upper = toNumber_1(upper);
+    upper = toNumber(upper);
     upper = upper === upper ? upper : 0;
   }
   if (lower !== undefined) {
-    lower = toNumber_1(lower);
+    lower = toNumber(lower);
     lower = lower === lower ? lower : 0;
   }
-  return _baseClamp(toNumber_1(number), lower, upper);
+  return baseClamp(toNumber(number), lower, upper);
 }
 
 var clamp_1 = clamp;
 
-let urlAlphabet =
+const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';
+
+const POOL_SIZE_MULTIPLIER = 128;
+let pool, poolOffset;
+let fillPool = bytes => {
+  if (!pool || pool.length < bytes) {
+    pool = Buffer.allocUnsafe(bytes * POOL_SIZE_MULTIPLIER);
+    randomFillSync(pool);
+    poolOffset = 0;
+  } else if (poolOffset + bytes > pool.length) {
+    randomFillSync(pool);
+    poolOffset = 0;
+  }
+  poolOffset += bytes;
+};
 let nanoid = (size = 21) => {
+  fillPool((size -= 0));
   let id = '';
-  let i = size;
-  while (i--) {
-    id += urlAlphabet[(Math.random() * 64) | 0];
+  for (let i = poolOffset - size; i < poolOffset; i++) {
+    id += urlAlphabet[pool[i] & 63];
   }
   return id
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
+var _jsxFileName$e = "/workspaces/flumeapi/src/components/ContextMenu/ContextMenu.js";
 
-var classCallCheck = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
+const ContextMenu = ({
+  x,
+  y,
+  options = [],
+  onRequestClose,
+  onOptionSelected,
+  label,
+  hideHeader,
+  hideFilter,
+  emptyText
+}) => {
+  const menuWrapper = React.useRef();
+  const menuOptionsWrapper = React.useRef();
+  const filterInput = React.useRef();
+  const [filter, setFilter] = React.useState("");
+  const [menuWidth, setMenuWidth] = React.useState(0);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const menuId = React.useRef(nanoid(10));
 
-var createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
-
-var defineProperty = function (obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-};
-
-var _extends = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];
-
-    for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }
-
-  return target;
-};
-
-var inherits = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-};
-
-var objectWithoutProperties = function (obj, keys) {
-  var target = {};
-
-  for (var i in obj) {
-    if (keys.indexOf(i) >= 0) continue;
-    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-    target[i] = obj[i];
-  }
-
-  return target;
-};
-
-var possibleConstructorReturn = function (self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-};
-
-var slicedToArray = function () {
-  function sliceIterator(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"]) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
-    }
-  };
-}();
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
-
-var ContextMenu = function ContextMenu(_ref) {
-  var x = _ref.x,
-      y = _ref.y,
-      _ref$options = _ref.options,
-      options = _ref$options === undefined ? [] : _ref$options,
-      onRequestClose = _ref.onRequestClose,
-      onOptionSelected = _ref.onOptionSelected,
-      label = _ref.label,
-      hideHeader = _ref.hideHeader,
-      hideFilter = _ref.hideFilter,
-      emptyText = _ref.emptyText;
-
-  var menuWrapper = React.useRef();
-  var menuOptionsWrapper = React.useRef();
-  var filterInput = React.useRef();
-
-  var _React$useState = React.useState(""),
-      _React$useState2 = slicedToArray(_React$useState, 2),
-      filter = _React$useState2[0],
-      setFilter = _React$useState2[1];
-
-  var _React$useState3 = React.useState(0),
-      _React$useState4 = slicedToArray(_React$useState3, 2),
-      menuWidth = _React$useState4[0],
-      setMenuWidth = _React$useState4[1];
-
-  var _React$useState5 = React.useState(0),
-      _React$useState6 = slicedToArray(_React$useState5, 2),
-      selectedIndex = _React$useState6[0],
-      setSelectedIndex = _React$useState6[1];
-
-  var menuId = React.useRef(nanoid(10));
-
-  var handleOptionSelected = function handleOptionSelected(option) {
+  const handleOptionSelected = option => {
     onOptionSelected(option);
     onRequestClose();
   };
 
-  var testClickOutside = React.useCallback(function (e) {
+  const testClickOutside = React.useCallback(e => {
     if (menuWrapper.current && !menuWrapper.current.contains(e.target)) {
       onRequestClose();
-      document.removeEventListener("click", testClickOutside, { capture: true });
-      document.removeEventListener("contextmenu", testClickOutside, { capture: true });
+      document.removeEventListener("click", testClickOutside, {
+        capture: true
+      });
+      document.removeEventListener("contextmenu", testClickOutside, {
+        capture: true
+      });
     }
   }, [menuWrapper, onRequestClose]);
-
-  var testEscape = React.useCallback(function (e) {
+  const testEscape = React.useCallback(e => {
     if (e.keyCode === 27) {
       onRequestClose();
-      document.removeEventListener("keydown", testEscape, { capture: true });
+      document.removeEventListener("keydown", testEscape, {
+        capture: true
+      });
     }
   }, [onRequestClose]);
-
-  React.useEffect(function () {
+  React.useEffect(() => {
     if (filterInput.current) {
       filterInput.current.focus();
     }
+
     setMenuWidth(menuWrapper.current.getBoundingClientRect().width);
-    document.addEventListener("keydown", testEscape, { capture: true });
-    document.addEventListener("click", testClickOutside, { capture: true });
-    document.addEventListener("contextmenu", testClickOutside, { capture: true });
-    return function () {
-      document.removeEventListener("click", testClickOutside, { capture: true });
-      document.removeEventListener("contextmenu", testClickOutside, { capture: true });
-      document.removeEventListener("keydown", testEscape, { capture: true });
+    document.addEventListener("keydown", testEscape, {
+      capture: true
+    });
+    document.addEventListener("click", testClickOutside, {
+      capture: true
+    });
+    document.addEventListener("contextmenu", testClickOutside, {
+      capture: true
+    });
+    return () => {
+      document.removeEventListener("click", testClickOutside, {
+        capture: true
+      });
+      document.removeEventListener("contextmenu", testClickOutside, {
+        capture: true
+      });
+      document.removeEventListener("keydown", testEscape, {
+        capture: true
+      });
     };
   }, [testClickOutside, testEscape]);
-
-  var filteredOptions = React.useMemo(function () {
+  const filteredOptions = React.useMemo(() => {
     if (!filter) return options;
-    var lowerFilter = filter.toLowerCase();
-    return options.filter(function (opt) {
-      return opt.label.toLowerCase().includes(lowerFilter);
-    });
+    const lowerFilter = filter.toLowerCase();
+    return options.filter(opt => opt.label.toLowerCase().includes(lowerFilter));
   }, [filter, options]);
 
-  var handleFilterChange = function handleFilterChange(e) {
-    var value = e.target.value;
+  const handleFilterChange = e => {
+    const value = e.target.value;
     setFilter(value);
     setSelectedIndex(0);
   };
 
-  var handleKeyDown = function handleKeyDown(e) {
+  const handleKeyDown = e => {
     // Up pressed
     if (e.which === 38) {
       e.preventDefault();
+
       if (selectedIndex === null) {
         setSelectedIndex(0);
       } else if (selectedIndex > 0) {
-        setSelectedIndex(function (i) {
-          return i - 1;
-        });
+        setSelectedIndex(i => i - 1);
       }
-    }
-    // Down pressed
+    } // Down pressed
+
+
     if (e.which === 40) {
       e.preventDefault();
+
       if (selectedIndex === null) {
         setSelectedIndex(0);
       } else if (selectedIndex < filteredOptions.length - 1) {
-        setSelectedIndex(function (i) {
-          return i + 1;
-        });
+        setSelectedIndex(i => i + 1);
       }
-    }
-    // Enter pressed
+    } // Enter pressed
+
+
     if (e.which === 13 && selectedIndex !== null) {
-      var option = filteredOptions[selectedIndex];
+      const option = filteredOptions[selectedIndex];
+
       if (option) {
         handleOptionSelected(option);
       }
     }
   };
 
-  React.useEffect(function () {
+  React.useEffect(() => {
     if (hideFilter || hideHeader) {
       menuWrapper.current.focus();
     }
   }, [hideFilter, hideHeader]);
+  React.useEffect(() => {
+    const menuOption = document.getElementById(`${menuId.current}-${selectedIndex}`);
 
-  React.useEffect(function () {
-    var menuOption = document.getElementById(menuId.current + "-" + selectedIndex);
     if (menuOption) {
-      var menuRect = menuOptionsWrapper.current.getBoundingClientRect();
-      var optionRect = menuOption.getBoundingClientRect();
+      const menuRect = menuOptionsWrapper.current.getBoundingClientRect();
+      const optionRect = menuOption.getBoundingClientRect();
+
       if (optionRect.y + optionRect.height > menuRect.y + menuRect.height || optionRect.y < menuRect.y) {
-        menuOption.scrollIntoView({ block: "nearest" });
+        menuOption.scrollIntoView({
+          block: "nearest"
+        });
       }
     }
   }, [selectedIndex]);
-
-  return React.createElement(
-    "div",
-    {
-      "data-flume-component": "ctx-menu",
-      className: styles$1.menuWrapper,
-      onMouseDown: function onMouseDown(e) {
-        return e.stopPropagation();
-      },
-      onKeyDown: handleKeyDown,
-      style: {
-        left: x,
-        top: y,
-        width: filter ? menuWidth : "auto"
-      },
-      ref: menuWrapper,
-      tabIndex: 0,
-      role: "menu",
-      "aria-activedescendant": menuId.current + "-" + selectedIndex
+  return /*#__PURE__*/React.createElement("div", {
+    "data-flume-component": "ctx-menu",
+    className: styles$c.menuWrapper,
+    onMouseDown: e => e.stopPropagation(),
+    onKeyDown: handleKeyDown,
+    style: {
+      left: x,
+      top: y,
+      width: filter ? menuWidth : "auto"
     },
-    !hideHeader && (label ? true : !!options.length) ? React.createElement(
-      "div",
-      { className: styles$1.menuHeader, "data-flume-component": "ctx-menu-header" },
-      React.createElement(
-        "label",
-        { className: styles$1.menuLabel, "data-flume-component": "ctx-menu-title" },
-        label
-      ),
-      !hideFilter && options.length ? React.createElement("input", {
-        "data-flume-component": "ctx-menu-input",
-        type: "text",
-        placeholder: "Filter options",
-        value: filter,
-        onChange: handleFilterChange,
-        className: styles$1.menuFilter,
-        autoFocus: true,
-        ref: filterInput
-      }) : null
-    ) : null,
-    React.createElement(
-      "div",
-      {
-        "data-flume-component": "ctx-menu-list",
-        className: styles$1.optionsWrapper,
-        role: "menu",
-        ref: menuOptionsWrapper,
-        style: { maxHeight: clamp_1(window.innerHeight - y - 70, 10, 300) }
-      },
-      filteredOptions.map(function (option, i) {
-        return React.createElement(
-          ContextOption,
-          {
-            menuId: menuId.current,
-            selected: selectedIndex === i,
-            onClick: function onClick() {
-              return handleOptionSelected(option);
-            },
-            onMouseEnter: function onMouseEnter() {
-              return setSelectedIndex(null);
-            },
-            index: i,
-            key: option.value + i
-          },
-          React.createElement(
-            "label",
-            null,
-            option.label
-          ),
-          option.description ? React.createElement(
-            "p",
-            null,
-            option.description
-          ) : null
-        );
-      }),
-      !options.length ? React.createElement(
-        "span",
-        { "data-flume-component": "ctx-menu-empty", className: styles$1.emptyText },
-        emptyText
-      ) : null
-    )
-  );
+    ref: menuWrapper,
+    tabIndex: 0,
+    role: "menu",
+    "aria-activedescendant": `${menuId.current}-${selectedIndex}`,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 129,
+      columnNumber: 5
+    }
+  }, !hideHeader && (label ? true : !!options.length) ? /*#__PURE__*/React.createElement("div", {
+    className: styles$c.menuHeader,
+    "data-flume-component": "ctx-menu-header",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 145,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    className: styles$c.menuLabel,
+    "data-flume-component": "ctx-menu-title",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 146,
+      columnNumber: 11
+    }
+  }, label), !hideFilter && options.length ? /*#__PURE__*/React.createElement("input", {
+    "data-flume-component": "ctx-menu-input",
+    type: "text",
+    placeholder: "Filter options",
+    value: filter,
+    onChange: handleFilterChange,
+    className: styles$c.menuFilter,
+    autoFocus: true,
+    ref: filterInput,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 148,
+      columnNumber: 13
+    }
+  }) : null) : null, /*#__PURE__*/React.createElement("div", {
+    "data-flume-component": "ctx-menu-list",
+    className: styles$c.optionsWrapper,
+    role: "menu",
+    ref: menuOptionsWrapper,
+    style: {
+      maxHeight: clamp_1(window.innerHeight - y - 70, 10, 300)
+    },
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 161,
+      columnNumber: 7
+    }
+  }, filteredOptions.map((option, i) => /*#__PURE__*/React.createElement(ContextOption, {
+    menuId: menuId.current,
+    selected: selectedIndex === i,
+    onClick: () => handleOptionSelected(option),
+    onMouseEnter: () => setSelectedIndex(null),
+    index: i,
+    key: option.value + i,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 169,
+      columnNumber: 11
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 177,
+      columnNumber: 13
+    }
+  }, option.label), option.description ? /*#__PURE__*/React.createElement("p", {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 178,
+      columnNumber: 35
+    }
+  }, option.description) : null)), !options.length ? /*#__PURE__*/React.createElement("span", {
+    "data-flume-component": "ctx-menu-empty",
+    className: styles$c.emptyText,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 182,
+      columnNumber: 11
+    }
+  }, emptyText) : null));
 };
 
-var ContextOption = function ContextOption(_ref2) {
-  var menuId = _ref2.menuId,
-      index = _ref2.index,
-      children = _ref2.children,
-      onClick = _ref2.onClick,
-      selected = _ref2.selected,
-      onMouseEnter = _ref2.onMouseEnter;
-
-  return React.createElement(
-    "div",
-    {
-      "data-flume-component": "ctx-menu-option",
-      className: styles$1.option,
-      role: "menuitem",
-      onClick: onClick,
-      onMouseEnter: onMouseEnter,
-      "data-selected": selected,
-      id: menuId + "-" + index
-    },
-    children
-  );
+const ContextOption = ({
+  menuId,
+  index,
+  children,
+  onClick,
+  selected,
+  onMouseEnter
+}) => {
+  return /*#__PURE__*/React.createElement("div", {
+    "data-flume-component": "ctx-menu-option",
+    className: styles$c.option,
+    role: "menuitem",
+    onClick: onClick,
+    onMouseEnter: onMouseEnter,
+    "data-selected": selected,
+    id: `${menuId}-${index}`,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$e,
+      lineNumber: 198,
+      columnNumber: 5
+    }
+  }, children);
 };
 
-var NodeTypesContext = React.createContext();
-var PortTypesContext = React.createContext();
-var NodeDispatchContext = React.createContext();
-var ConnectionRecalculateContext = React.createContext();
-var ContextContext = React.createContext();
-var StageContext = React.createContext();
-var CacheContext = React.createContext();
-var RecalculateStageRectContext = React.createContext();
-var EditorIdContext = React.createContext();
-var UIEventsContext = React.createContext();
+const NodeTypesContext = /*#__PURE__*/React.createContext();
+const PortTypesContext = /*#__PURE__*/React.createContext();
+const NodeDispatchContext = /*#__PURE__*/React.createContext();
+const ConnectionRecalculateContext = /*#__PURE__*/React.createContext();
+const ContextContext = /*#__PURE__*/React.createContext();
+const StageContext = /*#__PURE__*/React.createContext();
+const CacheContext = /*#__PURE__*/React.createContext();
+const RecalculateStageRectContext = /*#__PURE__*/React.createContext();
+const EditorIdContext = /*#__PURE__*/React.createContext();
+const UIEventsContext = /*#__PURE__*/React.createContext();
 
-var Draggable = (function (_ref) {
-  var children = _ref.children,
-      stageState = _ref.stageState,
-      stageRect = _ref.stageRect,
-      onDragDelayStart = _ref.onDragDelayStart,
-      onDragStart = _ref.onDragStart,
-      onDrag = _ref.onDrag,
-      onDragEnd = _ref.onDragEnd,
-      _onMouseDown = _ref.onMouseDown,
-      _onTouchStart = _ref.onTouchStart,
-      disabled = _ref.disabled,
-      _ref$delay = _ref.delay,
-      delay = _ref$delay === undefined ? 6 : _ref$delay,
-      innerRef = _ref.innerRef,
-      rest = objectWithoutProperties(_ref, ["children", "stageState", "stageRect", "onDragDelayStart", "onDragStart", "onDrag", "onDragEnd", "onMouseDown", "onTouchStart", "disabled", "delay", "innerRef"]);
+var _jsxFileName$d = "/workspaces/flumeapi/src/components/Draggable/Draggable.js";
 
-  var startCoordinates = React.useRef(null);
-  var offset = React.useRef();
-  var wrapper = React.useRef();
+const Draggable = ({
+  children,
+  stageState,
+  stageRect,
+  onDragDelayStart,
+  onDragStart,
+  onDrag,
+  onDragEnd,
+  onMouseDown,
+  onTouchStart,
+  disabled,
+  delay = 6,
+  innerRef,
+  ...rest
+}) => {
+  const startCoordinates = React.useRef(null);
+  const offset = React.useRef();
+  const wrapper = React.useRef();
 
-  var byScale = function byScale(value) {
-    return 1 / stageState.scale * value;
+  const byScale = value => 1 / stageState.scale * value;
+
+  const getScaledCoordinates = e => {
+    const x = byScale(e.clientX - (stageRect ? stageRect.current.left : 0) - offset.current.x - (stageRect ? stageRect.current.width : 0) / 2) + byScale(stageState.translate.x);
+    const y = byScale(e.clientY - (stageRect ? stageRect.current.top : 0) - offset.current.y - (stageRect ? stageRect.current.height : 0) / 2) + byScale(stageState.translate.y);
+    return {
+      x,
+      y
+    };
   };
 
-  var getScaledCoordinates = function getScaledCoordinates(e) {
-    var x = byScale(e.clientX - (stageRect ? stageRect.current.left : 0) - offset.current.x - (stageRect ? stageRect.current.width : 0) / 2) + byScale(stageState.translate.x);
-    var y = byScale(e.clientY - (stageRect ? stageRect.current.top : 0) - offset.current.y - (stageRect ? stageRect.current.height : 0) / 2) + byScale(stageState.translate.y);
-    return { x: x, y: y };
-  };
+  const updateCoordinates = e => {
+    const coordinates = getScaledCoordinates(e);
 
-  var updateCoordinates = function updateCoordinates(e) {
-    var coordinates = getScaledCoordinates(e);
     if (onDrag) {
       onDrag(coordinates, e);
     }
   };
 
-  var stopDrag = function stopDrag(e) {
-    var coordinates = getScaledCoordinates(e);
+  const stopDrag = e => {
+    const coordinates = getScaledCoordinates(e);
+
     if (onDragEnd) {
       onDragEnd(e, coordinates);
     }
+
     window.removeEventListener("mouseup", stopDrag);
     window.removeEventListener("mousemove", updateCoordinates);
   };
 
-  var startDrag = function startDrag(e) {
+  const startDrag = e => {
     if (onDragStart) {
       onDragStart(e);
     }
-    var nodeRect = wrapper.current.getBoundingClientRect();
+
+    const nodeRect = wrapper.current.getBoundingClientRect();
     offset.current = {
       x: startCoordinates.current.x - nodeRect.left,
       y: startCoordinates.current.y - nodeRect.top
@@ -1317,9 +1061,10 @@ var Draggable = (function (_ref) {
     window.addEventListener("mousemove", updateCoordinates);
   };
 
-  var checkDragDelay = function checkDragDelay(e) {
-    var x = void 0;
-    var y = void 0;
+  const checkDragDelay = e => {
+    let x;
+    let y;
+
     if ("ontouchstart" in window && e.touches) {
       x = e.touches[0].clientX;
       y = e.touches[0].clientY;
@@ -1328,29 +1073,33 @@ var Draggable = (function (_ref) {
       x = e.clientX;
       y = e.clientY;
     }
-    var a = Math.abs(startCoordinates.current.x - x);
-    var b = Math.abs(startCoordinates.current.y - y);
-    var distance = Math.round(Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)));
-    var dragDistance = delay;
+
+    let a = Math.abs(startCoordinates.current.x - x);
+    let b = Math.abs(startCoordinates.current.y - y);
+    let distance = Math.round(Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)));
+    let dragDistance = delay;
+
     if (distance >= dragDistance) {
       startDrag(e);
       endDragDelay();
     }
   };
 
-  var endDragDelay = function endDragDelay() {
+  const endDragDelay = () => {
     document.removeEventListener("mouseup", endDragDelay);
     document.removeEventListener("mousemove", checkDragDelay);
     startCoordinates.current = null;
   };
 
-  var startDragDelay = function startDragDelay(e) {
+  const startDragDelay = e => {
     if (onDragDelayStart) {
       onDragDelayStart(e);
     }
+
     e.stopPropagation();
-    var x = void 0;
-    var y = void 0;
+    let x;
+    let y;
+
     if ("ontouchstart" in window && e.touches) {
       x = e.touches[0].clientX;
       y = e.touches[0].clientY;
@@ -1359,44 +1108,54 @@ var Draggable = (function (_ref) {
       x = e.clientX;
       y = e.clientY;
     }
-    startCoordinates.current = { x: x, y: y };
+
+    startCoordinates.current = {
+      x,
+      y
+    };
     document.addEventListener("mouseup", endDragDelay);
     document.addEventListener("mousemove", checkDragDelay);
   };
 
-  return React.createElement(
-    "div",
-    _extends({
-      onMouseDown: function onMouseDown(e) {
-        if (!disabled) {
-          startDragDelay(e);
-        }
-        if (_onMouseDown) {
-          _onMouseDown(e);
-        }
-      },
-      onTouchStart: function onTouchStart(e) {
-        if (!disabled) {
-          startDragDelay(e);
-        }
-        if (_onTouchStart) {
-          _onTouchStart(e);
-        }
-      },
-      onDragStart: function onDragStart(e) {
-        e.preventDefault();
-        e.stopPropagation();
-      },
-      ref: function ref(_ref2) {
-        wrapper.current = _ref2;
-        if (innerRef) {
-          innerRef.current = _ref2;
-        }
+  return /*#__PURE__*/React.createElement("div", babelHelpers.extends({
+    onMouseDown: e => {
+      if (!disabled) {
+        startDragDelay(e);
       }
-    }, rest),
-    children
-  );
-});
+
+      if (onMouseDown) {
+        onMouseDown(e);
+      }
+    },
+    onTouchStart: e => {
+      if (!disabled) {
+        startDragDelay(e);
+      }
+
+      if (onTouchStart) {
+        onTouchStart(e);
+      }
+    },
+    onDragStart: e => {
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    ref: ref => {
+      wrapper.current = ref;
+
+      if (innerRef) {
+        innerRef.current = ref;
+      }
+    }
+  }, rest, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$d,
+      lineNumber: 119,
+      columnNumber: 5
+    }
+  }), children);
+};
 
 /**
  * A specialized version of `_.map` for arrays without support for iteratee
@@ -1407,7 +1166,8 @@ var Draggable = (function (_ref) {
  * @param {Function} iteratee The function invoked per iteration.
  * @returns {Array} Returns the new mapped array.
  */
-function arrayMap(array, iteratee) {
+
+function arrayMap$2(array, iteratee) {
   var index = -1,
       length = array == null ? 0 : array.length,
       result = Array(length);
@@ -1418,7 +1178,7 @@ function arrayMap(array, iteratee) {
   return result;
 }
 
-var _arrayMap = arrayMap;
+var _arrayMap = arrayMap$2;
 
 /**
  * Checks if `value` is classified as an `Array` object.
@@ -1443,9 +1203,13 @@ var _arrayMap = arrayMap;
  * _.isArray(_.noop);
  * // => false
  */
-var isArray = Array.isArray;
 
-var isArray_1 = isArray;
+var isArray$a = Array.isArray;
+
+var isArray_1 = isArray$a;
+
+var isArray$9 = isArray_1,
+    isSymbol$3 = isSymbol_1;
 
 /** Used to match property names within property paths. */
 var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
@@ -1459,24 +1223,27 @@ var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
  * @param {Object} [object] The object to query keys on.
  * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
  */
-function isKey(value, object) {
-  if (isArray_1(value)) {
+function isKey$3(value, object) {
+  if (isArray$9(value)) {
     return false;
   }
   var type = typeof value;
   if (type == 'number' || type == 'symbol' || type == 'boolean' ||
-      value == null || isSymbol_1(value)) {
+      value == null || isSymbol$3(value)) {
     return true;
   }
   return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
     (object != null && value in Object(object));
 }
 
-var _isKey = isKey;
+var _isKey = isKey$3;
+
+var baseGetTag$3 = _baseGetTag,
+    isObject$2 = isObject_1;
 
 /** `Object#toString` result references. */
 var asyncTag = '[object AsyncFunction]',
-    funcTag = '[object Function]',
+    funcTag$1 = '[object Function]',
     genTag = '[object GeneratorFunction]',
     proxyTag = '[object Proxy]';
 
@@ -1497,26 +1264,30 @@ var asyncTag = '[object AsyncFunction]',
  * _.isFunction(/abc/);
  * // => false
  */
-function isFunction$1(value) {
-  if (!isObject_1(value)) {
+function isFunction$2(value) {
+  if (!isObject$2(value)) {
     return false;
   }
   // The use of `Object#toString` avoids issues with the `typeof` operator
   // in Safari 9 which returns 'object' for typed arrays and other constructors.
-  var tag = _baseGetTag(value);
-  return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+  var tag = baseGetTag$3(value);
+  return tag == funcTag$1 || tag == genTag || tag == asyncTag || tag == proxyTag;
 }
 
-var isFunction_1 = isFunction$1;
+var isFunction_1 = isFunction$2;
+
+var root$6 = _root;
 
 /** Used to detect overreaching core-js shims. */
-var coreJsData = _root['__core-js_shared__'];
+var coreJsData$1 = root$6['__core-js_shared__'];
 
-var _coreJsData = coreJsData;
+var _coreJsData = coreJsData$1;
+
+var coreJsData = _coreJsData;
 
 /** Used to detect methods masquerading as native. */
 var maskSrcKey = (function() {
-  var uid = /[^.]+$/.exec(_coreJsData && _coreJsData.keys && _coreJsData.keys.IE_PROTO || '');
+  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
   return uid ? ('Symbol(src)_1.' + uid) : '';
 }());
 
@@ -1527,17 +1298,18 @@ var maskSrcKey = (function() {
  * @param {Function} func The function to check.
  * @returns {boolean} Returns `true` if `func` is masked, else `false`.
  */
-function isMasked(func) {
+function isMasked$1(func) {
   return !!maskSrcKey && (maskSrcKey in func);
 }
 
-var _isMasked = isMasked;
+var _isMasked = isMasked$1;
 
 /** Used for built-in method references. */
-var funcProto = Function.prototype;
+
+var funcProto$1 = Function.prototype;
 
 /** Used to resolve the decompiled source of functions. */
-var funcToString = funcProto.toString;
+var funcToString$1 = funcProto$1.toString;
 
 /**
  * Converts `func` to its source code.
@@ -1546,10 +1318,10 @@ var funcToString = funcProto.toString;
  * @param {Function} func The function to convert.
  * @returns {string} Returns the source code.
  */
-function toSource(func) {
+function toSource$2(func) {
   if (func != null) {
     try {
-      return funcToString.call(func);
+      return funcToString$1.call(func);
     } catch (e) {}
     try {
       return (func + '');
@@ -1558,7 +1330,12 @@ function toSource(func) {
   return '';
 }
 
-var _toSource = toSource;
+var _toSource = toSource$2;
+
+var isFunction$1 = isFunction_1,
+    isMasked = _isMasked,
+    isObject$1 = isObject_1,
+    toSource$1 = _toSource;
 
 /**
  * Used to match `RegExp`
@@ -1570,18 +1347,18 @@ var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
 var reIsHostCtor = /^\[object .+?Constructor\]$/;
 
 /** Used for built-in method references. */
-var funcProto$1 = Function.prototype,
-    objectProto$2 = Object.prototype;
+var funcProto = Function.prototype,
+    objectProto$9 = Object.prototype;
 
 /** Used to resolve the decompiled source of functions. */
-var funcToString$1 = funcProto$1.toString;
+var funcToString = funcProto.toString;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$1 = objectProto$2.hasOwnProperty;
+var hasOwnProperty$7 = objectProto$9.hasOwnProperty;
 
 /** Used to detect if a method is native. */
 var reIsNative = RegExp('^' +
-  funcToString$1.call(hasOwnProperty$1).replace(reRegExpChar, '\\$&')
+  funcToString.call(hasOwnProperty$7).replace(reRegExpChar, '\\$&')
   .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
 );
 
@@ -1593,15 +1370,15 @@ var reIsNative = RegExp('^' +
  * @returns {boolean} Returns `true` if `value` is a native function,
  *  else `false`.
  */
-function baseIsNative(value) {
-  if (!isObject_1(value) || _isMasked(value)) {
+function baseIsNative$1(value) {
+  if (!isObject$1(value) || isMasked(value)) {
     return false;
   }
-  var pattern = isFunction_1(value) ? reIsNative : reIsHostCtor;
-  return pattern.test(_toSource(value));
+  var pattern = isFunction$1(value) ? reIsNative : reIsHostCtor;
+  return pattern.test(toSource$1(value));
 }
 
-var _baseIsNative = baseIsNative;
+var _baseIsNative = baseIsNative$1;
 
 /**
  * Gets the value at `key` of `object`.
@@ -1611,11 +1388,15 @@ var _baseIsNative = baseIsNative;
  * @param {string} key The key of the property to get.
  * @returns {*} Returns the property value.
  */
-function getValue(object, key) {
+
+function getValue$1(object, key) {
   return object == null ? undefined : object[key];
 }
 
-var _getValue = getValue;
+var _getValue = getValue$1;
+
+var baseIsNative = _baseIsNative,
+    getValue = _getValue;
 
 /**
  * Gets the native function at `key` of `object`.
@@ -1625,17 +1406,21 @@ var _getValue = getValue;
  * @param {string} key The key of the method to get.
  * @returns {*} Returns the function if it's native, else `undefined`.
  */
-function getNative(object, key) {
-  var value = _getValue(object, key);
-  return _baseIsNative(value) ? value : undefined;
+function getNative$6(object, key) {
+  var value = getValue(object, key);
+  return baseIsNative(value) ? value : undefined;
 }
 
-var _getNative = getNative;
+var _getNative = getNative$6;
+
+var getNative$5 = _getNative;
 
 /* Built-in method references that are verified to be native. */
-var nativeCreate = _getNative(Object, 'create');
+var nativeCreate$4 = getNative$5(Object, 'create');
 
-var _nativeCreate = nativeCreate;
+var _nativeCreate = nativeCreate$4;
+
+var nativeCreate$3 = _nativeCreate;
 
 /**
  * Removes all key-value entries from the hash.
@@ -1644,12 +1429,12 @@ var _nativeCreate = nativeCreate;
  * @name clear
  * @memberOf Hash
  */
-function hashClear() {
-  this.__data__ = _nativeCreate ? _nativeCreate(null) : {};
+function hashClear$1() {
+  this.__data__ = nativeCreate$3 ? nativeCreate$3(null) : {};
   this.size = 0;
 }
 
-var _hashClear = hashClear;
+var _hashClear = hashClear$1;
 
 /**
  * Removes `key` and its value from the hash.
@@ -1661,22 +1446,25 @@ var _hashClear = hashClear;
  * @param {string} key The key of the value to remove.
  * @returns {boolean} Returns `true` if the entry was removed, else `false`.
  */
-function hashDelete(key) {
+
+function hashDelete$1(key) {
   var result = this.has(key) && delete this.__data__[key];
   this.size -= result ? 1 : 0;
   return result;
 }
 
-var _hashDelete = hashDelete;
+var _hashDelete = hashDelete$1;
+
+var nativeCreate$2 = _nativeCreate;
 
 /** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED = '__lodash_hash_undefined__';
+var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
 
 /** Used for built-in method references. */
-var objectProto$3 = Object.prototype;
+var objectProto$8 = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$2 = objectProto$3.hasOwnProperty;
+var hasOwnProperty$6 = objectProto$8.hasOwnProperty;
 
 /**
  * Gets the hash value for `key`.
@@ -1687,22 +1475,24 @@ var hasOwnProperty$2 = objectProto$3.hasOwnProperty;
  * @param {string} key The key of the value to get.
  * @returns {*} Returns the entry value.
  */
-function hashGet(key) {
+function hashGet$1(key) {
   var data = this.__data__;
-  if (_nativeCreate) {
+  if (nativeCreate$2) {
     var result = data[key];
-    return result === HASH_UNDEFINED ? undefined : result;
+    return result === HASH_UNDEFINED$2 ? undefined : result;
   }
-  return hasOwnProperty$2.call(data, key) ? data[key] : undefined;
+  return hasOwnProperty$6.call(data, key) ? data[key] : undefined;
 }
 
-var _hashGet = hashGet;
+var _hashGet = hashGet$1;
+
+var nativeCreate$1 = _nativeCreate;
 
 /** Used for built-in method references. */
-var objectProto$4 = Object.prototype;
+var objectProto$7 = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$3 = objectProto$4.hasOwnProperty;
+var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
 
 /**
  * Checks if a hash value for `key` exists.
@@ -1713,12 +1503,14 @@ var hasOwnProperty$3 = objectProto$4.hasOwnProperty;
  * @param {string} key The key of the entry to check.
  * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
  */
-function hashHas(key) {
+function hashHas$1(key) {
   var data = this.__data__;
-  return _nativeCreate ? (data[key] !== undefined) : hasOwnProperty$3.call(data, key);
+  return nativeCreate$1 ? (data[key] !== undefined) : hasOwnProperty$5.call(data, key);
 }
 
-var _hashHas = hashHas;
+var _hashHas = hashHas$1;
+
+var nativeCreate = _nativeCreate;
 
 /** Used to stand-in for `undefined` hash values. */
 var HASH_UNDEFINED$1 = '__lodash_hash_undefined__';
@@ -1733,14 +1525,20 @@ var HASH_UNDEFINED$1 = '__lodash_hash_undefined__';
  * @param {*} value The value to set.
  * @returns {Object} Returns the hash instance.
  */
-function hashSet(key, value) {
+function hashSet$1(key, value) {
   var data = this.__data__;
   this.size += this.has(key) ? 0 : 1;
-  data[key] = (_nativeCreate && value === undefined) ? HASH_UNDEFINED$1 : value;
+  data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED$1 : value;
   return this;
 }
 
-var _hashSet = hashSet;
+var _hashSet = hashSet$1;
+
+var hashClear = _hashClear,
+    hashDelete = _hashDelete,
+    hashGet = _hashGet,
+    hashHas = _hashHas,
+    hashSet = _hashSet;
 
 /**
  * Creates a hash object.
@@ -1749,7 +1547,7 @@ var _hashSet = hashSet;
  * @constructor
  * @param {Array} [entries] The key-value pairs to cache.
  */
-function Hash(entries) {
+function Hash$1(entries) {
   var index = -1,
       length = entries == null ? 0 : entries.length;
 
@@ -1761,13 +1559,13 @@ function Hash(entries) {
 }
 
 // Add methods to `Hash`.
-Hash.prototype.clear = _hashClear;
-Hash.prototype['delete'] = _hashDelete;
-Hash.prototype.get = _hashGet;
-Hash.prototype.has = _hashHas;
-Hash.prototype.set = _hashSet;
+Hash$1.prototype.clear = hashClear;
+Hash$1.prototype['delete'] = hashDelete;
+Hash$1.prototype.get = hashGet;
+Hash$1.prototype.has = hashHas;
+Hash$1.prototype.set = hashSet;
 
-var _Hash = Hash;
+var _Hash = Hash$1;
 
 /**
  * Removes all key-value entries from the list cache.
@@ -1776,12 +1574,13 @@ var _Hash = Hash;
  * @name clear
  * @memberOf ListCache
  */
-function listCacheClear() {
+
+function listCacheClear$1() {
   this.__data__ = [];
   this.size = 0;
 }
 
-var _listCacheClear = listCacheClear;
+var _listCacheClear = listCacheClear$1;
 
 /**
  * Performs a
@@ -1815,11 +1614,14 @@ var _listCacheClear = listCacheClear;
  * _.eq(NaN, NaN);
  * // => true
  */
-function eq(value, other) {
+
+function eq$2(value, other) {
   return value === other || (value !== value && other !== other);
 }
 
-var eq_1 = eq;
+var eq_1 = eq$2;
+
+var eq$1 = eq_1;
 
 /**
  * Gets the index at which the `key` is found in `array` of key-value pairs.
@@ -1829,17 +1631,19 @@ var eq_1 = eq;
  * @param {*} key The key to search for.
  * @returns {number} Returns the index of the matched value, else `-1`.
  */
-function assocIndexOf(array, key) {
+function assocIndexOf$4(array, key) {
   var length = array.length;
   while (length--) {
-    if (eq_1(array[length][0], key)) {
+    if (eq$1(array[length][0], key)) {
       return length;
     }
   }
   return -1;
 }
 
-var _assocIndexOf = assocIndexOf;
+var _assocIndexOf = assocIndexOf$4;
+
+var assocIndexOf$3 = _assocIndexOf;
 
 /** Used for built-in method references. */
 var arrayProto = Array.prototype;
@@ -1856,9 +1660,9 @@ var splice = arrayProto.splice;
  * @param {string} key The key of the value to remove.
  * @returns {boolean} Returns `true` if the entry was removed, else `false`.
  */
-function listCacheDelete(key) {
+function listCacheDelete$1(key) {
   var data = this.__data__,
-      index = _assocIndexOf(data, key);
+      index = assocIndexOf$3(data, key);
 
   if (index < 0) {
     return false;
@@ -1873,7 +1677,9 @@ function listCacheDelete(key) {
   return true;
 }
 
-var _listCacheDelete = listCacheDelete;
+var _listCacheDelete = listCacheDelete$1;
+
+var assocIndexOf$2 = _assocIndexOf;
 
 /**
  * Gets the list cache value for `key`.
@@ -1884,14 +1690,16 @@ var _listCacheDelete = listCacheDelete;
  * @param {string} key The key of the value to get.
  * @returns {*} Returns the entry value.
  */
-function listCacheGet(key) {
+function listCacheGet$1(key) {
   var data = this.__data__,
-      index = _assocIndexOf(data, key);
+      index = assocIndexOf$2(data, key);
 
   return index < 0 ? undefined : data[index][1];
 }
 
-var _listCacheGet = listCacheGet;
+var _listCacheGet = listCacheGet$1;
+
+var assocIndexOf$1 = _assocIndexOf;
 
 /**
  * Checks if a list cache value for `key` exists.
@@ -1902,11 +1710,13 @@ var _listCacheGet = listCacheGet;
  * @param {string} key The key of the entry to check.
  * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
  */
-function listCacheHas(key) {
-  return _assocIndexOf(this.__data__, key) > -1;
+function listCacheHas$1(key) {
+  return assocIndexOf$1(this.__data__, key) > -1;
 }
 
-var _listCacheHas = listCacheHas;
+var _listCacheHas = listCacheHas$1;
+
+var assocIndexOf = _assocIndexOf;
 
 /**
  * Sets the list cache `key` to `value`.
@@ -1918,9 +1728,9 @@ var _listCacheHas = listCacheHas;
  * @param {*} value The value to set.
  * @returns {Object} Returns the list cache instance.
  */
-function listCacheSet(key, value) {
+function listCacheSet$1(key, value) {
   var data = this.__data__,
-      index = _assocIndexOf(data, key);
+      index = assocIndexOf(data, key);
 
   if (index < 0) {
     ++this.size;
@@ -1931,7 +1741,13 @@ function listCacheSet(key, value) {
   return this;
 }
 
-var _listCacheSet = listCacheSet;
+var _listCacheSet = listCacheSet$1;
+
+var listCacheClear = _listCacheClear,
+    listCacheDelete = _listCacheDelete,
+    listCacheGet = _listCacheGet,
+    listCacheHas = _listCacheHas,
+    listCacheSet = _listCacheSet;
 
 /**
  * Creates an list cache object.
@@ -1940,7 +1756,7 @@ var _listCacheSet = listCacheSet;
  * @constructor
  * @param {Array} [entries] The key-value pairs to cache.
  */
-function ListCache(entries) {
+function ListCache$4(entries) {
   var index = -1,
       length = entries == null ? 0 : entries.length;
 
@@ -1952,18 +1768,25 @@ function ListCache(entries) {
 }
 
 // Add methods to `ListCache`.
-ListCache.prototype.clear = _listCacheClear;
-ListCache.prototype['delete'] = _listCacheDelete;
-ListCache.prototype.get = _listCacheGet;
-ListCache.prototype.has = _listCacheHas;
-ListCache.prototype.set = _listCacheSet;
+ListCache$4.prototype.clear = listCacheClear;
+ListCache$4.prototype['delete'] = listCacheDelete;
+ListCache$4.prototype.get = listCacheGet;
+ListCache$4.prototype.has = listCacheHas;
+ListCache$4.prototype.set = listCacheSet;
 
-var _ListCache = ListCache;
+var _ListCache = ListCache$4;
+
+var getNative$4 = _getNative,
+    root$5 = _root;
 
 /* Built-in method references that are verified to be native. */
-var Map = _getNative(_root, 'Map');
+var Map$3 = getNative$4(root$5, 'Map');
 
-var _Map = Map;
+var _Map = Map$3;
+
+var Hash = _Hash,
+    ListCache$3 = _ListCache,
+    Map$2 = _Map;
 
 /**
  * Removes all key-value entries from the map.
@@ -1972,16 +1795,16 @@ var _Map = Map;
  * @name clear
  * @memberOf MapCache
  */
-function mapCacheClear() {
+function mapCacheClear$1() {
   this.size = 0;
   this.__data__ = {
-    'hash': new _Hash,
-    'map': new (_Map || _ListCache),
-    'string': new _Hash
+    'hash': new Hash,
+    'map': new (Map$2 || ListCache$3),
+    'string': new Hash
   };
 }
 
-var _mapCacheClear = mapCacheClear;
+var _mapCacheClear = mapCacheClear$1;
 
 /**
  * Checks if `value` is suitable for use as unique object key.
@@ -1990,14 +1813,17 @@ var _mapCacheClear = mapCacheClear;
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
  */
-function isKeyable(value) {
+
+function isKeyable$1(value) {
   var type = typeof value;
   return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
     ? (value !== '__proto__')
     : (value === null);
 }
 
-var _isKeyable = isKeyable;
+var _isKeyable = isKeyable$1;
+
+var isKeyable = _isKeyable;
 
 /**
  * Gets the data for `map`.
@@ -2007,14 +1833,16 @@ var _isKeyable = isKeyable;
  * @param {string} key The reference key.
  * @returns {*} Returns the map data.
  */
-function getMapData(map, key) {
+function getMapData$4(map, key) {
   var data = map.__data__;
-  return _isKeyable(key)
+  return isKeyable(key)
     ? data[typeof key == 'string' ? 'string' : 'hash']
     : data.map;
 }
 
-var _getMapData = getMapData;
+var _getMapData = getMapData$4;
+
+var getMapData$3 = _getMapData;
 
 /**
  * Removes `key` and its value from the map.
@@ -2025,13 +1853,15 @@ var _getMapData = getMapData;
  * @param {string} key The key of the value to remove.
  * @returns {boolean} Returns `true` if the entry was removed, else `false`.
  */
-function mapCacheDelete(key) {
-  var result = _getMapData(this, key)['delete'](key);
+function mapCacheDelete$1(key) {
+  var result = getMapData$3(this, key)['delete'](key);
   this.size -= result ? 1 : 0;
   return result;
 }
 
-var _mapCacheDelete = mapCacheDelete;
+var _mapCacheDelete = mapCacheDelete$1;
+
+var getMapData$2 = _getMapData;
 
 /**
  * Gets the map value for `key`.
@@ -2042,11 +1872,13 @@ var _mapCacheDelete = mapCacheDelete;
  * @param {string} key The key of the value to get.
  * @returns {*} Returns the entry value.
  */
-function mapCacheGet(key) {
-  return _getMapData(this, key).get(key);
+function mapCacheGet$1(key) {
+  return getMapData$2(this, key).get(key);
 }
 
-var _mapCacheGet = mapCacheGet;
+var _mapCacheGet = mapCacheGet$1;
+
+var getMapData$1 = _getMapData;
 
 /**
  * Checks if a map value for `key` exists.
@@ -2057,11 +1889,13 @@ var _mapCacheGet = mapCacheGet;
  * @param {string} key The key of the entry to check.
  * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
  */
-function mapCacheHas(key) {
-  return _getMapData(this, key).has(key);
+function mapCacheHas$1(key) {
+  return getMapData$1(this, key).has(key);
 }
 
-var _mapCacheHas = mapCacheHas;
+var _mapCacheHas = mapCacheHas$1;
+
+var getMapData = _getMapData;
 
 /**
  * Sets the map `key` to `value`.
@@ -2073,8 +1907,8 @@ var _mapCacheHas = mapCacheHas;
  * @param {*} value The value to set.
  * @returns {Object} Returns the map cache instance.
  */
-function mapCacheSet(key, value) {
-  var data = _getMapData(this, key),
+function mapCacheSet$1(key, value) {
+  var data = getMapData(this, key),
       size = data.size;
 
   data.set(key, value);
@@ -2082,7 +1916,13 @@ function mapCacheSet(key, value) {
   return this;
 }
 
-var _mapCacheSet = mapCacheSet;
+var _mapCacheSet = mapCacheSet$1;
+
+var mapCacheClear = _mapCacheClear,
+    mapCacheDelete = _mapCacheDelete,
+    mapCacheGet = _mapCacheGet,
+    mapCacheHas = _mapCacheHas,
+    mapCacheSet = _mapCacheSet;
 
 /**
  * Creates a map cache object to store key-value pairs.
@@ -2091,7 +1931,7 @@ var _mapCacheSet = mapCacheSet;
  * @constructor
  * @param {Array} [entries] The key-value pairs to cache.
  */
-function MapCache(entries) {
+function MapCache$3(entries) {
   var index = -1,
       length = entries == null ? 0 : entries.length;
 
@@ -2103,13 +1943,15 @@ function MapCache(entries) {
 }
 
 // Add methods to `MapCache`.
-MapCache.prototype.clear = _mapCacheClear;
-MapCache.prototype['delete'] = _mapCacheDelete;
-MapCache.prototype.get = _mapCacheGet;
-MapCache.prototype.has = _mapCacheHas;
-MapCache.prototype.set = _mapCacheSet;
+MapCache$3.prototype.clear = mapCacheClear;
+MapCache$3.prototype['delete'] = mapCacheDelete;
+MapCache$3.prototype.get = mapCacheGet;
+MapCache$3.prototype.has = mapCacheHas;
+MapCache$3.prototype.set = mapCacheSet;
 
-var _MapCache = MapCache;
+var _MapCache = MapCache$3;
+
+var MapCache$2 = _MapCache;
 
 /** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
@@ -2158,7 +2000,7 @@ var FUNC_ERROR_TEXT = 'Expected a function';
  * // Replace `_.memoize.Cache`.
  * _.memoize.Cache = WeakMap;
  */
-function memoize(func, resolver) {
+function memoize$1(func, resolver) {
   if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
     throw new TypeError(FUNC_ERROR_TEXT);
   }
@@ -2174,14 +2016,16 @@ function memoize(func, resolver) {
     memoized.cache = cache.set(key, result) || cache;
     return result;
   };
-  memoized.cache = new (memoize.Cache || _MapCache);
+  memoized.cache = new (memoize$1.Cache || MapCache$2);
   return memoized;
 }
 
 // Expose `MapCache`.
-memoize.Cache = _MapCache;
+memoize$1.Cache = MapCache$2;
 
-var memoize_1 = memoize;
+var memoize_1 = memoize$1;
+
+var memoize = memoize_1;
 
 /** Used as the maximum memoize cache size. */
 var MAX_MEMOIZE_SIZE = 500;
@@ -2194,8 +2038,8 @@ var MAX_MEMOIZE_SIZE = 500;
  * @param {Function} func The function to have its output memoized.
  * @returns {Function} Returns the new memoized function.
  */
-function memoizeCapped(func) {
-  var result = memoize_1(func, function(key) {
+function memoizeCapped$1(func) {
+  var result = memoize(func, function(key) {
     if (cache.size === MAX_MEMOIZE_SIZE) {
       cache.clear();
     }
@@ -2206,7 +2050,9 @@ function memoizeCapped(func) {
   return result;
 }
 
-var _memoizeCapped = memoizeCapped;
+var _memoizeCapped = memoizeCapped$1;
+
+var memoizeCapped = _memoizeCapped;
 
 /** Used to match property names within property paths. */
 var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
@@ -2221,7 +2067,7 @@ var reEscapeChar = /\\(\\)?/g;
  * @param {string} string The string to convert.
  * @returns {Array} Returns the property path array.
  */
-var stringToPath = _memoizeCapped(function(string) {
+var stringToPath$1 = memoizeCapped(function(string) {
   var result = [];
   if (string.charCodeAt(0) === 46 /* . */) {
     result.push('');
@@ -2232,14 +2078,19 @@ var stringToPath = _memoizeCapped(function(string) {
   return result;
 });
 
-var _stringToPath = stringToPath;
+var _stringToPath = stringToPath$1;
+
+var Symbol$1 = _Symbol,
+    arrayMap$1 = _arrayMap,
+    isArray$8 = isArray_1,
+    isSymbol$2 = isSymbol_1;
 
 /** Used as references for various `Number` constants. */
-var INFINITY = 1 / 0;
+var INFINITY$1 = 1 / 0;
 
 /** Used to convert symbols to primitives and strings. */
-var symbolProto = _Symbol ? _Symbol.prototype : undefined,
-    symbolToString = symbolProto ? symbolProto.toString : undefined;
+var symbolProto$1 = Symbol$1 ? Symbol$1.prototype : undefined,
+    symbolToString = symbolProto$1 ? symbolProto$1.toString : undefined;
 
 /**
  * The base implementation of `_.toString` which doesn't convert nullish
@@ -2249,23 +2100,25 @@ var symbolProto = _Symbol ? _Symbol.prototype : undefined,
  * @param {*} value The value to process.
  * @returns {string} Returns the string.
  */
-function baseToString(value) {
+function baseToString$1(value) {
   // Exit early for strings to avoid a performance hit in some environments.
   if (typeof value == 'string') {
     return value;
   }
-  if (isArray_1(value)) {
+  if (isArray$8(value)) {
     // Recursively convert values (susceptible to call stack limits).
-    return _arrayMap(value, baseToString) + '';
+    return arrayMap$1(value, baseToString$1) + '';
   }
-  if (isSymbol_1(value)) {
+  if (isSymbol$2(value)) {
     return symbolToString ? symbolToString.call(value) : '';
   }
   var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
 }
 
-var _baseToString = baseToString;
+var _baseToString = baseToString$1;
+
+var baseToString = _baseToString;
 
 /**
  * Converts `value` to a string. An empty string is returned for `null`
@@ -2288,11 +2141,16 @@ var _baseToString = baseToString;
  * _.toString([1, 2, 3]);
  * // => '1,2,3'
  */
-function toString(value) {
-  return value == null ? '' : _baseToString(value);
+function toString$1(value) {
+  return value == null ? '' : baseToString(value);
 }
 
-var toString_1 = toString;
+var toString_1 = toString$1;
+
+var isArray$7 = isArray_1,
+    isKey$2 = _isKey,
+    stringToPath = _stringToPath,
+    toString = toString_1;
 
 /**
  * Casts `value` to a path array if it's not one.
@@ -2302,17 +2160,19 @@ var toString_1 = toString;
  * @param {Object} [object] The object to query keys on.
  * @returns {Array} Returns the cast property path array.
  */
-function castPath(value, object) {
-  if (isArray_1(value)) {
+function castPath$2(value, object) {
+  if (isArray$7(value)) {
     return value;
   }
-  return _isKey(value, object) ? [value] : _stringToPath(toString_1(value));
+  return isKey$2(value, object) ? [value] : stringToPath(toString(value));
 }
 
-var _castPath = castPath;
+var _castPath = castPath$2;
+
+var isSymbol$1 = isSymbol_1;
 
 /** Used as references for various `Number` constants. */
-var INFINITY$1 = 1 / 0;
+var INFINITY = 1 / 0;
 
 /**
  * Converts `value` to a string key if it's not a string or symbol.
@@ -2321,15 +2181,18 @@ var INFINITY$1 = 1 / 0;
  * @param {*} value The value to inspect.
  * @returns {string|symbol} Returns the key.
  */
-function toKey(value) {
-  if (typeof value == 'string' || isSymbol_1(value)) {
+function toKey$4(value) {
+  if (typeof value == 'string' || isSymbol$1(value)) {
     return value;
   }
   var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
 }
 
-var _toKey = toKey;
+var _toKey = toKey$4;
+
+var castPath$1 = _castPath,
+    toKey$3 = _toKey;
 
 /**
  * The base implementation of `_.get` without support for default values.
@@ -2339,19 +2202,21 @@ var _toKey = toKey;
  * @param {Array|string} path The path of the property to get.
  * @returns {*} Returns the resolved value.
  */
-function baseGet(object, path) {
-  path = _castPath(path, object);
+function baseGet$3(object, path) {
+  path = castPath$1(path, object);
 
   var index = 0,
       length = path.length;
 
   while (object != null && index < length) {
-    object = object[_toKey(path[index++])];
+    object = object[toKey$3(path[index++])];
   }
   return (index && index == length) ? object : undefined;
 }
 
-var _baseGet = baseGet;
+var _baseGet = baseGet$3;
+
+var ListCache$2 = _ListCache;
 
 /**
  * Removes all key-value entries from the stack.
@@ -2360,12 +2225,12 @@ var _baseGet = baseGet;
  * @name clear
  * @memberOf Stack
  */
-function stackClear() {
-  this.__data__ = new _ListCache;
+function stackClear$1() {
+  this.__data__ = new ListCache$2;
   this.size = 0;
 }
 
-var _stackClear = stackClear;
+var _stackClear = stackClear$1;
 
 /**
  * Removes `key` and its value from the stack.
@@ -2376,7 +2241,8 @@ var _stackClear = stackClear;
  * @param {string} key The key of the value to remove.
  * @returns {boolean} Returns `true` if the entry was removed, else `false`.
  */
-function stackDelete(key) {
+
+function stackDelete$1(key) {
   var data = this.__data__,
       result = data['delete'](key);
 
@@ -2384,7 +2250,7 @@ function stackDelete(key) {
   return result;
 }
 
-var _stackDelete = stackDelete;
+var _stackDelete = stackDelete$1;
 
 /**
  * Gets the stack value for `key`.
@@ -2395,11 +2261,12 @@ var _stackDelete = stackDelete;
  * @param {string} key The key of the value to get.
  * @returns {*} Returns the entry value.
  */
-function stackGet(key) {
+
+function stackGet$1(key) {
   return this.__data__.get(key);
 }
 
-var _stackGet = stackGet;
+var _stackGet = stackGet$1;
 
 /**
  * Checks if a stack value for `key` exists.
@@ -2410,11 +2277,16 @@ var _stackGet = stackGet;
  * @param {string} key The key of the entry to check.
  * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
  */
-function stackHas(key) {
+
+function stackHas$1(key) {
   return this.__data__.has(key);
 }
 
-var _stackHas = stackHas;
+var _stackHas = stackHas$1;
+
+var ListCache$1 = _ListCache,
+    Map$1 = _Map,
+    MapCache$1 = _MapCache;
 
 /** Used as the size to enable large array optimizations. */
 var LARGE_ARRAY_SIZE = 200;
@@ -2429,23 +2301,30 @@ var LARGE_ARRAY_SIZE = 200;
  * @param {*} value The value to set.
  * @returns {Object} Returns the stack cache instance.
  */
-function stackSet(key, value) {
+function stackSet$1(key, value) {
   var data = this.__data__;
-  if (data instanceof _ListCache) {
+  if (data instanceof ListCache$1) {
     var pairs = data.__data__;
-    if (!_Map || (pairs.length < LARGE_ARRAY_SIZE - 1)) {
+    if (!Map$1 || (pairs.length < LARGE_ARRAY_SIZE - 1)) {
       pairs.push([key, value]);
       this.size = ++data.size;
       return this;
     }
-    data = this.__data__ = new _MapCache(pairs);
+    data = this.__data__ = new MapCache$1(pairs);
   }
   data.set(key, value);
   this.size = data.size;
   return this;
 }
 
-var _stackSet = stackSet;
+var _stackSet = stackSet$1;
+
+var ListCache = _ListCache,
+    stackClear = _stackClear,
+    stackDelete = _stackDelete,
+    stackGet = _stackGet,
+    stackHas = _stackHas,
+    stackSet = _stackSet;
 
 /**
  * Creates a stack cache object to store key-value pairs.
@@ -2454,22 +2333,23 @@ var _stackSet = stackSet;
  * @constructor
  * @param {Array} [entries] The key-value pairs to cache.
  */
-function Stack(entries) {
-  var data = this.__data__ = new _ListCache(entries);
+function Stack$2(entries) {
+  var data = this.__data__ = new ListCache(entries);
   this.size = data.size;
 }
 
 // Add methods to `Stack`.
-Stack.prototype.clear = _stackClear;
-Stack.prototype['delete'] = _stackDelete;
-Stack.prototype.get = _stackGet;
-Stack.prototype.has = _stackHas;
-Stack.prototype.set = _stackSet;
+Stack$2.prototype.clear = stackClear;
+Stack$2.prototype['delete'] = stackDelete;
+Stack$2.prototype.get = stackGet;
+Stack$2.prototype.has = stackHas;
+Stack$2.prototype.set = stackSet;
 
-var _Stack = Stack;
+var _Stack = Stack$2;
 
 /** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
+
+var HASH_UNDEFINED = '__lodash_hash_undefined__';
 
 /**
  * Adds `value` to the array cache.
@@ -2481,12 +2361,12 @@ var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
  * @param {*} value The value to cache.
  * @returns {Object} Returns the cache instance.
  */
-function setCacheAdd(value) {
-  this.__data__.set(value, HASH_UNDEFINED$2);
+function setCacheAdd$1(value) {
+  this.__data__.set(value, HASH_UNDEFINED);
   return this;
 }
 
-var _setCacheAdd = setCacheAdd;
+var _setCacheAdd = setCacheAdd$1;
 
 /**
  * Checks if `value` is in the array cache.
@@ -2497,11 +2377,16 @@ var _setCacheAdd = setCacheAdd;
  * @param {*} value The value to search for.
  * @returns {number} Returns `true` if `value` is found, else `false`.
  */
-function setCacheHas(value) {
+
+function setCacheHas$1(value) {
   return this.__data__.has(value);
 }
 
-var _setCacheHas = setCacheHas;
+var _setCacheHas = setCacheHas$1;
+
+var MapCache = _MapCache,
+    setCacheAdd = _setCacheAdd,
+    setCacheHas = _setCacheHas;
 
 /**
  *
@@ -2511,21 +2396,21 @@ var _setCacheHas = setCacheHas;
  * @constructor
  * @param {Array} [values] The values to cache.
  */
-function SetCache(values) {
+function SetCache$1(values) {
   var index = -1,
       length = values == null ? 0 : values.length;
 
-  this.__data__ = new _MapCache;
+  this.__data__ = new MapCache;
   while (++index < length) {
     this.add(values[index]);
   }
 }
 
 // Add methods to `SetCache`.
-SetCache.prototype.add = SetCache.prototype.push = _setCacheAdd;
-SetCache.prototype.has = _setCacheHas;
+SetCache$1.prototype.add = SetCache$1.prototype.push = setCacheAdd;
+SetCache$1.prototype.has = setCacheHas;
 
-var _SetCache = SetCache;
+var _SetCache = SetCache$1;
 
 /**
  * A specialized version of `_.some` for arrays without support for iteratee
@@ -2537,7 +2422,8 @@ var _SetCache = SetCache;
  * @returns {boolean} Returns `true` if any element passes the predicate check,
  *  else `false`.
  */
-function arraySome(array, predicate) {
+
+function arraySome$1(array, predicate) {
   var index = -1,
       length = array == null ? 0 : array.length;
 
@@ -2549,7 +2435,7 @@ function arraySome(array, predicate) {
   return false;
 }
 
-var _arraySome = arraySome;
+var _arraySome = arraySome$1;
 
 /**
  * Checks if a `cache` value for `key` exists.
@@ -2559,15 +2445,20 @@ var _arraySome = arraySome;
  * @param {string} key The key of the entry to check.
  * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
  */
-function cacheHas(cache, key) {
+
+function cacheHas$1(cache, key) {
   return cache.has(key);
 }
 
-var _cacheHas = cacheHas;
+var _cacheHas = cacheHas$1;
+
+var SetCache = _SetCache,
+    arraySome = _arraySome,
+    cacheHas = _cacheHas;
 
 /** Used to compose bitmasks for value comparisons. */
-var COMPARE_PARTIAL_FLAG = 1,
-    COMPARE_UNORDERED_FLAG = 2;
+var COMPARE_PARTIAL_FLAG$5 = 1,
+    COMPARE_UNORDERED_FLAG$3 = 2;
 
 /**
  * A specialized version of `baseIsEqualDeep` for arrays with support for
@@ -2582,8 +2473,8 @@ var COMPARE_PARTIAL_FLAG = 1,
  * @param {Object} stack Tracks traversed `array` and `other` objects.
  * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
  */
-function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
-  var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
+function equalArrays$2(array, other, bitmask, customizer, equalFunc, stack) {
+  var isPartial = bitmask & COMPARE_PARTIAL_FLAG$5,
       arrLength = array.length,
       othLength = other.length;
 
@@ -2598,7 +2489,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
   }
   var index = -1,
       result = true,
-      seen = (bitmask & COMPARE_UNORDERED_FLAG) ? new _SetCache : undefined;
+      seen = (bitmask & COMPARE_UNORDERED_FLAG$3) ? new SetCache : undefined;
 
   stack.set(array, other);
   stack.set(other, array);
@@ -2622,8 +2513,8 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
     }
     // Recursively compare arrays (susceptible to call stack limits).
     if (seen) {
-      if (!_arraySome(other, function(othValue, othIndex) {
-            if (!_cacheHas(seen, othIndex) &&
+      if (!arraySome(other, function(othValue, othIndex) {
+            if (!cacheHas(seen, othIndex) &&
                 (arrValue === othValue || equalFunc(arrValue, othValue, bitmask, customizer, stack))) {
               return seen.push(othIndex);
             }
@@ -2644,12 +2535,14 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
   return result;
 }
 
-var _equalArrays = equalArrays;
+var _equalArrays = equalArrays$2;
+
+var root$4 = _root;
 
 /** Built-in value references. */
-var Uint8Array = _root.Uint8Array;
+var Uint8Array$1 = root$4.Uint8Array;
 
-var _Uint8Array = Uint8Array;
+var _Uint8Array = Uint8Array$1;
 
 /**
  * Converts `map` to its key-value pairs.
@@ -2658,7 +2551,8 @@ var _Uint8Array = Uint8Array;
  * @param {Object} map The map to convert.
  * @returns {Array} Returns the key-value pairs.
  */
-function mapToArray(map) {
+
+function mapToArray$1(map) {
   var index = -1,
       result = Array(map.size);
 
@@ -2668,7 +2562,7 @@ function mapToArray(map) {
   return result;
 }
 
-var _mapToArray = mapToArray;
+var _mapToArray = mapToArray$1;
 
 /**
  * Converts `set` to an array of its values.
@@ -2677,7 +2571,8 @@ var _mapToArray = mapToArray;
  * @param {Object} set The set to convert.
  * @returns {Array} Returns the values.
  */
-function setToArray(set) {
+
+function setToArray$1(set) {
   var index = -1,
       result = Array(set.size);
 
@@ -2687,29 +2582,36 @@ function setToArray(set) {
   return result;
 }
 
-var _setToArray = setToArray;
+var _setToArray = setToArray$1;
+
+var Symbol = _Symbol,
+    Uint8Array = _Uint8Array,
+    eq = eq_1,
+    equalArrays$1 = _equalArrays,
+    mapToArray = _mapToArray,
+    setToArray = _setToArray;
 
 /** Used to compose bitmasks for value comparisons. */
-var COMPARE_PARTIAL_FLAG$1 = 1,
-    COMPARE_UNORDERED_FLAG$1 = 2;
+var COMPARE_PARTIAL_FLAG$4 = 1,
+    COMPARE_UNORDERED_FLAG$2 = 2;
 
 /** `Object#toString` result references. */
-var boolTag = '[object Boolean]',
-    dateTag = '[object Date]',
-    errorTag = '[object Error]',
-    mapTag = '[object Map]',
-    numberTag = '[object Number]',
-    regexpTag = '[object RegExp]',
-    setTag = '[object Set]',
-    stringTag = '[object String]',
-    symbolTag$1 = '[object Symbol]';
+var boolTag$1 = '[object Boolean]',
+    dateTag$1 = '[object Date]',
+    errorTag$1 = '[object Error]',
+    mapTag$2 = '[object Map]',
+    numberTag$1 = '[object Number]',
+    regexpTag$1 = '[object RegExp]',
+    setTag$2 = '[object Set]',
+    stringTag$1 = '[object String]',
+    symbolTag = '[object Symbol]';
 
-var arrayBufferTag = '[object ArrayBuffer]',
-    dataViewTag = '[object DataView]';
+var arrayBufferTag$1 = '[object ArrayBuffer]',
+    dataViewTag$2 = '[object DataView]';
 
 /** Used to convert symbols to primitives and strings. */
-var symbolProto$1 = _Symbol ? _Symbol.prototype : undefined,
-    symbolValueOf = symbolProto$1 ? symbolProto$1.valueOf : undefined;
+var symbolProto = Symbol ? Symbol.prototype : undefined,
+    symbolValueOf = symbolProto ? symbolProto.valueOf : undefined;
 
 /**
  * A specialized version of `baseIsEqualDeep` for comparing objects of
@@ -2728,9 +2630,9 @@ var symbolProto$1 = _Symbol ? _Symbol.prototype : undefined,
  * @param {Object} stack Tracks traversed `object` and `other` objects.
  * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
  */
-function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
+function equalByTag$1(object, other, tag, bitmask, customizer, equalFunc, stack) {
   switch (tag) {
-    case dataViewTag:
+    case dataViewTag$2:
       if ((object.byteLength != other.byteLength) ||
           (object.byteOffset != other.byteOffset)) {
         return false;
@@ -2738,36 +2640,36 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
       object = object.buffer;
       other = other.buffer;
 
-    case arrayBufferTag:
+    case arrayBufferTag$1:
       if ((object.byteLength != other.byteLength) ||
-          !equalFunc(new _Uint8Array(object), new _Uint8Array(other))) {
+          !equalFunc(new Uint8Array(object), new Uint8Array(other))) {
         return false;
       }
       return true;
 
-    case boolTag:
-    case dateTag:
-    case numberTag:
+    case boolTag$1:
+    case dateTag$1:
+    case numberTag$1:
       // Coerce booleans to `1` or `0` and dates to milliseconds.
       // Invalid dates are coerced to `NaN`.
-      return eq_1(+object, +other);
+      return eq(+object, +other);
 
-    case errorTag:
+    case errorTag$1:
       return object.name == other.name && object.message == other.message;
 
-    case regexpTag:
-    case stringTag:
+    case regexpTag$1:
+    case stringTag$1:
       // Coerce regexes to strings and treat strings, primitives and objects,
       // as equal. See http://www.ecma-international.org/ecma-262/7.0/#sec-regexp.prototype.tostring
       // for more details.
       return object == (other + '');
 
-    case mapTag:
-      var convert = _mapToArray;
+    case mapTag$2:
+      var convert = mapToArray;
 
-    case setTag:
-      var isPartial = bitmask & COMPARE_PARTIAL_FLAG$1;
-      convert || (convert = _setToArray);
+    case setTag$2:
+      var isPartial = bitmask & COMPARE_PARTIAL_FLAG$4;
+      convert || (convert = setToArray);
 
       if (object.size != other.size && !isPartial) {
         return false;
@@ -2777,15 +2679,15 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
       if (stacked) {
         return stacked == other;
       }
-      bitmask |= COMPARE_UNORDERED_FLAG$1;
+      bitmask |= COMPARE_UNORDERED_FLAG$2;
 
       // Recursively compare objects (susceptible to call stack limits).
       stack.set(object, other);
-      var result = _equalArrays(convert(object), convert(other), bitmask, customizer, equalFunc, stack);
+      var result = equalArrays$1(convert(object), convert(other), bitmask, customizer, equalFunc, stack);
       stack['delete'](object);
       return result;
 
-    case symbolTag$1:
+    case symbolTag:
       if (symbolValueOf) {
         return symbolValueOf.call(object) == symbolValueOf.call(other);
       }
@@ -2793,7 +2695,7 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
   return false;
 }
 
-var _equalByTag = equalByTag;
+var _equalByTag = equalByTag$1;
 
 /**
  * Appends the elements of `values` to `array`.
@@ -2803,7 +2705,8 @@ var _equalByTag = equalByTag;
  * @param {Array} values The values to append.
  * @returns {Array} Returns `array`.
  */
-function arrayPush(array, values) {
+
+function arrayPush$1(array, values) {
   var index = -1,
       length = values.length,
       offset = array.length;
@@ -2814,7 +2717,10 @@ function arrayPush(array, values) {
   return array;
 }
 
-var _arrayPush = arrayPush;
+var _arrayPush = arrayPush$1;
+
+var arrayPush = _arrayPush,
+    isArray$6 = isArray_1;
 
 /**
  * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
@@ -2827,12 +2733,12 @@ var _arrayPush = arrayPush;
  * @param {Function} symbolsFunc The function to get the symbols of `object`.
  * @returns {Array} Returns the array of property names and symbols.
  */
-function baseGetAllKeys(object, keysFunc, symbolsFunc) {
+function baseGetAllKeys$1(object, keysFunc, symbolsFunc) {
   var result = keysFunc(object);
-  return isArray_1(object) ? result : _arrayPush(result, symbolsFunc(object));
+  return isArray$6(object) ? result : arrayPush(result, symbolsFunc(object));
 }
 
-var _baseGetAllKeys = baseGetAllKeys;
+var _baseGetAllKeys = baseGetAllKeys$1;
 
 /**
  * A specialized version of `_.filter` for arrays without support for
@@ -2843,7 +2749,8 @@ var _baseGetAllKeys = baseGetAllKeys;
  * @param {Function} predicate The function invoked per iteration.
  * @returns {Array} Returns the new filtered array.
  */
-function arrayFilter(array, predicate) {
+
+function arrayFilter$1(array, predicate) {
   var index = -1,
       length = array == null ? 0 : array.length,
       resIndex = 0,
@@ -2858,7 +2765,7 @@ function arrayFilter(array, predicate) {
   return result;
 }
 
-var _arrayFilter = arrayFilter;
+var _arrayFilter = arrayFilter$1;
 
 /**
  * This method returns a new empty array.
@@ -2878,17 +2785,21 @@ var _arrayFilter = arrayFilter;
  * console.log(arrays[0] === arrays[1]);
  * // => false
  */
-function stubArray() {
+
+function stubArray$1() {
   return [];
 }
 
-var stubArray_1 = stubArray;
+var stubArray_1 = stubArray$1;
+
+var arrayFilter = _arrayFilter,
+    stubArray = stubArray_1;
 
 /** Used for built-in method references. */
-var objectProto$5 = Object.prototype;
+var objectProto$6 = Object.prototype;
 
 /** Built-in value references. */
-var propertyIsEnumerable = objectProto$5.propertyIsEnumerable;
+var propertyIsEnumerable$1 = objectProto$6.propertyIsEnumerable;
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeGetSymbols = Object.getOwnPropertySymbols;
@@ -2900,17 +2811,17 @@ var nativeGetSymbols = Object.getOwnPropertySymbols;
  * @param {Object} object The object to query.
  * @returns {Array} Returns the array of symbols.
  */
-var getSymbols = !nativeGetSymbols ? stubArray_1 : function(object) {
+var getSymbols$1 = !nativeGetSymbols ? stubArray : function(object) {
   if (object == null) {
     return [];
   }
   object = Object(object);
-  return _arrayFilter(nativeGetSymbols(object), function(symbol) {
-    return propertyIsEnumerable.call(object, symbol);
+  return arrayFilter(nativeGetSymbols(object), function(symbol) {
+    return propertyIsEnumerable$1.call(object, symbol);
   });
 };
 
-var _getSymbols = getSymbols;
+var _getSymbols = getSymbols$1;
 
 /**
  * The base implementation of `_.times` without support for iteratee shorthands
@@ -2921,7 +2832,8 @@ var _getSymbols = getSymbols;
  * @param {Function} iteratee The function invoked per iteration.
  * @returns {Array} Returns the array of results.
  */
-function baseTimes(n, iteratee) {
+
+function baseTimes$1(n, iteratee) {
   var index = -1,
       result = Array(n);
 
@@ -2931,10 +2843,13 @@ function baseTimes(n, iteratee) {
   return result;
 }
 
-var _baseTimes = baseTimes;
+var _baseTimes = baseTimes$1;
+
+var baseGetTag$2 = _baseGetTag,
+    isObjectLike$3 = isObjectLike_1;
 
 /** `Object#toString` result references. */
-var argsTag = '[object Arguments]';
+var argsTag$2 = '[object Arguments]';
 
 /**
  * The base implementation of `_.isArguments`.
@@ -2943,20 +2858,23 @@ var argsTag = '[object Arguments]';
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is an `arguments` object,
  */
-function baseIsArguments(value) {
-  return isObjectLike_1(value) && _baseGetTag(value) == argsTag;
+function baseIsArguments$1(value) {
+  return isObjectLike$3(value) && baseGetTag$2(value) == argsTag$2;
 }
 
-var _baseIsArguments = baseIsArguments;
+var _baseIsArguments = baseIsArguments$1;
+
+var baseIsArguments = _baseIsArguments,
+    isObjectLike$2 = isObjectLike_1;
 
 /** Used for built-in method references. */
-var objectProto$6 = Object.prototype;
+var objectProto$5 = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$4 = objectProto$6.hasOwnProperty;
+var hasOwnProperty$4 = objectProto$5.hasOwnProperty;
 
 /** Built-in value references. */
-var propertyIsEnumerable$1 = objectProto$6.propertyIsEnumerable;
+var propertyIsEnumerable = objectProto$5.propertyIsEnumerable;
 
 /**
  * Checks if `value` is likely an `arguments` object.
@@ -2976,12 +2894,14 @@ var propertyIsEnumerable$1 = objectProto$6.propertyIsEnumerable;
  * _.isArguments([1, 2, 3]);
  * // => false
  */
-var isArguments = _baseIsArguments(function() { return arguments; }()) ? _baseIsArguments : function(value) {
-  return isObjectLike_1(value) && hasOwnProperty$4.call(value, 'callee') &&
-    !propertyIsEnumerable$1.call(value, 'callee');
+var isArguments$2 = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
+  return isObjectLike$2(value) && hasOwnProperty$4.call(value, 'callee') &&
+    !propertyIsEnumerable.call(value, 'callee');
 };
 
-var isArguments_1 = isArguments;
+var isArguments_1 = isArguments$2;
+
+var isBuffer$2 = {exports: {}};
 
 /**
  * This method returns `false`.
@@ -2996,52 +2916,57 @@ var isArguments_1 = isArguments;
  * _.times(2, _.stubFalse);
  * // => [false, false]
  */
+
 function stubFalse() {
   return false;
 }
 
 var stubFalse_1 = stubFalse;
 
-var isBuffer_1 = createCommonjsModule(function (module, exports) {
-/** Detect free variable `exports`. */
-var freeExports = exports && !exports.nodeType && exports;
+(function (module, exports) {
+	var root = _root,
+	    stubFalse = stubFalse_1;
 
-/** Detect free variable `module`. */
-var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
+	/** Detect free variable `exports`. */
+	var freeExports = exports && !exports.nodeType && exports;
 
-/** Detect the popular CommonJS extension `module.exports`. */
-var moduleExports = freeModule && freeModule.exports === freeExports;
+	/** Detect free variable `module`. */
+	var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
 
-/** Built-in value references. */
-var Buffer = moduleExports ? _root.Buffer : undefined;
+	/** Detect the popular CommonJS extension `module.exports`. */
+	var moduleExports = freeModule && freeModule.exports === freeExports;
 
-/* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined;
+	/** Built-in value references. */
+	var Buffer = moduleExports ? root.Buffer : undefined;
 
-/**
- * Checks if `value` is a buffer.
- *
- * @static
- * @memberOf _
- * @since 4.3.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
- * @example
- *
- * _.isBuffer(new Buffer(2));
- * // => true
- *
- * _.isBuffer(new Uint8Array(2));
- * // => false
- */
-var isBuffer = nativeIsBuffer || stubFalse_1;
+	/* Built-in method references for those with the same name as other `lodash` methods. */
+	var nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined;
 
-module.exports = isBuffer;
-});
+	/**
+	 * Checks if `value` is a buffer.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.3.0
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
+	 * @example
+	 *
+	 * _.isBuffer(new Buffer(2));
+	 * // => true
+	 *
+	 * _.isBuffer(new Uint8Array(2));
+	 * // => false
+	 */
+	var isBuffer = nativeIsBuffer || stubFalse;
+
+	module.exports = isBuffer;
+} (isBuffer$2, isBuffer$2.exports));
 
 /** Used as references for various `Number` constants. */
-var MAX_SAFE_INTEGER = 9007199254740991;
+
+var MAX_SAFE_INTEGER$1 = 9007199254740991;
 
 /** Used to detect unsigned integer values. */
 var reIsUint = /^(?:0|[1-9]\d*)$/;
@@ -3054,9 +2979,9 @@ var reIsUint = /^(?:0|[1-9]\d*)$/;
  * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
  * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
  */
-function isIndex(value, length) {
+function isIndex$2(value, length) {
   var type = typeof value;
-  length = length == null ? MAX_SAFE_INTEGER : length;
+  length = length == null ? MAX_SAFE_INTEGER$1 : length;
 
   return !!length &&
     (type == 'number' ||
@@ -3064,10 +2989,11 @@ function isIndex(value, length) {
         (value > -1 && value % 1 == 0 && value < length);
 }
 
-var _isIndex = isIndex;
+var _isIndex = isIndex$2;
 
 /** Used as references for various `Number` constants. */
-var MAX_SAFE_INTEGER$1 = 9007199254740991;
+
+var MAX_SAFE_INTEGER = 9007199254740991;
 
 /**
  * Checks if `value` is a valid array-like length.
@@ -3095,29 +3021,33 @@ var MAX_SAFE_INTEGER$1 = 9007199254740991;
  * _.isLength('3');
  * // => false
  */
-function isLength(value) {
+function isLength$3(value) {
   return typeof value == 'number' &&
-    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER$1;
+    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
 }
 
-var isLength_1 = isLength;
+var isLength_1 = isLength$3;
+
+var baseGetTag$1 = _baseGetTag,
+    isLength$2 = isLength_1,
+    isObjectLike$1 = isObjectLike_1;
 
 /** `Object#toString` result references. */
 var argsTag$1 = '[object Arguments]',
-    arrayTag = '[object Array]',
-    boolTag$1 = '[object Boolean]',
-    dateTag$1 = '[object Date]',
-    errorTag$1 = '[object Error]',
-    funcTag$1 = '[object Function]',
+    arrayTag$1 = '[object Array]',
+    boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    funcTag = '[object Function]',
     mapTag$1 = '[object Map]',
-    numberTag$1 = '[object Number]',
-    objectTag = '[object Object]',
-    regexpTag$1 = '[object RegExp]',
+    numberTag = '[object Number]',
+    objectTag$2 = '[object Object]',
+    regexpTag = '[object RegExp]',
     setTag$1 = '[object Set]',
-    stringTag$1 = '[object String]',
-    weakMapTag = '[object WeakMap]';
+    stringTag = '[object String]',
+    weakMapTag$1 = '[object WeakMap]';
 
-var arrayBufferTag$1 = '[object ArrayBuffer]',
+var arrayBufferTag = '[object ArrayBuffer]',
     dataViewTag$1 = '[object DataView]',
     float32Tag = '[object Float32Array]',
     float64Tag = '[object Float64Array]',
@@ -3136,14 +3066,14 @@ typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
 typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
 typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
 typedArrayTags[uint32Tag] = true;
-typedArrayTags[argsTag$1] = typedArrayTags[arrayTag] =
-typedArrayTags[arrayBufferTag$1] = typedArrayTags[boolTag$1] =
-typedArrayTags[dataViewTag$1] = typedArrayTags[dateTag$1] =
-typedArrayTags[errorTag$1] = typedArrayTags[funcTag$1] =
-typedArrayTags[mapTag$1] = typedArrayTags[numberTag$1] =
-typedArrayTags[objectTag] = typedArrayTags[regexpTag$1] =
-typedArrayTags[setTag$1] = typedArrayTags[stringTag$1] =
-typedArrayTags[weakMapTag] = false;
+typedArrayTags[argsTag$1] = typedArrayTags[arrayTag$1] =
+typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+typedArrayTags[dataViewTag$1] = typedArrayTags[dateTag] =
+typedArrayTags[errorTag] = typedArrayTags[funcTag] =
+typedArrayTags[mapTag$1] = typedArrayTags[numberTag] =
+typedArrayTags[objectTag$2] = typedArrayTags[regexpTag] =
+typedArrayTags[setTag$1] = typedArrayTags[stringTag] =
+typedArrayTags[weakMapTag$1] = false;
 
 /**
  * The base implementation of `_.isTypedArray` without Node.js optimizations.
@@ -3152,12 +3082,12 @@ typedArrayTags[weakMapTag] = false;
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
  */
-function baseIsTypedArray(value) {
-  return isObjectLike_1(value) &&
-    isLength_1(value.length) && !!typedArrayTags[_baseGetTag(value)];
+function baseIsTypedArray$1(value) {
+  return isObjectLike$1(value) &&
+    isLength$2(value.length) && !!typedArrayTags[baseGetTag$1(value)];
 }
 
-var _baseIsTypedArray = baseIsTypedArray;
+var _baseIsTypedArray = baseIsTypedArray$1;
 
 /**
  * The base implementation of `_.unary` without support for storing metadata.
@@ -3166,47 +3096,56 @@ var _baseIsTypedArray = baseIsTypedArray;
  * @param {Function} func The function to cap arguments for.
  * @returns {Function} Returns the new capped function.
  */
-function baseUnary(func) {
+
+function baseUnary$2(func) {
   return function(value) {
     return func(value);
   };
 }
 
-var _baseUnary = baseUnary;
+var _baseUnary = baseUnary$2;
 
-var _nodeUtil = createCommonjsModule(function (module, exports) {
-/** Detect free variable `exports`. */
-var freeExports = exports && !exports.nodeType && exports;
+var _nodeUtil = {exports: {}};
 
-/** Detect free variable `module`. */
-var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
+(function (module, exports) {
+	var freeGlobal = _freeGlobal;
 
-/** Detect the popular CommonJS extension `module.exports`. */
-var moduleExports = freeModule && freeModule.exports === freeExports;
+	/** Detect free variable `exports`. */
+	var freeExports = exports && !exports.nodeType && exports;
 
-/** Detect free variable `process` from Node.js. */
-var freeProcess = moduleExports && _freeGlobal.process;
+	/** Detect free variable `module`. */
+	var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
 
-/** Used to access faster Node.js helpers. */
-var nodeUtil = (function() {
-  try {
-    // Use `util.types` for Node.js 10+.
-    var types = freeModule && freeModule.require && freeModule.require('util').types;
+	/** Detect the popular CommonJS extension `module.exports`. */
+	var moduleExports = freeModule && freeModule.exports === freeExports;
 
-    if (types) {
-      return types;
-    }
+	/** Detect free variable `process` from Node.js. */
+	var freeProcess = moduleExports && freeGlobal.process;
 
-    // Legacy `process.binding('util')` for Node.js < 10.
-    return freeProcess && freeProcess.binding && freeProcess.binding('util');
-  } catch (e) {}
-}());
+	/** Used to access faster Node.js helpers. */
+	var nodeUtil = (function() {
+	  try {
+	    // Use `util.types` for Node.js 10+.
+	    var types = freeModule && freeModule.require && freeModule.require('util').types;
 
-module.exports = nodeUtil;
-});
+	    if (types) {
+	      return types;
+	    }
+
+	    // Legacy `process.binding('util')` for Node.js < 10.
+	    return freeProcess && freeProcess.binding && freeProcess.binding('util');
+	  } catch (e) {}
+	}());
+
+	module.exports = nodeUtil;
+} (_nodeUtil, _nodeUtil.exports));
+
+var baseIsTypedArray = _baseIsTypedArray,
+    baseUnary$1 = _baseUnary,
+    nodeUtil = _nodeUtil.exports;
 
 /* Node.js helper references. */
-var nodeIsTypedArray = _nodeUtil && _nodeUtil.isTypedArray;
+var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
 
 /**
  * Checks if `value` is classified as a typed array.
@@ -3225,15 +3164,22 @@ var nodeIsTypedArray = _nodeUtil && _nodeUtil.isTypedArray;
  * _.isTypedArray([]);
  * // => false
  */
-var isTypedArray = nodeIsTypedArray ? _baseUnary(nodeIsTypedArray) : _baseIsTypedArray;
+var isTypedArray$2 = nodeIsTypedArray ? baseUnary$1(nodeIsTypedArray) : baseIsTypedArray;
 
-var isTypedArray_1 = isTypedArray;
+var isTypedArray_1 = isTypedArray$2;
+
+var baseTimes = _baseTimes,
+    isArguments$1 = isArguments_1,
+    isArray$5 = isArray_1,
+    isBuffer$1 = isBuffer$2.exports,
+    isIndex$1 = _isIndex,
+    isTypedArray$1 = isTypedArray_1;
 
 /** Used for built-in method references. */
-var objectProto$7 = Object.prototype;
+var objectProto$4 = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
+var hasOwnProperty$3 = objectProto$4.hasOwnProperty;
 
 /**
  * Creates an array of the enumerable property names of the array-like `value`.
@@ -3243,17 +3189,17 @@ var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
  * @param {boolean} inherited Specify returning inherited property names.
  * @returns {Array} Returns the array of property names.
  */
-function arrayLikeKeys(value, inherited) {
-  var isArr = isArray_1(value),
-      isArg = !isArr && isArguments_1(value),
-      isBuff = !isArr && !isArg && isBuffer_1(value),
-      isType = !isArr && !isArg && !isBuff && isTypedArray_1(value),
+function arrayLikeKeys$1(value, inherited) {
+  var isArr = isArray$5(value),
+      isArg = !isArr && isArguments$1(value),
+      isBuff = !isArr && !isArg && isBuffer$1(value),
+      isType = !isArr && !isArg && !isBuff && isTypedArray$1(value),
       skipIndexes = isArr || isArg || isBuff || isType,
-      result = skipIndexes ? _baseTimes(value.length, String) : [],
+      result = skipIndexes ? baseTimes(value.length, String) : [],
       length = result.length;
 
   for (var key in value) {
-    if ((inherited || hasOwnProperty$5.call(value, key)) &&
+    if ((inherited || hasOwnProperty$3.call(value, key)) &&
         !(skipIndexes && (
            // Safari 9 has enumerable `arguments.length` in strict mode.
            key == 'length' ||
@@ -3262,7 +3208,7 @@ function arrayLikeKeys(value, inherited) {
            // PhantomJS 2 has enumerable non-index properties on typed arrays.
            (isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset')) ||
            // Skip index properties.
-           _isIndex(key, length)
+           isIndex$1(key, length)
         ))) {
       result.push(key);
     }
@@ -3270,10 +3216,11 @@ function arrayLikeKeys(value, inherited) {
   return result;
 }
 
-var _arrayLikeKeys = arrayLikeKeys;
+var _arrayLikeKeys = arrayLikeKeys$1;
 
 /** Used for built-in method references. */
-var objectProto$8 = Object.prototype;
+
+var objectProto$3 = Object.prototype;
 
 /**
  * Checks if `value` is likely a prototype object.
@@ -3282,14 +3229,14 @@ var objectProto$8 = Object.prototype;
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is a prototype, else `false`.
  */
-function isPrototype(value) {
+function isPrototype$1(value) {
   var Ctor = value && value.constructor,
-      proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto$8;
+      proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto$3;
 
   return value === proto;
 }
 
-var _isPrototype = isPrototype;
+var _isPrototype = isPrototype$1;
 
 /**
  * Creates a unary function that invokes `func` with its argument transformed.
@@ -3299,24 +3246,30 @@ var _isPrototype = isPrototype;
  * @param {Function} transform The argument transform.
  * @returns {Function} Returns the new function.
  */
-function overArg(func, transform) {
+
+function overArg$1(func, transform) {
   return function(arg) {
     return func(transform(arg));
   };
 }
 
-var _overArg = overArg;
+var _overArg = overArg$1;
+
+var overArg = _overArg;
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeKeys = _overArg(Object.keys, Object);
+var nativeKeys$1 = overArg(Object.keys, Object);
 
-var _nativeKeys = nativeKeys;
+var _nativeKeys = nativeKeys$1;
+
+var isPrototype = _isPrototype,
+    nativeKeys = _nativeKeys;
 
 /** Used for built-in method references. */
-var objectProto$9 = Object.prototype;
+var objectProto$2 = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$6 = objectProto$9.hasOwnProperty;
+var hasOwnProperty$2 = objectProto$2.hasOwnProperty;
 
 /**
  * The base implementation of `_.keys` which doesn't treat sparse arrays as dense.
@@ -3325,20 +3278,23 @@ var hasOwnProperty$6 = objectProto$9.hasOwnProperty;
  * @param {Object} object The object to query.
  * @returns {Array} Returns the array of property names.
  */
-function baseKeys(object) {
-  if (!_isPrototype(object)) {
-    return _nativeKeys(object);
+function baseKeys$1(object) {
+  if (!isPrototype(object)) {
+    return nativeKeys(object);
   }
   var result = [];
   for (var key in Object(object)) {
-    if (hasOwnProperty$6.call(object, key) && key != 'constructor') {
+    if (hasOwnProperty$2.call(object, key) && key != 'constructor') {
       result.push(key);
     }
   }
   return result;
 }
 
-var _baseKeys = baseKeys;
+var _baseKeys = baseKeys$1;
+
+var isFunction = isFunction_1,
+    isLength$1 = isLength_1;
 
 /**
  * Checks if `value` is array-like. A value is considered array-like if it's
@@ -3365,11 +3321,15 @@ var _baseKeys = baseKeys;
  * _.isArrayLike(_.noop);
  * // => false
  */
-function isArrayLike(value) {
-  return value != null && isLength_1(value.length) && !isFunction_1(value);
+function isArrayLike$3(value) {
+  return value != null && isLength$1(value.length) && !isFunction(value);
 }
 
-var isArrayLike_1 = isArrayLike;
+var isArrayLike_1 = isArrayLike$3;
+
+var arrayLikeKeys = _arrayLikeKeys,
+    baseKeys = _baseKeys,
+    isArrayLike$2 = isArrayLike_1;
 
 /**
  * Creates an array of the own enumerable property names of `object`.
@@ -3399,11 +3359,15 @@ var isArrayLike_1 = isArrayLike;
  * _.keys('hi');
  * // => ['0', '1']
  */
-function keys(object) {
-  return isArrayLike_1(object) ? _arrayLikeKeys(object) : _baseKeys(object);
+function keys$3(object) {
+  return isArrayLike$2(object) ? arrayLikeKeys(object) : baseKeys(object);
 }
 
-var keys_1 = keys;
+var keys_1 = keys$3;
+
+var baseGetAllKeys = _baseGetAllKeys,
+    getSymbols = _getSymbols,
+    keys$2 = keys_1;
 
 /**
  * Creates an array of own enumerable property names and symbols of `object`.
@@ -3412,20 +3376,22 @@ var keys_1 = keys;
  * @param {Object} object The object to query.
  * @returns {Array} Returns the array of property names and symbols.
  */
-function getAllKeys(object) {
-  return _baseGetAllKeys(object, keys_1, _getSymbols);
+function getAllKeys$1(object) {
+  return baseGetAllKeys(object, keys$2, getSymbols);
 }
 
-var _getAllKeys = getAllKeys;
+var _getAllKeys = getAllKeys$1;
+
+var getAllKeys = _getAllKeys;
 
 /** Used to compose bitmasks for value comparisons. */
-var COMPARE_PARTIAL_FLAG$2 = 1;
+var COMPARE_PARTIAL_FLAG$3 = 1;
 
 /** Used for built-in method references. */
-var objectProto$a = Object.prototype;
+var objectProto$1 = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$7 = objectProto$a.hasOwnProperty;
+var hasOwnProperty$1 = objectProto$1.hasOwnProperty;
 
 /**
  * A specialized version of `baseIsEqualDeep` for objects with support for
@@ -3440,11 +3406,11 @@ var hasOwnProperty$7 = objectProto$a.hasOwnProperty;
  * @param {Object} stack Tracks traversed `object` and `other` objects.
  * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
  */
-function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
-  var isPartial = bitmask & COMPARE_PARTIAL_FLAG$2,
-      objProps = _getAllKeys(object),
+function equalObjects$1(object, other, bitmask, customizer, equalFunc, stack) {
+  var isPartial = bitmask & COMPARE_PARTIAL_FLAG$3,
+      objProps = getAllKeys(object),
       objLength = objProps.length,
-      othProps = _getAllKeys(other),
+      othProps = getAllKeys(other),
       othLength = othProps.length;
 
   if (objLength != othLength && !isPartial) {
@@ -3453,7 +3419,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
   var index = objLength;
   while (index--) {
     var key = objProps[index];
-    if (!(isPartial ? key in other : hasOwnProperty$7.call(other, key))) {
+    if (!(isPartial ? key in other : hasOwnProperty$1.call(other, key))) {
       return false;
     }
   }
@@ -3505,43 +3471,63 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
   return result;
 }
 
-var _equalObjects = equalObjects;
+var _equalObjects = equalObjects$1;
+
+var getNative$3 = _getNative,
+    root$3 = _root;
 
 /* Built-in method references that are verified to be native. */
-var DataView = _getNative(_root, 'DataView');
+var DataView$1 = getNative$3(root$3, 'DataView');
 
-var _DataView = DataView;
+var _DataView = DataView$1;
 
-/* Built-in method references that are verified to be native. */
-var Promise$1 = _getNative(_root, 'Promise');
-
-var _Promise = Promise$1;
+var getNative$2 = _getNative,
+    root$2 = _root;
 
 /* Built-in method references that are verified to be native. */
-var Set = _getNative(_root, 'Set');
+var Promise$2 = getNative$2(root$2, 'Promise');
 
-var _Set = Set;
+var _Promise = Promise$2;
+
+var getNative$1 = _getNative,
+    root$1 = _root;
 
 /* Built-in method references that are verified to be native. */
-var WeakMap = _getNative(_root, 'WeakMap');
+var Set$1 = getNative$1(root$1, 'Set');
 
-var _WeakMap = WeakMap;
+var _Set = Set$1;
+
+var getNative = _getNative,
+    root = _root;
+
+/* Built-in method references that are verified to be native. */
+var WeakMap$1 = getNative(root, 'WeakMap');
+
+var _WeakMap = WeakMap$1;
+
+var DataView = _DataView,
+    Map = _Map,
+    Promise$1 = _Promise,
+    Set = _Set,
+    WeakMap = _WeakMap,
+    baseGetTag = _baseGetTag,
+    toSource = _toSource;
 
 /** `Object#toString` result references. */
-var mapTag$2 = '[object Map]',
+var mapTag = '[object Map]',
     objectTag$1 = '[object Object]',
     promiseTag = '[object Promise]',
-    setTag$2 = '[object Set]',
-    weakMapTag$1 = '[object WeakMap]';
+    setTag = '[object Set]',
+    weakMapTag = '[object WeakMap]';
 
-var dataViewTag$2 = '[object DataView]';
+var dataViewTag = '[object DataView]';
 
 /** Used to detect maps, sets, and weakmaps. */
-var dataViewCtorString = _toSource(_DataView),
-    mapCtorString = _toSource(_Map),
-    promiseCtorString = _toSource(_Promise),
-    setCtorString = _toSource(_Set),
-    weakMapCtorString = _toSource(_WeakMap);
+var dataViewCtorString = toSource(DataView),
+    mapCtorString = toSource(Map),
+    promiseCtorString = toSource(Promise$1),
+    setCtorString = toSource(Set),
+    weakMapCtorString = toSource(WeakMap);
 
 /**
  * Gets the `toStringTag` of `value`.
@@ -3550,47 +3536,56 @@ var dataViewCtorString = _toSource(_DataView),
  * @param {*} value The value to query.
  * @returns {string} Returns the `toStringTag`.
  */
-var getTag = _baseGetTag;
+var getTag$1 = baseGetTag;
 
 // Fallback for data views, maps, sets, and weak maps in IE 11 and promises in Node.js < 6.
-if ((_DataView && getTag(new _DataView(new ArrayBuffer(1))) != dataViewTag$2) ||
-    (_Map && getTag(new _Map) != mapTag$2) ||
-    (_Promise && getTag(_Promise.resolve()) != promiseTag) ||
-    (_Set && getTag(new _Set) != setTag$2) ||
-    (_WeakMap && getTag(new _WeakMap) != weakMapTag$1)) {
-  getTag = function(value) {
-    var result = _baseGetTag(value),
+if ((DataView && getTag$1(new DataView(new ArrayBuffer(1))) != dataViewTag) ||
+    (Map && getTag$1(new Map) != mapTag) ||
+    (Promise$1 && getTag$1(Promise$1.resolve()) != promiseTag) ||
+    (Set && getTag$1(new Set) != setTag) ||
+    (WeakMap && getTag$1(new WeakMap) != weakMapTag)) {
+  getTag$1 = function(value) {
+    var result = baseGetTag(value),
         Ctor = result == objectTag$1 ? value.constructor : undefined,
-        ctorString = Ctor ? _toSource(Ctor) : '';
+        ctorString = Ctor ? toSource(Ctor) : '';
 
     if (ctorString) {
       switch (ctorString) {
-        case dataViewCtorString: return dataViewTag$2;
-        case mapCtorString: return mapTag$2;
+        case dataViewCtorString: return dataViewTag;
+        case mapCtorString: return mapTag;
         case promiseCtorString: return promiseTag;
-        case setCtorString: return setTag$2;
-        case weakMapCtorString: return weakMapTag$1;
+        case setCtorString: return setTag;
+        case weakMapCtorString: return weakMapTag;
       }
     }
     return result;
   };
 }
 
-var _getTag = getTag;
+var _getTag = getTag$1;
+
+var Stack$1 = _Stack,
+    equalArrays = _equalArrays,
+    equalByTag = _equalByTag,
+    equalObjects = _equalObjects,
+    getTag = _getTag,
+    isArray$4 = isArray_1,
+    isBuffer = isBuffer$2.exports,
+    isTypedArray = isTypedArray_1;
 
 /** Used to compose bitmasks for value comparisons. */
-var COMPARE_PARTIAL_FLAG$3 = 1;
+var COMPARE_PARTIAL_FLAG$2 = 1;
 
 /** `Object#toString` result references. */
-var argsTag$2 = '[object Arguments]',
-    arrayTag$1 = '[object Array]',
-    objectTag$2 = '[object Object]';
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    objectTag = '[object Object]';
 
 /** Used for built-in method references. */
-var objectProto$b = Object.prototype;
+var objectProto = Object.prototype;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$8 = objectProto$b.hasOwnProperty;
+var hasOwnProperty = objectProto.hasOwnProperty;
 
 /**
  * A specialized version of `baseIsEqual` for arrays and objects which performs
@@ -3606,52 +3601,55 @@ var hasOwnProperty$8 = objectProto$b.hasOwnProperty;
  * @param {Object} [stack] Tracks traversed `object` and `other` objects.
  * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
  */
-function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
-  var objIsArr = isArray_1(object),
-      othIsArr = isArray_1(other),
-      objTag = objIsArr ? arrayTag$1 : _getTag(object),
-      othTag = othIsArr ? arrayTag$1 : _getTag(other);
+function baseIsEqualDeep$1(object, other, bitmask, customizer, equalFunc, stack) {
+  var objIsArr = isArray$4(object),
+      othIsArr = isArray$4(other),
+      objTag = objIsArr ? arrayTag : getTag(object),
+      othTag = othIsArr ? arrayTag : getTag(other);
 
-  objTag = objTag == argsTag$2 ? objectTag$2 : objTag;
-  othTag = othTag == argsTag$2 ? objectTag$2 : othTag;
+  objTag = objTag == argsTag ? objectTag : objTag;
+  othTag = othTag == argsTag ? objectTag : othTag;
 
-  var objIsObj = objTag == objectTag$2,
-      othIsObj = othTag == objectTag$2,
+  var objIsObj = objTag == objectTag,
+      othIsObj = othTag == objectTag,
       isSameTag = objTag == othTag;
 
-  if (isSameTag && isBuffer_1(object)) {
-    if (!isBuffer_1(other)) {
+  if (isSameTag && isBuffer(object)) {
+    if (!isBuffer(other)) {
       return false;
     }
     objIsArr = true;
     objIsObj = false;
   }
   if (isSameTag && !objIsObj) {
-    stack || (stack = new _Stack);
-    return (objIsArr || isTypedArray_1(object))
-      ? _equalArrays(object, other, bitmask, customizer, equalFunc, stack)
-      : _equalByTag(object, other, objTag, bitmask, customizer, equalFunc, stack);
+    stack || (stack = new Stack$1);
+    return (objIsArr || isTypedArray(object))
+      ? equalArrays(object, other, bitmask, customizer, equalFunc, stack)
+      : equalByTag(object, other, objTag, bitmask, customizer, equalFunc, stack);
   }
-  if (!(bitmask & COMPARE_PARTIAL_FLAG$3)) {
-    var objIsWrapped = objIsObj && hasOwnProperty$8.call(object, '__wrapped__'),
-        othIsWrapped = othIsObj && hasOwnProperty$8.call(other, '__wrapped__');
+  if (!(bitmask & COMPARE_PARTIAL_FLAG$2)) {
+    var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+        othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
 
     if (objIsWrapped || othIsWrapped) {
       var objUnwrapped = objIsWrapped ? object.value() : object,
           othUnwrapped = othIsWrapped ? other.value() : other;
 
-      stack || (stack = new _Stack);
+      stack || (stack = new Stack$1);
       return equalFunc(objUnwrapped, othUnwrapped, bitmask, customizer, stack);
     }
   }
   if (!isSameTag) {
     return false;
   }
-  stack || (stack = new _Stack);
-  return _equalObjects(object, other, bitmask, customizer, equalFunc, stack);
+  stack || (stack = new Stack$1);
+  return equalObjects(object, other, bitmask, customizer, equalFunc, stack);
 }
 
-var _baseIsEqualDeep = baseIsEqualDeep;
+var _baseIsEqualDeep = baseIsEqualDeep$1;
+
+var baseIsEqualDeep = _baseIsEqualDeep,
+    isObjectLike = isObjectLike_1;
 
 /**
  * The base implementation of `_.isEqual` which supports partial comparisons
@@ -3667,21 +3665,24 @@ var _baseIsEqualDeep = baseIsEqualDeep;
  * @param {Object} [stack] Tracks traversed `value` and `other` objects.
  * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
  */
-function baseIsEqual(value, other, bitmask, customizer, stack) {
+function baseIsEqual$2(value, other, bitmask, customizer, stack) {
   if (value === other) {
     return true;
   }
-  if (value == null || other == null || (!isObjectLike_1(value) && !isObjectLike_1(other))) {
+  if (value == null || other == null || (!isObjectLike(value) && !isObjectLike(other))) {
     return value !== value && other !== other;
   }
-  return _baseIsEqualDeep(value, other, bitmask, customizer, baseIsEqual, stack);
+  return baseIsEqualDeep(value, other, bitmask, customizer, baseIsEqual$2, stack);
 }
 
-var _baseIsEqual = baseIsEqual;
+var _baseIsEqual = baseIsEqual$2;
+
+var Stack = _Stack,
+    baseIsEqual$1 = _baseIsEqual;
 
 /** Used to compose bitmasks for value comparisons. */
-var COMPARE_PARTIAL_FLAG$4 = 1,
-    COMPARE_UNORDERED_FLAG$2 = 2;
+var COMPARE_PARTIAL_FLAG$1 = 1,
+    COMPARE_UNORDERED_FLAG$1 = 2;
 
 /**
  * The base implementation of `_.isMatch` without support for iteratee shorthands.
@@ -3693,7 +3694,7 @@ var COMPARE_PARTIAL_FLAG$4 = 1,
  * @param {Function} [customizer] The function to customize comparisons.
  * @returns {boolean} Returns `true` if `object` is a match, else `false`.
  */
-function baseIsMatch(object, source, matchData, customizer) {
+function baseIsMatch$1(object, source, matchData, customizer) {
   var index = matchData.length,
       length = index,
       noCustomizer = !customizer;
@@ -3722,12 +3723,12 @@ function baseIsMatch(object, source, matchData, customizer) {
         return false;
       }
     } else {
-      var stack = new _Stack;
+      var stack = new Stack;
       if (customizer) {
         var result = customizer(objValue, srcValue, key, object, source, stack);
       }
       if (!(result === undefined
-            ? _baseIsEqual(srcValue, objValue, COMPARE_PARTIAL_FLAG$4 | COMPARE_UNORDERED_FLAG$2, customizer, stack)
+            ? baseIsEqual$1(srcValue, objValue, COMPARE_PARTIAL_FLAG$1 | COMPARE_UNORDERED_FLAG$1, customizer, stack)
             : result
           )) {
         return false;
@@ -3737,7 +3738,9 @@ function baseIsMatch(object, source, matchData, customizer) {
   return true;
 }
 
-var _baseIsMatch = baseIsMatch;
+var _baseIsMatch = baseIsMatch$1;
+
+var isObject = isObject_1;
 
 /**
  * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
@@ -3747,11 +3750,14 @@ var _baseIsMatch = baseIsMatch;
  * @returns {boolean} Returns `true` if `value` if suitable for strict
  *  equality comparisons, else `false`.
  */
-function isStrictComparable(value) {
-  return value === value && !isObject_1(value);
+function isStrictComparable$2(value) {
+  return value === value && !isObject(value);
 }
 
-var _isStrictComparable = isStrictComparable;
+var _isStrictComparable = isStrictComparable$2;
+
+var isStrictComparable$1 = _isStrictComparable,
+    keys$1 = keys_1;
 
 /**
  * Gets the property names, values, and compare flags of `object`.
@@ -3760,20 +3766,20 @@ var _isStrictComparable = isStrictComparable;
  * @param {Object} object The object to query.
  * @returns {Array} Returns the match data of `object`.
  */
-function getMatchData(object) {
-  var result = keys_1(object),
+function getMatchData$1(object) {
+  var result = keys$1(object),
       length = result.length;
 
   while (length--) {
     var key = result[length],
         value = object[key];
 
-    result[length] = [key, value, _isStrictComparable(value)];
+    result[length] = [key, value, isStrictComparable$1(value)];
   }
   return result;
 }
 
-var _getMatchData = getMatchData;
+var _getMatchData = getMatchData$1;
 
 /**
  * A specialized version of `matchesProperty` for source values suitable
@@ -3784,7 +3790,8 @@ var _getMatchData = getMatchData;
  * @param {*} srcValue The value to match.
  * @returns {Function} Returns the new spec function.
  */
-function matchesStrictComparable(key, srcValue) {
+
+function matchesStrictComparable$2(key, srcValue) {
   return function(object) {
     if (object == null) {
       return false;
@@ -3794,7 +3801,11 @@ function matchesStrictComparable(key, srcValue) {
   };
 }
 
-var _matchesStrictComparable = matchesStrictComparable;
+var _matchesStrictComparable = matchesStrictComparable$2;
+
+var baseIsMatch = _baseIsMatch,
+    getMatchData = _getMatchData,
+    matchesStrictComparable$1 = _matchesStrictComparable;
 
 /**
  * The base implementation of `_.matches` which doesn't clone `source`.
@@ -3803,17 +3814,19 @@ var _matchesStrictComparable = matchesStrictComparable;
  * @param {Object} source The object of property values to match.
  * @returns {Function} Returns the new spec function.
  */
-function baseMatches(source) {
-  var matchData = _getMatchData(source);
+function baseMatches$1(source) {
+  var matchData = getMatchData(source);
   if (matchData.length == 1 && matchData[0][2]) {
-    return _matchesStrictComparable(matchData[0][0], matchData[0][1]);
+    return matchesStrictComparable$1(matchData[0][0], matchData[0][1]);
   }
   return function(object) {
-    return object === source || _baseIsMatch(object, source, matchData);
+    return object === source || baseIsMatch(object, source, matchData);
   };
 }
 
-var _baseMatches = baseMatches;
+var _baseMatches = baseMatches$1;
+
+var baseGet$2 = _baseGet;
 
 /**
  * Gets the value at `path` of `object`. If the resolved value is
@@ -3841,7 +3854,7 @@ var _baseMatches = baseMatches;
  * // => 'default'
  */
 function get$1(object, path, defaultValue) {
-  var result = object == null ? undefined : _baseGet(object, path);
+  var result = object == null ? undefined : baseGet$2(object, path);
   return result === undefined ? defaultValue : result;
 }
 
@@ -3855,11 +3868,19 @@ var get_1 = get$1;
  * @param {Array|string} key The key to check.
  * @returns {boolean} Returns `true` if `key` exists, else `false`.
  */
-function baseHasIn(object, key) {
+
+function baseHasIn$1(object, key) {
   return object != null && key in Object(object);
 }
 
-var _baseHasIn = baseHasIn;
+var _baseHasIn = baseHasIn$1;
+
+var castPath = _castPath,
+    isArguments = isArguments_1,
+    isArray$3 = isArray_1,
+    isIndex = _isIndex,
+    isLength = isLength_1,
+    toKey$2 = _toKey;
 
 /**
  * Checks if `path` exists on `object`.
@@ -3870,15 +3891,15 @@ var _baseHasIn = baseHasIn;
  * @param {Function} hasFunc The function to check properties.
  * @returns {boolean} Returns `true` if `path` exists, else `false`.
  */
-function hasPath(object, path, hasFunc) {
-  path = _castPath(path, object);
+function hasPath$1(object, path, hasFunc) {
+  path = castPath(path, object);
 
   var index = -1,
       length = path.length,
       result = false;
 
   while (++index < length) {
-    var key = _toKey(path[index]);
+    var key = toKey$2(path[index]);
     if (!(result = object != null && hasFunc(object, key))) {
       break;
     }
@@ -3888,11 +3909,14 @@ function hasPath(object, path, hasFunc) {
     return result;
   }
   length = object == null ? 0 : object.length;
-  return !!length && isLength_1(length) && _isIndex(key, length) &&
-    (isArray_1(object) || isArguments_1(object));
+  return !!length && isLength(length) && isIndex(key, length) &&
+    (isArray$3(object) || isArguments(object));
 }
 
-var _hasPath = hasPath;
+var _hasPath = hasPath$1;
+
+var baseHasIn = _baseHasIn,
+    hasPath = _hasPath;
 
 /**
  * Checks if `path` is a direct or inherited property of `object`.
@@ -3920,15 +3944,23 @@ var _hasPath = hasPath;
  * _.hasIn(object, 'b');
  * // => false
  */
-function hasIn(object, path) {
-  return object != null && _hasPath(object, path, _baseHasIn);
+function hasIn$1(object, path) {
+  return object != null && hasPath(object, path, baseHasIn);
 }
 
-var hasIn_1 = hasIn;
+var hasIn_1 = hasIn$1;
+
+var baseIsEqual = _baseIsEqual,
+    get = get_1,
+    hasIn = hasIn_1,
+    isKey$1 = _isKey,
+    isStrictComparable = _isStrictComparable,
+    matchesStrictComparable = _matchesStrictComparable,
+    toKey$1 = _toKey;
 
 /** Used to compose bitmasks for value comparisons. */
-var COMPARE_PARTIAL_FLAG$5 = 1,
-    COMPARE_UNORDERED_FLAG$3 = 2;
+var COMPARE_PARTIAL_FLAG = 1,
+    COMPARE_UNORDERED_FLAG = 2;
 
 /**
  * The base implementation of `_.matchesProperty` which doesn't clone `srcValue`.
@@ -3938,19 +3970,19 @@ var COMPARE_PARTIAL_FLAG$5 = 1,
  * @param {*} srcValue The value to match.
  * @returns {Function} Returns the new spec function.
  */
-function baseMatchesProperty(path, srcValue) {
-  if (_isKey(path) && _isStrictComparable(srcValue)) {
-    return _matchesStrictComparable(_toKey(path), srcValue);
+function baseMatchesProperty$1(path, srcValue) {
+  if (isKey$1(path) && isStrictComparable(srcValue)) {
+    return matchesStrictComparable(toKey$1(path), srcValue);
   }
   return function(object) {
-    var objValue = get_1(object, path);
+    var objValue = get(object, path);
     return (objValue === undefined && objValue === srcValue)
-      ? hasIn_1(object, path)
-      : _baseIsEqual(srcValue, objValue, COMPARE_PARTIAL_FLAG$5 | COMPARE_UNORDERED_FLAG$3);
+      ? hasIn(object, path)
+      : baseIsEqual(srcValue, objValue, COMPARE_PARTIAL_FLAG | COMPARE_UNORDERED_FLAG);
   };
 }
 
-var _baseMatchesProperty = baseMatchesProperty;
+var _baseMatchesProperty = baseMatchesProperty$1;
 
 /**
  * This method returns the first argument it receives.
@@ -3968,11 +4000,12 @@ var _baseMatchesProperty = baseMatchesProperty;
  * console.log(_.identity(object) === object);
  * // => true
  */
-function identity(value) {
+
+function identity$2(value) {
   return value;
 }
 
-var identity_1 = identity;
+var identity_1 = identity$2;
 
 /**
  * The base implementation of `_.property` without support for deep paths.
@@ -3981,13 +4014,16 @@ var identity_1 = identity;
  * @param {string} key The key of the property to get.
  * @returns {Function} Returns the new accessor function.
  */
-function baseProperty(key) {
+
+function baseProperty$1(key) {
   return function(object) {
     return object == null ? undefined : object[key];
   };
 }
 
-var _baseProperty = baseProperty;
+var _baseProperty = baseProperty$1;
+
+var baseGet$1 = _baseGet;
 
 /**
  * A specialized version of `baseProperty` which supports deep paths.
@@ -3996,13 +4032,18 @@ var _baseProperty = baseProperty;
  * @param {Array|string} path The path of the property to get.
  * @returns {Function} Returns the new accessor function.
  */
-function basePropertyDeep(path) {
+function basePropertyDeep$1(path) {
   return function(object) {
-    return _baseGet(object, path);
+    return baseGet$1(object, path);
   };
 }
 
-var _basePropertyDeep = basePropertyDeep;
+var _basePropertyDeep = basePropertyDeep$1;
+
+var baseProperty = _baseProperty,
+    basePropertyDeep = _basePropertyDeep,
+    isKey = _isKey,
+    toKey = _toKey;
 
 /**
  * Creates a function that returns the value at `path` of a given object.
@@ -4026,11 +4067,17 @@ var _basePropertyDeep = basePropertyDeep;
  * _.map(_.sortBy(objects, _.property(['a', 'b'])), 'a.b');
  * // => [1, 2]
  */
-function property(path) {
-  return _isKey(path) ? _baseProperty(_toKey(path)) : _basePropertyDeep(path);
+function property$1(path) {
+  return isKey(path) ? baseProperty(toKey(path)) : basePropertyDeep(path);
 }
 
-var property_1 = property;
+var property_1 = property$1;
+
+var baseMatches = _baseMatches,
+    baseMatchesProperty = _baseMatchesProperty,
+    identity$1 = identity_1,
+    isArray$2 = isArray_1,
+    property = property_1;
 
 /**
  * The base implementation of `_.iteratee`.
@@ -4039,24 +4086,24 @@ var property_1 = property;
  * @param {*} [value=_.identity] The value to convert to an iteratee.
  * @returns {Function} Returns the iteratee.
  */
-function baseIteratee(value) {
+function baseIteratee$1(value) {
   // Don't store the `typeof` result in a variable to avoid a JIT bug in Safari 9.
   // See https://bugs.webkit.org/show_bug.cgi?id=156034 for more details.
   if (typeof value == 'function') {
     return value;
   }
   if (value == null) {
-    return identity_1;
+    return identity$1;
   }
   if (typeof value == 'object') {
-    return isArray_1(value)
-      ? _baseMatchesProperty(value[0], value[1])
-      : _baseMatches(value);
+    return isArray$2(value)
+      ? baseMatchesProperty(value[0], value[1])
+      : baseMatches(value);
   }
-  return property_1(value);
+  return property(value);
 }
 
-var _baseIteratee = baseIteratee;
+var _baseIteratee = baseIteratee$1;
 
 /**
  * Creates a base function for methods like `_.forIn` and `_.forOwn`.
@@ -4065,7 +4112,8 @@ var _baseIteratee = baseIteratee;
  * @param {boolean} [fromRight] Specify iterating from right to left.
  * @returns {Function} Returns the new base function.
  */
-function createBaseFor(fromRight) {
+
+function createBaseFor$1(fromRight) {
   return function(object, iteratee, keysFunc) {
     var index = -1,
         iterable = Object(object),
@@ -4082,7 +4130,9 @@ function createBaseFor(fromRight) {
   };
 }
 
-var _createBaseFor = createBaseFor;
+var _createBaseFor = createBaseFor$1;
+
+var createBaseFor = _createBaseFor;
 
 /**
  * The base implementation of `baseForOwn` which iterates over `object`
@@ -4095,9 +4145,12 @@ var _createBaseFor = createBaseFor;
  * @param {Function} keysFunc The function to get the keys of `object`.
  * @returns {Object} Returns `object`.
  */
-var baseFor = _createBaseFor();
+var baseFor$1 = createBaseFor();
 
-var _baseFor = baseFor;
+var _baseFor = baseFor$1;
+
+var baseFor = _baseFor,
+    keys = keys_1;
 
 /**
  * The base implementation of `_.forOwn` without support for iteratee shorthands.
@@ -4107,11 +4160,13 @@ var _baseFor = baseFor;
  * @param {Function} iteratee The function invoked per iteration.
  * @returns {Object} Returns `object`.
  */
-function baseForOwn(object, iteratee) {
-  return object && _baseFor(object, iteratee, keys_1);
+function baseForOwn$1(object, iteratee) {
+  return object && baseFor(object, iteratee, keys);
 }
 
-var _baseForOwn = baseForOwn;
+var _baseForOwn = baseForOwn$1;
+
+var isArrayLike$1 = isArrayLike_1;
 
 /**
  * Creates a `baseEach` or `baseEachRight` function.
@@ -4121,12 +4176,12 @@ var _baseForOwn = baseForOwn;
  * @param {boolean} [fromRight] Specify iterating from right to left.
  * @returns {Function} Returns the new base function.
  */
-function createBaseEach(eachFunc, fromRight) {
+function createBaseEach$1(eachFunc, fromRight) {
   return function(collection, iteratee) {
     if (collection == null) {
       return collection;
     }
-    if (!isArrayLike_1(collection)) {
+    if (!isArrayLike$1(collection)) {
       return eachFunc(collection, iteratee);
     }
     var length = collection.length,
@@ -4142,7 +4197,10 @@ function createBaseEach(eachFunc, fromRight) {
   };
 }
 
-var _createBaseEach = createBaseEach;
+var _createBaseEach = createBaseEach$1;
+
+var baseForOwn = _baseForOwn,
+    createBaseEach = _createBaseEach;
 
 /**
  * The base implementation of `_.forEach` without support for iteratee shorthands.
@@ -4152,9 +4210,12 @@ var _createBaseEach = createBaseEach;
  * @param {Function} iteratee The function invoked per iteration.
  * @returns {Array|Object} Returns `collection`.
  */
-var baseEach = _createBaseEach(_baseForOwn);
+var baseEach$1 = createBaseEach(baseForOwn);
 
-var _baseEach = baseEach;
+var _baseEach = baseEach$1;
+
+var baseEach = _baseEach,
+    isArrayLike = isArrayLike_1;
 
 /**
  * The base implementation of `_.map` without support for iteratee shorthands.
@@ -4164,17 +4225,17 @@ var _baseEach = baseEach;
  * @param {Function} iteratee The function invoked per iteration.
  * @returns {Array} Returns the new mapped array.
  */
-function baseMap(collection, iteratee) {
+function baseMap$1(collection, iteratee) {
   var index = -1,
-      result = isArrayLike_1(collection) ? Array(collection.length) : [];
+      result = isArrayLike(collection) ? Array(collection.length) : [];
 
-  _baseEach(collection, function(value, key, collection) {
+  baseEach(collection, function(value, key, collection) {
     result[++index] = iteratee(value, key, collection);
   });
   return result;
 }
 
-var _baseMap = baseMap;
+var _baseMap = baseMap$1;
 
 /**
  * The base implementation of `_.sortBy` which uses `comparer` to define the
@@ -4186,7 +4247,8 @@ var _baseMap = baseMap;
  * @param {Function} comparer The function to define sort order.
  * @returns {Array} Returns `array`.
  */
-function baseSortBy(array, comparer) {
+
+function baseSortBy$1(array, comparer) {
   var length = array.length;
 
   array.sort(comparer);
@@ -4196,7 +4258,9 @@ function baseSortBy(array, comparer) {
   return array;
 }
 
-var _baseSortBy = baseSortBy;
+var _baseSortBy = baseSortBy$1;
+
+var isSymbol = isSymbol_1;
 
 /**
  * Compares values to sort them in ascending order.
@@ -4206,17 +4270,17 @@ var _baseSortBy = baseSortBy;
  * @param {*} other The other value to compare.
  * @returns {number} Returns the sort order indicator for `value`.
  */
-function compareAscending(value, other) {
+function compareAscending$1(value, other) {
   if (value !== other) {
     var valIsDefined = value !== undefined,
         valIsNull = value === null,
         valIsReflexive = value === value,
-        valIsSymbol = isSymbol_1(value);
+        valIsSymbol = isSymbol(value);
 
     var othIsDefined = other !== undefined,
         othIsNull = other === null,
         othIsReflexive = other === other,
-        othIsSymbol = isSymbol_1(other);
+        othIsSymbol = isSymbol(other);
 
     if ((!othIsNull && !othIsSymbol && !valIsSymbol && value > other) ||
         (valIsSymbol && othIsDefined && othIsReflexive && !othIsNull && !othIsSymbol) ||
@@ -4236,7 +4300,9 @@ function compareAscending(value, other) {
   return 0;
 }
 
-var _compareAscending = compareAscending;
+var _compareAscending = compareAscending$1;
+
+var compareAscending = _compareAscending;
 
 /**
  * Used by `_.orderBy` to compare multiple properties of a value to another
@@ -4252,7 +4318,7 @@ var _compareAscending = compareAscending;
  * @param {boolean[]|string[]} orders The order to sort by for each property.
  * @returns {number} Returns the sort order indicator for `object`.
  */
-function compareMultiple(object, other, orders) {
+function compareMultiple$1(object, other, orders) {
   var index = -1,
       objCriteria = object.criteria,
       othCriteria = other.criteria,
@@ -4260,7 +4326,7 @@ function compareMultiple(object, other, orders) {
       ordersLength = orders.length;
 
   while (++index < length) {
-    var result = _compareAscending(objCriteria[index], othCriteria[index]);
+    var result = compareAscending(objCriteria[index], othCriteria[index]);
     if (result) {
       if (index >= ordersLength) {
         return result;
@@ -4279,7 +4345,17 @@ function compareMultiple(object, other, orders) {
   return object.index - other.index;
 }
 
-var _compareMultiple = compareMultiple;
+var _compareMultiple = compareMultiple$1;
+
+var arrayMap = _arrayMap,
+    baseGet = _baseGet,
+    baseIteratee = _baseIteratee,
+    baseMap = _baseMap,
+    baseSortBy = _baseSortBy,
+    baseUnary = _baseUnary,
+    compareMultiple = _compareMultiple,
+    identity = identity_1,
+    isArray$1 = isArray_1;
 
 /**
  * The base implementation of `_.orderBy` without param guards.
@@ -4290,36 +4366,39 @@ var _compareMultiple = compareMultiple;
  * @param {string[]} orders The sort orders of `iteratees`.
  * @returns {Array} Returns the new sorted array.
  */
-function baseOrderBy(collection, iteratees, orders) {
+function baseOrderBy$1(collection, iteratees, orders) {
   if (iteratees.length) {
-    iteratees = _arrayMap(iteratees, function(iteratee) {
-      if (isArray_1(iteratee)) {
+    iteratees = arrayMap(iteratees, function(iteratee) {
+      if (isArray$1(iteratee)) {
         return function(value) {
-          return _baseGet(value, iteratee.length === 1 ? iteratee[0] : iteratee);
+          return baseGet(value, iteratee.length === 1 ? iteratee[0] : iteratee);
         }
       }
       return iteratee;
     });
   } else {
-    iteratees = [identity_1];
+    iteratees = [identity];
   }
 
   var index = -1;
-  iteratees = _arrayMap(iteratees, _baseUnary(_baseIteratee));
+  iteratees = arrayMap(iteratees, baseUnary(baseIteratee));
 
-  var result = _baseMap(collection, function(value, key, collection) {
-    var criteria = _arrayMap(iteratees, function(iteratee) {
+  var result = baseMap(collection, function(value, key, collection) {
+    var criteria = arrayMap(iteratees, function(iteratee) {
       return iteratee(value);
     });
     return { 'criteria': criteria, 'index': ++index, 'value': value };
   });
 
-  return _baseSortBy(result, function(object, other) {
-    return _compareMultiple(object, other, orders);
+  return baseSortBy(result, function(object, other) {
+    return compareMultiple(object, other, orders);
   });
 }
 
-var _baseOrderBy = baseOrderBy;
+var _baseOrderBy = baseOrderBy$1;
+
+var baseOrderBy = _baseOrderBy,
+    isArray = isArray_1;
 
 /**
  * This method is like `_.sortBy` except that it allows specifying the sort
@@ -4354,104 +4433,89 @@ function orderBy(collection, iteratees, orders, guard) {
   if (collection == null) {
     return [];
   }
-  if (!isArray_1(iteratees)) {
+  if (!isArray(iteratees)) {
     iteratees = iteratees == null ? [] : [iteratees];
   }
   orders = guard ? undefined : orders;
-  if (!isArray_1(orders)) {
+  if (!isArray(orders)) {
     orders = orders == null ? [] : [orders];
   }
-  return _baseOrderBy(collection, iteratees, orders);
+  return baseOrderBy(collection, iteratees, orders);
 }
 
 var orderBy_1 = orderBy;
 
-var STAGE_ID = '__node_editor_stage__';
-var DRAG_CONNECTION_ID = '__node_editor_drag_connection__';
-var CONNECTIONS_ID = '__node_editor_connections__';
+const STAGE_ID = '__node_editor_stage__';
+const DRAG_CONNECTION_ID = '__node_editor_drag_connection__';
+const CONNECTIONS_ID = '__node_editor_connections__';
 
-var Stage = function Stage(_ref) {
-  var scale = _ref.scale,
-      translate = _ref.translate,
-      editorId = _ref.editorId,
-      dispatchStageState = _ref.dispatchStageState,
-      children = _ref.children,
-      outerStageChildren = _ref.outerStageChildren,
-      numNodes = _ref.numNodes,
-      stageRef = _ref.stageRef,
-      spaceToPan = _ref.spaceToPan,
-      dispatchComments = _ref.dispatchComments,
-      disableComments = _ref.disableComments,
-      disablePan = _ref.disablePan,
-      disableZoom = _ref.disableZoom;
+var _jsxFileName$c = "/workspaces/flumeapi/src/components/Stage/Stage.js";
 
-  var nodeTypes = React.useContext(NodeTypesContext);
-  var dispatchNodes = React.useContext(NodeDispatchContext);
-  var wrapper = React.useRef();
-  var translateWrapper = React.useRef();
-
-  var _React$useState = React.useState(false),
-      _React$useState2 = slicedToArray(_React$useState, 2),
-      menuOpen = _React$useState2[0],
-      setMenuOpen = _React$useState2[1];
-
-  var _React$useState3 = React.useState({ x: 0, y: 0 }),
-      _React$useState4 = slicedToArray(_React$useState3, 2),
-      menuCoordinates = _React$useState4[0],
-      setMenuCoordinates = _React$useState4[1];
-
-  var dragData = React.useRef({ x: 0, y: 0 });
-
-  var _React$useState5 = React.useState(false),
-      _React$useState6 = slicedToArray(_React$useState5, 2),
-      spaceIsPressed = _React$useState6[0],
-      setSpaceIsPressed = _React$useState6[1];
-
-  var uiEvents = React.useContext(UIEventsContext);
-
-  var setStageRect = React.useCallback(function () {
+const Stage = ({
+  scale,
+  translate,
+  editorId,
+  dispatchStageState,
+  children,
+  outerStageChildren,
+  numNodes,
+  stageRef,
+  spaceToPan,
+  dispatchComments,
+  disableComments,
+  disablePan,
+  disableZoom
+}) => {
+  const nodeTypes = React.useContext(NodeTypesContext);
+  const dispatchNodes = React.useContext(NodeDispatchContext);
+  const wrapper = React.useRef();
+  const translateWrapper = React.useRef();
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [menuCoordinates, setMenuCoordinates] = React.useState({
+    x: 0,
+    y: 0
+  });
+  const dragData = React.useRef({
+    x: 0,
+    y: 0
+  });
+  const [spaceIsPressed, setSpaceIsPressed] = React.useState(false);
+  const uiEvents = React.useContext(UIEventsContext);
+  const setStageRect = React.useCallback(() => {
     stageRef.current = wrapper.current.getBoundingClientRect();
   }, []);
-
-  React.useEffect(function () {
+  React.useEffect(() => {
     stageRef.current = wrapper.current.getBoundingClientRect();
     window.addEventListener("resize", setStageRect);
-    return function () {
+    return () => {
       window.removeEventListener("resize", setStageRect);
     };
   }, [stageRef, setStageRect]);
-
-  var handleWheel = React.useCallback(function (e) {
+  const handleWheel = React.useCallback(e => {
     if (e.target.nodeName === "TEXTAREA" || e.target.dataset.comment) {
       if (e.target.clientHeight < e.target.scrollHeight) return;
     }
+
     e.preventDefault();
     if (numNodes === 0) return;
-    dispatchStageState(function (_ref2) {
-      var currentScale = _ref2.scale,
-          currentTranslate = _ref2.translate;
+    dispatchStageState(({
+      scale: currentScale,
+      translate: currentTranslate
+    }) => {
+      const delta = e.deltaY;
+      const newScale = clamp_1(currentScale - clamp_1(delta, -10, 10) * 0.005, 0.1, 7);
 
-      var delta = e.deltaY;
-      var newScale = clamp_1(currentScale - clamp_1(delta, -10, 10) * 0.005, 0.1, 7);
+      const byOldScale = no => no * (1 / currentScale);
 
-      var byOldScale = function byOldScale(no) {
-        return no * (1 / currentScale);
-      };
-      var byNewScale = function byNewScale(no) {
-        return no * (1 / newScale);
-      };
+      const byNewScale = no => no * (1 / newScale);
 
-      var wrapperRect = wrapper.current.getBoundingClientRect();
-
-      var xOld = byOldScale(e.clientX - wrapperRect.x - wrapperRect.width / 2 + currentTranslate.x);
-      var yOld = byOldScale(e.clientY - wrapperRect.y - wrapperRect.height / 2 + currentTranslate.y);
-
-      var xNew = byNewScale(e.clientX - wrapperRect.x - wrapperRect.width / 2 + currentTranslate.x);
-      var yNew = byNewScale(e.clientY - wrapperRect.y - wrapperRect.height / 2 + currentTranslate.y);
-
-      var xDistance = xOld - xNew;
-      var yDistance = yOld - yNew;
-
+      const wrapperRect = wrapper.current.getBoundingClientRect();
+      const xOld = byOldScale(e.clientX - wrapperRect.x - wrapperRect.width / 2 + currentTranslate.x);
+      const yOld = byOldScale(e.clientY - wrapperRect.y - wrapperRect.height / 2 + currentTranslate.y);
+      const xNew = byNewScale(e.clientX - wrapperRect.x - wrapperRect.width / 2 + currentTranslate.x);
+      const yNew = byNewScale(e.clientY - wrapperRect.y - wrapperRect.height / 2 + currentTranslate.y);
+      const xDistance = xOld - xNew;
+      const yDistance = yOld - yNew;
       return {
         type: "SET_TRANSLATE_SCALE",
         scale: newScale,
@@ -4463,11 +4527,11 @@ var Stage = function Stage(_ref) {
     });
   }, [dispatchStageState, numNodes]);
 
-  var handleDragDelayStart = function handleDragDelayStart(e) {
+  const handleDragDelayStart = e => {
     wrapper.current.focus();
   };
 
-  var handleDragStart = function handleDragStart(e) {
+  const handleDragStart = e => {
     uiEvents.onStageClick && uiEvents.onStageClick(e);
     e.preventDefault();
     dragData.current = {
@@ -4476,59 +4540,60 @@ var Stage = function Stage(_ref) {
     };
   };
 
-  var handleMouseDrag = function handleMouseDrag(coords, e) {
-    var xDistance = dragData.current.x - e.clientX;
-    var yDistance = dragData.current.y - e.clientY;
-    var xDelta = translate.x + xDistance;
-    var yDelta = translate.y + yDistance;
-    wrapper.current.style.backgroundPosition = -xDelta + "px " + -yDelta + "px";
-    translateWrapper.current.style.transform = "translate(" + -(translate.x + xDistance) + "px, " + -(translate.y + yDistance) + "px)";
+  const handleMouseDrag = (coords, e) => {
+    const xDistance = dragData.current.x - e.clientX;
+    const yDistance = dragData.current.y - e.clientY;
+    const xDelta = translate.x + xDistance;
+    const yDelta = translate.y + yDistance;
+    wrapper.current.style.backgroundPosition = `${-xDelta}px ${-yDelta}px`;
+    translateWrapper.current.style.transform = `translate(${-(translate.x + xDistance)}px, ${-(translate.y + yDistance)}px)`;
   };
 
-  var handleDragEnd = function handleDragEnd(e) {
-    var xDistance = dragData.current.x - e.clientX;
-    var yDistance = dragData.current.y - e.clientY;
+  const handleDragEnd = e => {
+    const xDistance = dragData.current.x - e.clientX;
+    const yDistance = dragData.current.y - e.clientY;
     dragData.current.x = e.clientX;
     dragData.current.y = e.clientY;
-    dispatchStageState(function (_ref3) {
-      var tran = _ref3.translate;
-      return {
-        type: "SET_TRANSLATE",
-        translate: {
-          x: tran.x + xDistance,
-          y: tran.y + yDistance
-        }
-      };
-    });
+    dispatchStageState(({
+      translate: tran
+    }) => ({
+      type: "SET_TRANSLATE",
+      translate: {
+        x: tran.x + xDistance,
+        y: tran.y + yDistance
+      }
+    }));
   };
 
-  var handleContextMenu = function handleContextMenu(e) {
+  const handleContextMenu = e => {
     e.preventDefault();
-    setMenuCoordinates({ x: e.clientX, y: e.clientY });
+    setMenuCoordinates({
+      x: e.clientX,
+      y: e.clientY
+    });
     setMenuOpen(true);
     return false;
   };
 
-  var closeContextMenu = function closeContextMenu() {
+  const closeContextMenu = () => {
     setMenuOpen(false);
   };
 
-  var byScale = function byScale(value) {
-    return 1 / scale * value;
-  };
+  const byScale = value => 1 / scale * value;
 
-  var addNode = function addNode(_ref4) {
-    var node = _ref4.node,
-        internalType = _ref4.internalType;
+  const addNode = ({
+    node,
+    internalType
+  }) => {
+    const wrapperRect = wrapper.current.getBoundingClientRect();
+    const x = byScale(menuCoordinates.x - wrapperRect.x - wrapperRect.width / 2) + byScale(translate.x);
+    const y = byScale(menuCoordinates.y - wrapperRect.y - wrapperRect.height / 2) + byScale(translate.y);
 
-    var wrapperRect = wrapper.current.getBoundingClientRect();
-    var x = byScale(menuCoordinates.x - wrapperRect.x - wrapperRect.width / 2) + byScale(translate.x);
-    var y = byScale(menuCoordinates.y - wrapperRect.y - wrapperRect.height / 2) + byScale(translate.y);
     if (internalType === "comment") {
       dispatchComments({
         type: "ADD_COMMENT",
-        x: x,
-        y: y
+        x,
+        y
       });
     } else {
       if (uiEvents.addNodeRequest) {
@@ -4536,22 +4601,22 @@ var Stage = function Stage(_ref) {
       } else {
         dispatchNodes({
           type: "ADD_NODE",
-          x: x,
-          y: y,
+          x,
+          y,
           nodeType: node.type
         });
       }
     }
   };
 
-  var handleDocumentKeyUp = function handleDocumentKeyUp(e) {
+  const handleDocumentKeyUp = e => {
     if (e.which === 32) {
       setSpaceIsPressed(false);
       document.removeEventListener("keyup", handleDocumentKeyUp);
     }
   };
 
-  var handleKeyDown = function handleKeyDown(e) {
+  const handleKeyDown = e => {
     if (e.which === 32 && document.activeElement === wrapper.current) {
       e.preventDefault();
       e.stopPropagation();
@@ -4560,104 +4625,127 @@ var Stage = function Stage(_ref) {
     }
   };
 
-  var handleMouseEnter = function handleMouseEnter() {
+  const handleMouseEnter = () => {
     if (!wrapper.current.contains(document.activeElement)) {
       wrapper.current.focus();
     }
   };
 
-  React.useEffect(function () {
+  React.useEffect(() => {
     if (!disableZoom) {
-      var stageWrapper = wrapper.current;
+      let stageWrapper = wrapper.current;
       stageWrapper.addEventListener("wheel", handleWheel);
-      return function () {
+      return () => {
         stageWrapper.removeEventListener("wheel", handleWheel);
       };
     }
   }, [handleWheel, disableZoom]);
+  const menuOptions = React.useMemo(() => {
+    const options = orderBy_1(Object.values(nodeTypes).filter(node => node.addable !== false).map(node => ({
+      value: node.type,
+      label: node.label,
+      description: node.description,
+      sortIndex: node.sortIndex,
+      node
+    })), ["sortIndex", "label"]);
 
-  var menuOptions = React.useMemo(function () {
-    var options = orderBy_1(Object.values(nodeTypes).filter(function (node) {
-      return node.addable !== false;
-    }).map(function (node) {
-      return {
-        value: node.type,
-        label: node.label,
-        description: node.description,
-        sortIndex: node.sortIndex,
-        node: node
-      };
-    }), ["sortIndex", "label"]);
     if (!disableComments) {
-      options.push({ value: "comment", label: "Comment", description: "A comment for documenting nodes", internalType: "comment" });
+      options.push({
+        value: "comment",
+        label: "Comment",
+        description: "A comment for documenting nodes",
+        internalType: "comment"
+      });
     }
+
     return options;
   }, [nodeTypes, disableComments]);
-
-  return React.createElement(
-    Draggable,
-    {
-      "data-flume-component": "stage",
-      id: "" + STAGE_ID + editorId,
-      className: styles.wrapper,
-      innerRef: wrapper,
-      onContextMenu: handleContextMenu,
-      onMouseEnter: handleMouseEnter,
-      onDragDelayStart: handleDragDelayStart,
-      onDragStart: handleDragStart,
-      onDrag: handleMouseDrag,
-      onDragEnd: handleDragEnd,
-      onKeyDown: handleKeyDown,
-      tabIndex: -1,
-      stageState: { scale: scale, translate: translate },
-      style: { cursor: spaceIsPressed && spaceToPan ? "grab" : "" },
-      disabled: disablePan || spaceToPan && !spaceIsPressed,
-      "data-flume-stage": true
+  return /*#__PURE__*/React.createElement(Draggable, {
+    "data-flume-component": "stage",
+    id: `${STAGE_ID}${editorId}`,
+    className: styles$d.wrapper,
+    innerRef: wrapper,
+    onContextMenu: handleContextMenu,
+    onMouseEnter: handleMouseEnter,
+    onDragDelayStart: handleDragDelayStart,
+    onDragStart: handleDragStart,
+    onDrag: handleMouseDrag,
+    onDragEnd: handleDragEnd,
+    onKeyDown: handleKeyDown,
+    tabIndex: -1,
+    stageState: {
+      scale,
+      translate
     },
-    menuOpen ? React.createElement(
-      Portal$3,
-      null,
-      React.createElement(ContextMenu, {
-        x: menuCoordinates.x,
-        y: menuCoordinates.y,
-        options: menuOptions,
-        onRequestClose: closeContextMenu,
-        onOptionSelected: addNode,
-        label: "Add Node"
-      })
-    ) : null,
-    React.createElement(
-      "div",
-      {
-        ref: translateWrapper,
-        className: styles.transformWrapper,
-        style: { transform: "translate(" + -translate.x + "px, " + -translate.y + "px)" }
-      },
-      React.createElement(
-        "div",
-        {
-          className: styles.scaleWrapper,
-          style: { transform: "scale(" + scale + ")" }
-        },
-        children
-      )
-    ),
-    outerStageChildren
-  );
+    style: {
+      cursor: spaceIsPressed && spaceToPan ? "grab" : ""
+    },
+    disabled: disablePan || spaceToPan && !spaceIsPressed,
+    "data-flume-stage": true,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$c,
+      lineNumber: 222,
+      columnNumber: 5
+    }
+  }, menuOpen ? /*#__PURE__*/React.createElement(Portal$1, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$c,
+      lineNumber: 241,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/React.createElement(ContextMenu, {
+    x: menuCoordinates.x,
+    y: menuCoordinates.y,
+    options: menuOptions,
+    onRequestClose: closeContextMenu,
+    onOptionSelected: addNode,
+    label: "Add Node",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$c,
+      lineNumber: 242,
+      columnNumber: 11
+    }
+  })) : null, /*#__PURE__*/React.createElement("div", {
+    ref: translateWrapper,
+    className: styles$d.transformWrapper,
+    style: {
+      transform: `translate(${-translate.x}px, ${-translate.y}px)`
+    },
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$c,
+      lineNumber: 252,
+      columnNumber: 7
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: styles$d.scaleWrapper,
+    style: {
+      transform: `scale(${scale})`
+    },
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$c,
+      lineNumber: 257,
+      columnNumber: 9
+    }
+  }, children)), outerStageChildren);
 };
 
-var css$2 = ".Node_wrapper__3SmT7{\n  background: rgba(91, 96, 99, 0.9);\n  border-radius: 5px;\n  box-shadow: 0px 4px 8px rgba(0,0,0,.4);\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  user-select: none;\n  display: flex;\n  flex-direction: column;\n  z-index: 1;\n  cursor: default;\n}\n.Node_label__3MmhF{\n  font-size: 13px;\n  text-transform: uppercase;\n  padding: 5px;\n  background: #464b4e;\n  border-radius: 5px 5px 0px 0px;\n  margin: 0px;\n  margin-bottom: 3px;\n  border-bottom: 1px solid rgba(0,0,0,.15);\n}\n";
-var styles$2 = { "wrapper": "Node_wrapper__3SmT7", "label": "Node_label__3MmhF" };
-styleInject(css$2);
+var css_248z$b = ".Node_wrapper__S8Vij{\n  background: rgba(91, 96, 99, 0.9);\n  border-radius: 5px;\n  box-shadow: 0px 4px 8px rgba(0,0,0,.4);\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  user-select: none;\n  display: flex;\n  flex-direction: column;\n  z-index: 1;\n  cursor: default;\n}\n.Node_label__v7h4v{\n  font-size: 13px;\n  text-transform: uppercase;\n  padding: 5px;\n  background: #464b4e;\n  border-radius: 5px 5px 0px 0px;\n  margin: 0px;\n  margin-bottom: 3px;\n  border-bottom: 1px solid rgba(0,0,0,.15);\n}\n";
+var styles$b = {"wrapper":"Node_wrapper__S8Vij","label":"Node_label__v7h4v"};
+styleInject(css_248z$b);
 
-var css$3 = ".Connection_svg__-fKLY{\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  pointer-events: none;\n  z-index: 0;\n  overflow: visible !important;\n}\n";
-var styles$3 = { "svg": "Connection_svg__-fKLY" };
-styleInject(css$3);
+var css_248z$a = ".Connection_svg__dY13y{\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  pointer-events: none;\n  z-index: 0;\n  overflow: visible !important;\n}\n";
+var styles$a = {"svg":"Connection_svg__dY13y"};
+styleInject(css_248z$a);
 
 var pi = Math.PI,
     tau = 2 * pi,
-    epsilon = 1e-6,
-    tauEpsilon = tau - epsilon;
+    epsilon$1 = 1e-6,
+    tauEpsilon = tau - epsilon$1;
 
 function Path() {
   this._x0 = this._y0 = // start of current subpath
@@ -4708,12 +4796,12 @@ Path.prototype = path.prototype = {
     }
 
     // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-    else if (!(l01_2 > epsilon));
+    else if (!(l01_2 > epsilon$1));
 
     // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
     // Equivalently, is (x1,y1) coincident with (x2,y2)?
     // Or, is the radius zero? Line to (x1,y1).
-    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
+    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$1) || !r) {
       this._ += "L" + (this._x1 = x1) + "," + (this._y1 = y1);
     }
 
@@ -4730,7 +4818,7 @@ Path.prototype = path.prototype = {
           t21 = l / l21;
 
       // If the start tangent is not coincident with (x0,y0), line to.
-      if (Math.abs(t01 - 1) > epsilon) {
+      if (Math.abs(t01 - 1) > epsilon$1) {
         this._ += "L" + (x1 + t01 * x01) + "," + (y1 + t01 * y01);
       }
 
@@ -4755,7 +4843,7 @@ Path.prototype = path.prototype = {
     }
 
     // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
-    else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) {
+    else if (Math.abs(this._x1 - x0) > epsilon$1 || Math.abs(this._y1 - y0) > epsilon$1) {
       this._ += "L" + x0 + "," + y0;
     }
 
@@ -4771,7 +4859,7 @@ Path.prototype = path.prototype = {
     }
 
     // Is this arc non-empty? Draw an arc!
-    else if (da > epsilon) {
+    else if (da > epsilon$1) {
       this._ += "A" + r + "," + r + ",0," + (+(da >= pi)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
     }
   },
@@ -4789,7 +4877,13 @@ function constant(x) {
   };
 }
 
-var pi$1 = Math.PI;
+const epsilon = 1e-12;
+
+function array(x) {
+  return typeof x === "object" && "length" in x
+    ? x // Array, TypedArray, NodeList, array-like
+    : Array.from(x); // Map, Set, iterable, string, or anything else
+}
 
 function Linear(context) {
   this._context = context;
@@ -4813,7 +4907,7 @@ Linear.prototype = {
     x = +x, y = +y;
     switch (this._point) {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; // proceed
+      case 1: this._point = 2; // falls through
       default: this._context.lineTo(x, y); break;
     }
   }
@@ -4831,17 +4925,18 @@ function y(p) {
   return p[1];
 }
 
-function line() {
-  var x$$1 = x,
-      y$$1 = y,
-      defined = constant(true),
+function line(x$1, y$1) {
+  var defined = constant(true),
       context = null,
       curve = curveLinear,
       output = null;
 
+  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant(x$1);
+  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant(y$1);
+
   function line(data) {
     var i,
-        n = data.length,
+        n = (data = array(data)).length,
         d,
         defined0 = false,
         buffer;
@@ -4853,18 +4948,18 @@ function line() {
         if (defined0 = !defined0) output.lineStart();
         else output.lineEnd();
       }
-      if (defined0) output.point(+x$$1(d, i, data), +y$$1(d, i, data));
+      if (defined0) output.point(+x$1(d, i, data), +y$1(d, i, data));
     }
 
     if (buffer) return output = null, buffer + "" || null;
   }
 
   line.x = function(_) {
-    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant(+_), line) : x$$1;
+    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant(+_), line) : x$1;
   };
 
   line.y = function(_) {
-    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant(+_), line) : y$$1;
+    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant(+_), line) : y$1;
   };
 
   line.defined = function(_) {
@@ -4882,7 +4977,9 @@ function line() {
   return line;
 }
 
-function point(that, x, y) {
+function noop() {}
+
+function point$3(that, x, y) {
   that._context.bezierCurveTo(
     (2 * that._x0 + that._x1) / 3,
     (2 * that._y0 + that._y1) / 3,
@@ -4911,7 +5008,7 @@ Basis.prototype = {
   },
   lineEnd: function() {
     switch (this._point) {
-      case 3: point(this, this._x1, this._y1); // proceed
+      case 3: point$3(this, this._x1, this._y1); // falls through
       case 2: this._context.lineTo(this._x1, this._y1); break;
     }
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
@@ -4922,8 +5019,8 @@ Basis.prototype = {
     switch (this._point) {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
       case 1: this._point = 2; break;
-      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // proceed
-      default: point(this, x, y); break;
+      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // falls through
+      default: point$3(this, x, y); break;
     }
     this._x0 = this._x1, this._x1 = x;
     this._y0 = this._y1, this._y1 = y;
@@ -4933,6 +5030,447 @@ Basis.prototype = {
 function curveBasis(context) {
   return new Basis(context);
 }
+
+function Bundle(context, beta) {
+  this._basis = new Basis(context);
+  this._beta = beta;
+}
+
+Bundle.prototype = {
+  lineStart: function() {
+    this._x = [];
+    this._y = [];
+    this._basis.lineStart();
+  },
+  lineEnd: function() {
+    var x = this._x,
+        y = this._y,
+        j = x.length - 1;
+
+    if (j > 0) {
+      var x0 = x[0],
+          y0 = y[0],
+          dx = x[j] - x0,
+          dy = y[j] - y0,
+          i = -1,
+          t;
+
+      while (++i <= j) {
+        t = i / j;
+        this._basis.point(
+          this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
+          this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
+        );
+      }
+    }
+
+    this._x = this._y = null;
+    this._basis.lineEnd();
+  },
+  point: function(x, y) {
+    this._x.push(+x);
+    this._y.push(+y);
+  }
+};
+
+((function custom(beta) {
+
+  function bundle(context) {
+    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
+  }
+
+  bundle.beta = function(beta) {
+    return custom(+beta);
+  };
+
+  return bundle;
+}))(0.85);
+
+function point$2(that, x, y) {
+  that._context.bezierCurveTo(
+    that._x1 + that._k * (that._x2 - that._x0),
+    that._y1 + that._k * (that._y2 - that._y0),
+    that._x2 + that._k * (that._x1 - x),
+    that._y2 + that._k * (that._y1 - y),
+    that._x2,
+    that._y2
+  );
+}
+
+function Cardinal(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+Cardinal.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: point$2(this, this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
+      case 2: this._point = 3; // falls through
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new Cardinal(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function CardinalClosed(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalClosed.prototype = {
+  areaStart: noop,
+  areaEnd: noop,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new CardinalClosed(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function CardinalOpen(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // falls through
+      default: point$2(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(tension) {
+
+  function cardinal(context) {
+    return new CardinalOpen(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+}))(0);
+
+function point$1(that, x, y) {
+  var x1 = that._x1,
+      y1 = that._y1,
+      x2 = that._x2,
+      y2 = that._y2;
+
+  if (that._l01_a > epsilon) {
+    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
+        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
+    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
+    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
+  }
+
+  if (that._l23_a > epsilon) {
+    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
+        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
+    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
+    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
+  }
+
+  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
+}
+
+function CatmullRom(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRom.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: this.point(this._x2, this._y2); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; // falls through
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function CatmullRomClosed(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomClosed.prototype = {
+  areaStart: noop,
+  areaEnd: noop,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
+
+function CatmullRomOpen(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // falls through
+      default: point$1(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+((function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+}))(0.5);
 
 function sign(x) {
   return x < 0 ? -1 : 1;
@@ -4960,7 +5498,7 @@ function slope2(that, t) {
 // According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
 // "you can express cubic Hermite interpolation in terms of cubic Bézier curves
 // with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-function point$3(that, t0, t1) {
+function point(that, t0, t1) {
   var x0 = that._x0,
       y0 = that._y0,
       x1 = that._x1,
@@ -4989,7 +5527,7 @@ MonotoneX.prototype = {
   lineEnd: function() {
     switch (this._point) {
       case 2: this._context.lineTo(this._x1, this._y1); break;
-      case 3: point$3(this, this._t0, slope2(this, this._t0)); break;
+      case 3: point(this, this._t0, slope2(this, this._t0)); break;
     }
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
     this._line = 1 - this._line;
@@ -5002,8 +5540,8 @@ MonotoneX.prototype = {
     switch (this._point) {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
       case 1: this._point = 2; break;
-      case 2: this._point = 3; point$3(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
-      default: point$3(this, this._t0, t1 = slope3(this, x, y)); break;
+      case 2: this._point = 3; point(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
+      default: point(this, this._t0, t1 = slope3(this, x, y)); break;
     }
 
     this._x0 = this._x1, this._x1 = x;
@@ -5012,114 +5550,69 @@ MonotoneX.prototype = {
   }
 };
 
-function MonotoneY(context) {
-  this._context = new ReflectContext(context);
-}
-
-(MonotoneY.prototype = Object.create(MonotoneX.prototype)).point = function(x, y) {
+(Object.create(MonotoneX.prototype)).point = function(x, y) {
   MonotoneX.prototype.point.call(this, y, x);
 };
 
-function ReflectContext(context) {
-  this._context = context;
-}
+const getPort = (nodeId, portName, transputType = "input") => document.querySelector(`[data-node-id="${nodeId}"] [data-port-name="${portName}"][data-port-transput-type="${transputType}"]`);
 
-ReflectContext.prototype = {
-  moveTo: function(x, y) { this._context.moveTo(y, x); },
-  closePath: function() { this._context.closePath(); },
-  lineTo: function(x, y) { this._context.lineTo(y, x); },
-  bezierCurveTo: function(x1, y1, x2, y2, x, y) { this._context.bezierCurveTo(y1, x1, y2, x2, y, x); }
-};
-
-var getPort = function getPort(nodeId, portName) {
-  var transputType = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "input";
-  return document.querySelector('[data-node-id="' + nodeId + '"] [data-port-name="' + portName + '"][data-port-transput-type="' + transputType + '"]');
-};
-
-var getPortRect = function getPortRect(nodeId, portName) {
-  var transputType = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "input";
-  var cache = arguments[3];
-
+const getPortRect = (nodeId, portName, transputType = "input", cache) => {
   if (cache) {
-    var portCacheName = nodeId + portName + transputType;
-    var cachedPort = cache.current.ports[portCacheName];
+    const portCacheName = nodeId + portName + transputType;
+    const cachedPort = cache.current.ports[portCacheName];
+
     if (cachedPort) {
       return cachedPort.getBoundingClientRect();
     } else {
-      var port = getPort(nodeId, portName, transputType);
+      const port = getPort(nodeId, portName, transputType);
       cache.current.ports[portCacheName] = port;
       return port && port.getBoundingClientRect();
     }
   } else {
-    var _port = getPort(nodeId, portName, transputType);
-    return _port && _port.getBoundingClientRect();
+    const port = getPort(nodeId, portName, transputType);
+    return port && port.getBoundingClientRect();
   }
 };
-
-var calculateCurve = function calculateCurve(from, to) {
-  var length = to.x - from.x;
-  var thirdLength = length / 3;
-  var curve = line().curve(curveBasis)([[from.x, from.y], [from.x + thirdLength, from.y], [from.x + thirdLength * 2, to.y], [to.x, to.y]]);
+const calculateCurve = (from, to) => {
+  const length = to.x - from.x;
+  const thirdLength = length / 3;
+  const curve = line().curve(curveBasis)([[from.x, from.y], [from.x + thirdLength, from.y], [from.x + thirdLength * 2, to.y], [to.x, to.y]]);
   return curve;
 };
-
-var deleteConnection = function deleteConnection(_ref3) {
-  var id = _ref3.id;
-
-  var line$$1 = document.querySelector('[data-connection-id="' + id + '"]');
-  if (line$$1) line$$1.parentNode.remove();
+const deleteConnection = ({
+  id
+}) => {
+  const line = document.querySelector(`[data-connection-id="${id}"]`);
+  if (line) line.parentNode.remove();
 };
+const deleteConnectionsByNodeId = nodeId => {
+  const lines = document.querySelectorAll(`[data-output-node-id="${nodeId}"], [data-input-node-id="${nodeId}"]`);
 
-var deleteConnectionsByNodeId = function deleteConnectionsByNodeId(nodeId) {
-  var lines = document.querySelectorAll('[data-output-node-id="' + nodeId + '"], [data-input-node-id="' + nodeId + '"]');
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = lines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var _line = _step.value;
-
-      _line.parentNode.remove();
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+  for (const line of lines) {
+    line.parentNode.remove();
   }
 };
-
-var updateConnection = function updateConnection(_ref4) {
-  var line$$1 = _ref4.line,
-      from = _ref4.from,
-      to = _ref4.to;
-
-  line$$1.setAttribute("d", calculateCurve(from, to));
+const updateConnection = ({
+  line,
+  from,
+  to
+}) => {
+  line.setAttribute("d", calculateCurve(from, to));
 };
-
-var createSVG = function createSVG(_ref5) {
-  var from = _ref5.from,
-      to = _ref5.to,
-      stage = _ref5.stage,
-      id = _ref5.id,
-      outputNodeId = _ref5.outputNodeId,
-      outputPortName = _ref5.outputPortName,
-      inputNodeId = _ref5.inputNodeId,
-      inputPortName = _ref5.inputPortName;
-
-  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("class", styles$3.svg);
-  var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  var curve = calculateCurve(from, to);
+const createSVG = ({
+  from,
+  to,
+  stage,
+  id,
+  outputNodeId,
+  outputPortName,
+  inputNodeId,
+  inputPortName
+}) => {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", styles$a.svg);
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  const curve = calculateCurve(from, to);
   path.setAttribute("d", curve);
   path.setAttribute("stroke", "rgb(185, 186, 189)");
   path.setAttribute("stroke-width", "3");
@@ -5134,39 +5627,32 @@ var createSVG = function createSVG(_ref5) {
   stage.appendChild(svg);
   return svg;
 };
+const getStageRef = editorId => document.getElementById(`${CONNECTIONS_ID}${editorId}`);
+const createConnections = (nodes, {
+  scale,
+  stageId
+}, editorId) => {
+  const stageRef = getStageRef(editorId);
 
-var getStageRef = function getStageRef(editorId) {
-  return document.getElementById('' + CONNECTIONS_ID + editorId);
-};
-
-var createConnections = function createConnections(nodes, _ref6, editorId) {
-  var scale = _ref6.scale,
-      stageId = _ref6.stageId;
-
-  var stageRef = getStageRef(editorId);
   if (stageRef) {
-    var stage = stageRef.getBoundingClientRect();
-    var stageHalfWidth = stage.width / 2;
-    var stageHalfHeight = stage.height / 2;
+    const stage = stageRef.getBoundingClientRect();
+    const stageHalfWidth = stage.width / 2;
+    const stageHalfHeight = stage.height / 2;
 
-    var byScale = function byScale(value) {
-      return 1 / scale * value;
-    };
+    const byScale = value => 1 / scale * value;
 
-    Object.values(nodes).forEach(function (node) {
+    Object.values(nodes).forEach(node => {
       if (node.connections && node.connections.inputs) {
-        Object.entries(node.connections.inputs).forEach(function (_ref7, k) {
-          var _ref8 = slicedToArray(_ref7, 2),
-              inputName = _ref8[0],
-              outputs = _ref8[1];
+        Object.entries(node.connections.inputs).forEach(([inputName, outputs], k) => {
+          outputs.forEach(output => {
+            const fromPort = getPortRect(output.nodeId, output.portName, "output");
+            const toPort = getPortRect(node.id, inputName, "input");
+            const portHalf = fromPort ? fromPort.width / 2 : 0;
 
-          outputs.forEach(function (output) {
-            var fromPort = getPortRect(output.nodeId, output.portName, "output");
-            var toPort = getPortRect(node.id, inputName, "input");
-            var portHalf = fromPort ? fromPort.width / 2 : 0;
             if (fromPort && toPort) {
-              var id = output.nodeId + output.portName + node.id + inputName;
-              var existingLine = document.querySelector('[data-connection-id="' + id + '"]');
+              const id = output.nodeId + output.portName + node.id + inputName;
+              const existingLine = document.querySelector(`[data-connection-id="${id}"]`);
+
               if (existingLine) {
                 updateConnection({
                   line: existingLine,
@@ -5181,7 +5667,7 @@ var createConnections = function createConnections(nodes, _ref6, editorId) {
                 });
               } else {
                 createSVG({
-                  id: id,
+                  id,
                   outputNodeId: output.nodeId,
                   outputPortName: output.portName,
                   inputNodeId: node.id,
@@ -5205,172 +5691,192 @@ var createConnections = function createConnections(nodes, _ref6, editorId) {
   }
 };
 
-var css$4 = ".IoPorts_wrapper__3d2hh{\n  display: flex;\n  flex-direction: column;\n  margin-top: auto;\n  width: 100%;\n  padding: 5px;\n}\n.IoPorts_inputs__2etkb{\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n  width: 100%;\n  margin-bottom: 10px;\n}\n.IoPorts_inputs__2etkb:last-child{\n    margin-bottom: 0px;\n  }\n.IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:first-child .IoPorts_portLabel__qOE7y, .IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:first-child .IoPorts_port__1_a6J{\n        margin-top: 5px;\n      }\n.IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:last-child .IoPorts_portLabel__qOE7y, .IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:last-child .IoPorts_port__1_a6J{\n        margin-bottom: 5px;\n      }\n.IoPorts_outputs__3JGh-{\n  display: flex;\n  flex-direction: column;\n  margin-left: auto;\n  justify-content: flex-end;\n  align-items: flex-end;\n  width: 100%;\n}\n.IoPorts_outputs__3JGh- .IoPorts_transput__1wbHA:last-child .IoPorts_portLabel__qOE7y, .IoPorts_outputs__3JGh- .IoPorts_transput__1wbHA:last-child .IoPorts_port__1_a6J{\n        margin-bottom: 5px;\n      }\n.IoPorts_outputs__3JGh-:first-child{\n    margin-top: 5px;\n  }\n.IoPorts_transput__1wbHA{\n  display: flex;\n  align-items: center;\n  margin-top: 6px;\n  margin-bottom: 6px;\n}\n.IoPorts_transput__1wbHA:first-child{\n    margin-top: 0px;\n  }\n.IoPorts_transput__1wbHA[data-controlless=\"true\"]{\n    margin-top: 6px;\n    margin-bottom: 6px;\n  }\n.IoPorts_transput__1wbHA[data-controlless=\"true\"]:first-child{\n      margin-top: 0px;\n    }\n.IoPorts_transput__1wbHA[data-controlless=\"false\"]{\n    margin-top: 2px;\n    margin-bottom: 2px;\n  }\n.IoPorts_controls__1dKFt{\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n}\n.IoPorts_portLabel__qOE7y{\n  font-size: 13px;\n  font-weight: 400;\n}\n.IoPorts_port__1_a6J{\n  width: 12px;\n  height: 12px;\n  background: linear-gradient(to bottom, #acb1b4, #919699);\n  border-radius: 100%;\n  margin-right: 5px;\n  margin-left: -11px;\n  flex: 0 0 auto;\n  box-shadow: 0px 2px 1px 0px rgba(0,0,0,.6);\n}\n.IoPorts_port__1_a6J:last-child{\n    margin-right: -11px;\n    margin-left: 5px;\n  }\n.IoPorts_port__1_a6J[data-port-color=\"red\"]{\n    background: linear-gradient(to bottom, #fa4a6f, #c22e4d);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"purple\"]{\n    background: linear-gradient(to bottom, #9e55fb, #6024b6);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"blue\"]{\n    background: linear-gradient(to bottom, #4284f7, #2867d4);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"green\"]{\n    background: linear-gradient(to bottom, #31dd9f, #11ad7a);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"yellow\"]{\n    background: linear-gradient(to bottom, #d6bf47, #9d8923);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"orange\"]{\n    background: linear-gradient(to bottom, #fa7841, #c94b23);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"pink\"]{\n    background: linear-gradient(to bottom, #fe8aeb, #e046c3);\n  }\n";
-var styles$4 = { "wrapper": "IoPorts_wrapper__3d2hh", "inputs": "IoPorts_inputs__2etkb", "transput": "IoPorts_transput__1wbHA", "portLabel": "IoPorts_portLabel__qOE7y", "port": "IoPorts_port__1_a6J", "outputs": "IoPorts_outputs__3JGh-", "controls": "IoPorts_controls__1dKFt" };
-styleInject(css$4);
+var css_248z$9 = ".IoPorts_wrapper__4jboF{\n  display: flex;\n  flex-direction: column;\n  margin-top: auto;\n  width: 100%;\n  padding: 5px;\n}\n.IoPorts_inputs__M7xAH{\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n  width: 100%;\n  margin-bottom: 10px;\n}\n.IoPorts_inputs__M7xAH:last-child{\n    margin-bottom: 0px;\n  }\n.IoPorts_inputs__M7xAH .IoPorts_transput__5JT3i:first-child .IoPorts_portLabel__XY5gi, .IoPorts_inputs__M7xAH .IoPorts_transput__5JT3i:first-child .IoPorts_port__ZC6Mw{\n        margin-top: 5px;\n      }\n.IoPorts_inputs__M7xAH .IoPorts_transput__5JT3i:last-child .IoPorts_portLabel__XY5gi, .IoPorts_inputs__M7xAH .IoPorts_transput__5JT3i:last-child .IoPorts_port__ZC6Mw{\n        margin-bottom: 5px;\n      }\n.IoPorts_outputs__hqc88{\n  display: flex;\n  flex-direction: column;\n  margin-left: auto;\n  justify-content: flex-end;\n  align-items: flex-end;\n  width: 100%;\n}\n.IoPorts_outputs__hqc88 .IoPorts_transput__5JT3i:last-child .IoPorts_portLabel__XY5gi, .IoPorts_outputs__hqc88 .IoPorts_transput__5JT3i:last-child .IoPorts_port__ZC6Mw{\n        margin-bottom: 5px;\n      }\n.IoPorts_outputs__hqc88:first-child{\n    margin-top: 5px;\n  }\n.IoPorts_transput__5JT3i{\n  display: flex;\n  align-items: center;\n  margin-top: 6px;\n  margin-bottom: 6px;\n}\n.IoPorts_transput__5JT3i:first-child{\n    margin-top: 0px;\n  }\n.IoPorts_transput__5JT3i[data-controlless=\"true\"]{\n    margin-top: 6px;\n    margin-bottom: 6px;\n  }\n.IoPorts_transput__5JT3i[data-controlless=\"true\"]:first-child{\n      margin-top: 0px;\n    }\n.IoPorts_transput__5JT3i[data-controlless=\"false\"]{\n    margin-top: 2px;\n    margin-bottom: 2px;\n  }\n.IoPorts_controls__J4rPJ{\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n}\n.IoPorts_portLabel__XY5gi{\n  font-size: 13px;\n  font-weight: 400;\n}\n.IoPorts_port__ZC6Mw{\n  width: 12px;\n  height: 12px;\n  background: linear-gradient(to bottom, #acb1b4, #919699);\n  border-radius: 100%;\n  margin-right: 5px;\n  margin-left: -11px;\n  flex: 0 0 auto;\n  box-shadow: 0px 2px 1px 0px rgba(0,0,0,.6);\n}\n.IoPorts_port__ZC6Mw:last-child{\n    margin-right: -11px;\n    margin-left: 5px;\n  }\n.IoPorts_port__ZC6Mw[data-port-color=\"red\"]{\n    background: linear-gradient(to bottom, #fa4a6f, #c22e4d);\n  }\n.IoPorts_port__ZC6Mw[data-port-color=\"purple\"]{\n    background: linear-gradient(to bottom, #9e55fb, #6024b6);\n  }\n.IoPorts_port__ZC6Mw[data-port-color=\"blue\"]{\n    background: linear-gradient(to bottom, #4284f7, #2867d4);\n  }\n.IoPorts_port__ZC6Mw[data-port-color=\"green\"]{\n    background: linear-gradient(to bottom, #31dd9f, #11ad7a);\n  }\n.IoPorts_port__ZC6Mw[data-port-color=\"yellow\"]{\n    background: linear-gradient(to bottom, #d6bf47, #9d8923);\n  }\n.IoPorts_port__ZC6Mw[data-port-color=\"orange\"]{\n    background: linear-gradient(to bottom, #fa7841, #c94b23);\n  }\n.IoPorts_port__ZC6Mw[data-port-color=\"pink\"]{\n    background: linear-gradient(to bottom, #fe8aeb, #e046c3);\n  }\n";
+var styles$9 = {"wrapper":"IoPorts_wrapper__4jboF","inputs":"IoPorts_inputs__M7xAH","transput":"IoPorts_transput__5JT3i","portLabel":"IoPorts_portLabel__XY5gi","port":"IoPorts_port__ZC6Mw","outputs":"IoPorts_outputs__hqc88","controls":"IoPorts_controls__J4rPJ"};
+styleInject(css_248z$9);
 
-var css$5 = ".Control_wrapper__VZIiC {\n  width: 100%;\n  padding-right: 3px;\n  padding-top: 3px;\n  padding-bottom: 5px;\n}\n.Control_label__1OX-Q {\n  font-size: 14px;\n}\n.Control_controlLabel__3ga2- {\n  font-size: 13px;\n  display: inline-block;\n  margin-left: 2px;\n}\n";
-var styles$5 = { "wrapper": "Control_wrapper__VZIiC", "label": "Control_label__1OX-Q", "controlLabel": "Control_controlLabel__3ga2-" };
-styleInject(css$5);
+var css_248z$8 = ".Control_wrapper__-SFsk {\n  width: 100%;\n  padding-right: 3px;\n  padding-top: 3px;\n  padding-bottom: 5px;\n}\n.Control_label__KZtDp {\n  font-size: 14px;\n}\n.Control_controlLabel__4z-U8 {\n  font-size: 13px;\n  display: inline-block;\n  margin-left: 2px;\n}\n";
+var styles$8 = {"wrapper":"Control_wrapper__-SFsk","label":"Control_label__KZtDp","controlLabel":"Control_controlLabel__4z-U8"};
+styleInject(css_248z$8);
 
-var css$6 = ".Checkbox_wrapper__aSqyY{\n  display: flex;\n  align-items: center;\n}\n.Checkbox_checkbox__Qv5gn{\n  background: linear-gradient(to bottom, #5b5f62, #6f7477);\n  border: 1px solid #3c3e40;\n  border-radius: 4px;\n  margin-right: 8px;\n}\n.Checkbox_label__2RxP-{\n  padding-top: 2px;\n  font-size: 13px;\n}\n";
-var styles$6 = { "wrapper": "Checkbox_wrapper__aSqyY", "checkbox": "Checkbox_checkbox__Qv5gn", "label": "Checkbox_label__2RxP-" };
-styleInject(css$6);
+var css_248z$7 = ".Checkbox_wrapper__KYSY7{\n  display: flex;\n  align-items: center;\n}\n.Checkbox_checkbox__-WxSv{\n  background: linear-gradient(to bottom, #5b5f62, #6f7477);\n  border: 1px solid #3c3e40;\n  border-radius: 4px;\n  margin-right: 8px;\n}\n.Checkbox_label__z44oI{\n  padding-top: 2px;\n  font-size: 13px;\n}\n";
+var styles$7 = {"wrapper":"Checkbox_wrapper__KYSY7","checkbox":"Checkbox_checkbox__-WxSv","label":"Checkbox_label__z44oI"};
+styleInject(css_248z$7);
 
-var Checkbox = function Checkbox(_ref) {
-  var label = _ref.label,
-      data = _ref.data,
-      _onChange = _ref.onChange;
+var _jsxFileName$b = "/workspaces/flumeapi/src/components/Checkbox/Checkbox.js";
 
-  var id = React.useRef(nanoid(10));
-
-  return React.createElement(
-    "div",
-    { className: styles$6.wrapper },
-    React.createElement("input", {
-      "data-flume-component": "checkbox",
-      className: styles$6.checkbox,
-      type: "checkbox",
-      id: id,
-      value: data,
-      checked: data,
-      onChange: function onChange(e) {
-        return _onChange(e.target.checked);
-      }
-    }),
-    React.createElement(
-      "label",
-      { "data-flume-component": "checkbox-label", className: styles$6.label, htmlFor: id },
-      label
-    )
-  );
+const Checkbox = ({
+  label,
+  data,
+  onChange
+}) => {
+  const id = React.useRef(nanoid(10));
+  return /*#__PURE__*/React.createElement("div", {
+    className: styles$7.wrapper,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$b,
+      lineNumber: 9,
+      columnNumber: 5
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    "data-flume-component": "checkbox",
+    className: styles$7.checkbox,
+    type: "checkbox",
+    id: id,
+    value: data,
+    checked: data,
+    onChange: e => onChange(e.target.checked),
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$b,
+      lineNumber: 10,
+      columnNumber: 7
+    }
+  }), /*#__PURE__*/React.createElement("label", {
+    "data-flume-component": "checkbox-label",
+    className: styles$7.label,
+    htmlFor: id,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$b,
+      lineNumber: 19,
+      columnNumber: 7
+    }
+  }, label));
 };
 
-var css$7 = ".TextInput_wrapper__tefOZ{\n  background: none;\n  border: none;\n}\n.TextInput_input__1QHwS{\n  background: linear-gradient(to bottom, #5b5f62, #6f7477);\n  width: 100%;\n  border: 1px solid #3c3e40;\n  border-radius: 4px;\n  font-size: 13px;\n  padding: 5px;\n  resize: vertical;\n  outline: none;\n}\n.TextInput_input__1QHwS::placeholder{\n    color: rgb(47, 49, 50);\n  }\n.TextInput_input__1QHwS:focus{\n    background: linear-gradient(to bottom, #676b6e, #75797c);\n  }\n";
-var styles$7 = { "wrapper": "TextInput_wrapper__tefOZ", "input": "TextInput_input__1QHwS" };
-styleInject(css$7);
+var css_248z$6 = ".TextInput_wrapper__9lufS{\n  background: none;\n  border: none;\n}\n.TextInput_input__EPXF0{\n  background: linear-gradient(to bottom, #5b5f62, #6f7477);\n  width: 100%;\n  border: 1px solid #3c3e40;\n  border-radius: 4px;\n  font-size: 13px;\n  padding: 5px;\n  resize: vertical;\n  outline: none;\n}\n.TextInput_input__EPXF0::placeholder{\n    color: rgb(47, 49, 50);\n  }\n.TextInput_input__EPXF0:focus{\n    background: linear-gradient(to bottom, #676b6e, #75797c);\n  }\n";
+var styles$6 = {"wrapper":"TextInput_wrapper__9lufS","input":"TextInput_input__EPXF0"};
+styleInject(css_248z$6);
 
-var TextInput = function TextInput(_ref) {
-  var placeholder = _ref.placeholder,
-      updateNodeConnections = _ref.updateNodeConnections,
-      _onChange = _ref.onChange,
-      data = _ref.data,
-      step = _ref.step,
-      type = _ref.type;
+var _jsxFileName$a = "/workspaces/flumeapi/src/components/TextInput/TextInput.js";
 
-  var numberInput = React.useRef();
-  var recalculateStageRect = React.useContext(RecalculateStageRectContext);
+const TextInput = ({
+  placeholder,
+  updateNodeConnections,
+  onChange,
+  data,
+  step,
+  type
+}) => {
+  const numberInput = React.useRef();
+  const recalculateStageRect = React.useContext(RecalculateStageRectContext);
 
-  var handleDragEnd = function handleDragEnd() {
+  const handleDragEnd = () => {
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseup", handleDragEnd);
   };
 
-  var handleMouseMove = function handleMouseMove(e) {
+  const handleMouseMove = e => {
     e.stopPropagation();
     updateNodeConnections();
   };
 
-  var handlePossibleResize = function handlePossibleResize(e) {
+  const handlePossibleResize = e => {
     e.stopPropagation();
     recalculateStageRect();
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleDragEnd);
   };
 
-  return React.createElement(
-    "div",
-    { className: styles$7.wrapper, "data-flume-component": "text-input" },
-    type === "number" ? React.createElement("input", {
-      "data-flume-component": "text-input-number",
-      onKeyDown: function onKeyDown(e) {
-        if (e.keyCode === 69) {
-          e.preventDefault();
-          return false;
-        }
-      },
-      onChange: function onChange(e) {
-        var inputValue = e.target.value.replace(/e/g, "");
-        if (!!inputValue) {
-          var value = parseFloat(inputValue, 10);
-          if (Number.isNaN(value)) {
-            _onChange(0);
-          } else {
-            _onChange(value);
-            numberInput.current.value = value;
-          }
-        }
-      },
-      onBlur: function onBlur(e) {
-        if (!e.target.value) {
-          _onChange(0);
-          numberInput.current.value = 0;
-        }
-      },
-      step: step || "1",
-      onMouseDown: handlePossibleResize,
-      type: type || "text",
-      placeholder: placeholder,
-      className: styles$7.input,
-      defaultValue: data,
-      onDragStart: function onDragStart(e) {
-        return e.stopPropagation();
-      },
-      ref: numberInput
-    }) : React.createElement("textarea", {
-      "data-flume-component": "text-input-textarea",
-      onChange: function onChange(e) {
-        return _onChange(e.target.value);
-      },
-      onMouseDown: handlePossibleResize,
-      type: "text",
-      placeholder: placeholder,
-      className: styles$7.input,
-      value: data,
-      onDragStart: function onDragStart(e) {
-        return e.stopPropagation();
+  return /*#__PURE__*/React.createElement("div", {
+    className: styles$6.wrapper,
+    "data-flume-component": "text-input",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$a,
+      lineNumber: 34,
+      columnNumber: 5
+    }
+  }, type === "number" ? /*#__PURE__*/React.createElement("input", {
+    "data-flume-component": "text-input-number",
+    onKeyDown: e => {
+      if (e.keyCode === 69) {
+        e.preventDefault();
+        return false;
       }
-    })
-  );
+    },
+    onChange: e => {
+      const inputValue = e.target.value.replace(/e/g, "");
+
+      if (!!inputValue) {
+        const value = parseFloat(inputValue, 10);
+
+        if (Number.isNaN(value)) {
+          onChange(0);
+        } else {
+          onChange(value);
+          numberInput.current.value = value;
+        }
+      }
+    },
+    onBlur: e => {
+      if (!e.target.value) {
+        onChange(0);
+        numberInput.current.value = 0;
+      }
+    },
+    step: step || "1",
+    onMouseDown: handlePossibleResize,
+    type: type || "text",
+    placeholder: placeholder,
+    className: styles$6.input,
+    defaultValue: data,
+    onDragStart: e => e.stopPropagation(),
+    ref: numberInput,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$a,
+      lineNumber: 36,
+      columnNumber: 9
+    }
+  }) : /*#__PURE__*/React.createElement("textarea", {
+    "data-flume-component": "text-input-textarea",
+    onChange: e => onChange(e.target.value),
+    onMouseDown: handlePossibleResize,
+    type: "text",
+    placeholder: placeholder,
+    className: styles$6.input,
+    value: data,
+    onDragStart: e => e.stopPropagation(),
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$a,
+      lineNumber: 72,
+      columnNumber: 9
+    }
+  }));
 };
 
-var css$8 = ".Select_wrapper__eAPoQ{\n  font-size: 14px;\n  padding: 3px 6px;\n  border-radius: 4px;\n  background: linear-gradient(to top, #5b5f62, #6f7477);\n  width: 100%;\n  border: 1px solid #3c3e40;\n  padding-right: 15px;\n  position: relative;\n}\n  .Select_wrapper__eAPoQ::after{\n    content: \"\";\n    position: absolute;\n    background: none;\n    right: 5px;\n    top: 8px;\n    width: 0;\n    height: 0;\n    border-style: solid;\n    border-width: 6px 5px 0 5px;\n    border-color: #191b1c transparent transparent transparent;\n  }\n  .Select_wrapper__eAPoQ:hover{\n    background: linear-gradient(to top, #63676a, #777b7e);\n  }\n.Select_chipWrapper__3hK2u{\n  font-size: 14px;\n  padding: 3px 6px;\n  border-radius: 4px;\n  background: linear-gradient(to top, #5b5f62, #6f7477);\n  border: 1px solid #3c3e40;\n  margin: 2px;\n  position: relative;\n}\n.Select_chipWrapper__3hK2u:hover .Select_deleteButton__1FnLK{\n  opacity: 1;\n}\n.Select_chipsWrapper__4Alw8{\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 6px;\n}\n.Select_deleteButton__1FnLK{\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  height: 100%;\n  width: 22px;\n  padding: 0px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: linear-gradient(to top, #5b5f62, #6f7477);\n  border-radius: 3px;\n  border: none;\n  font-weight: bold;\n  opacity: 0;\n}\n.Select_deleteButton__1FnLK:focus{\n  opacity: 1;\n}\n.Select_deleteButton__1FnLK:hover{\n  background: linear-gradient(to top, #64696c, #797f82);\n}\n.Select_selectedWrapper__SUs4D{\n  display: flex;\n  flex-direction: column;\n  border-radius: 4px;\n  background: linear-gradient(to top, #5b5f62, #6f7477);\n  width: 100%;\n  border: 1px solid #3c3e40;\n  font-size: 14px;\n  padding: 3px 6px;\n  padding-right: 15px;\n  position: relative;\n}\n.Select_selectedWrapper__SUs4D::after{\n    content: \"\";\n    position: absolute;\n    background: none;\n    right: 5px;\n    top: calc(50% - 4px);\n    width: 0;\n    height: 0;\n    border-style: solid;\n    border-width: 6px 5px 0 5px;\n    border-color: #191b1c transparent transparent transparent;\n  }\n.Select_selectedWrapper__SUs4D label{\n    margin: 0px;\n  }\n.Select_selectedWrapper__SUs4D p{\n    margin: 0px;\n    margin-top: 5px;\n    font-size: 12px;\n    font-style: italic;\n    color: rgb(50, 50, 50);\n  }\n";
-var styles$8 = { "wrapper": "Select_wrapper__eAPoQ", "chipWrapper": "Select_chipWrapper__3hK2u", "deleteButton": "Select_deleteButton__1FnLK", "chipsWrapper": "Select_chipsWrapper__4Alw8", "selectedWrapper": "Select_selectedWrapper__SUs4D" };
-styleInject(css$8);
+var css_248z$5 = ".Select_wrapper__LU8xp{\n  font-size: 14px;\n  padding: 3px 6px;\n  border-radius: 4px;\n  background: linear-gradient(to top, #5b5f62, #6f7477);\n  width: 100%;\n  border: 1px solid #3c3e40;\n  padding-right: 15px;\n  position: relative;\n}\n  .Select_wrapper__LU8xp::after{\n    content: \"\";\n    position: absolute;\n    background: none;\n    right: 5px;\n    top: 8px;\n    width: 0;\n    height: 0;\n    border-style: solid;\n    border-width: 6px 5px 0 5px;\n    border-color: #191b1c transparent transparent transparent;\n  }\n  .Select_wrapper__LU8xp:hover{\n    background: linear-gradient(to top, #63676a, #777b7e);\n  }\n.Select_chipWrapper__zZu-R{\n  font-size: 14px;\n  padding: 3px 6px;\n  border-radius: 4px;\n  background: linear-gradient(to top, #5b5f62, #6f7477);\n  border: 1px solid #3c3e40;\n  margin: 2px;\n  position: relative;\n}\n.Select_chipWrapper__zZu-R:hover .Select_deleteButton__K7AfO{\n  opacity: 1;\n}\n.Select_chipsWrapper__3uo8O{\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 6px;\n}\n.Select_deleteButton__K7AfO{\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  height: 100%;\n  width: 22px;\n  padding: 0px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: linear-gradient(to top, #5b5f62, #6f7477);\n  border-radius: 3px;\n  border: none;\n  font-weight: bold;\n  opacity: 0;\n}\n.Select_deleteButton__K7AfO:focus{\n  opacity: 1;\n}\n.Select_deleteButton__K7AfO:hover{\n  background: linear-gradient(to top, #64696c, #797f82);\n}\n.Select_selectedWrapper__JsEFo{\n  display: flex;\n  flex-direction: column;\n  border-radius: 4px;\n  background: linear-gradient(to top, #5b5f62, #6f7477);\n  width: 100%;\n  border: 1px solid #3c3e40;\n  font-size: 14px;\n  padding: 3px 6px;\n  padding-right: 15px;\n  position: relative;\n}\n.Select_selectedWrapper__JsEFo::after{\n    content: \"\";\n    position: absolute;\n    background: none;\n    right: 5px;\n    top: calc(50% - 4px);\n    width: 0;\n    height: 0;\n    border-style: solid;\n    border-width: 6px 5px 0 5px;\n    border-color: #191b1c transparent transparent transparent;\n  }\n.Select_selectedWrapper__JsEFo label{\n    margin: 0px;\n  }\n.Select_selectedWrapper__JsEFo p{\n    margin: 0px;\n    margin-top: 5px;\n    font-size: 12px;\n    font-style: italic;\n    color: rgb(50, 50, 50);\n  }\n";
+var styles$5 = {"wrapper":"Select_wrapper__LU8xp","chipWrapper":"Select_chipWrapper__zZu-R","deleteButton":"Select_deleteButton__K7AfO","chipsWrapper":"Select_chipsWrapper__3uo8O","selectedWrapper":"Select_selectedWrapper__JsEFo"};
+styleInject(css_248z$5);
 
-var MAX_LABEL_LENGTH = 50;
+var _jsxFileName$9 = "/workspaces/flumeapi/src/components/Select/Select.js";
+const MAX_LABEL_LENGTH = 50;
 
-var Select = function Select(_ref) {
-  var _ref$options = _ref.options,
-      options = _ref$options === undefined ? [] : _ref$options,
-      _ref$placeholder = _ref.placeholder,
-      placeholder = _ref$placeholder === undefined ? "[Select an option]" : _ref$placeholder,
-      onChange = _ref.onChange,
-      data = _ref.data,
-      allowMultiple = _ref.allowMultiple;
-
-  var _React$useState = React.useState(false),
-      _React$useState2 = slicedToArray(_React$useState, 2),
-      drawerOpen = _React$useState2[0],
-      setDrawerOpen = _React$useState2[1];
-
-  var _React$useState3 = React.useState({
+const Select = ({
+  options = [],
+  placeholder = "[Select an option]",
+  onChange,
+  data,
+  allowMultiple
+}) => {
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [drawerCoordinates, setDrawerCoordinates] = React.useState({
     x: 0,
     y: 0
-  }),
-      _React$useState4 = slicedToArray(_React$useState3, 2),
-      drawerCoordinates = _React$useState4[0],
-      setDrawerCoordinates = _React$useState4[1];
+  });
+  const wrapper = React.useRef();
 
-  var wrapper = React.useRef();
-
-  var closeDrawer = function closeDrawer() {
+  const closeDrawer = () => {
     setDrawerOpen(false);
   };
 
-  var openDrawer = function openDrawer() {
+  const openDrawer = () => {
     if (!drawerOpen) {
-      var wrapperRect = wrapper.current.getBoundingClientRect();
+      const wrapperRect = wrapper.current.getBoundingClientRect();
       setDrawerCoordinates({
         x: wrapperRect.x,
         y: wrapperRect.y + wrapperRect.height
@@ -5379,551 +5885,667 @@ var Select = function Select(_ref) {
     }
   };
 
-  var handleOptionSelected = function handleOptionSelected(option) {
+  const handleOptionSelected = option => {
     if (allowMultiple) {
-      onChange([].concat(toConsumableArray(data), [option.value]));
+      onChange([...data, option.value]);
     } else {
       onChange(option.value);
     }
   };
 
-  var handleOptionDeleted = function handleOptionDeleted(optionIndex) {
-    onChange([].concat(toConsumableArray(data.slice(0, optionIndex)), toConsumableArray(data.slice(optionIndex + 1))));
+  const handleOptionDeleted = optionIndex => {
+    onChange([...data.slice(0, optionIndex), ...data.slice(optionIndex + 1)]);
   };
 
-  var getFilteredOptions = function getFilteredOptions() {
-    return allowMultiple ? options.filter(function (opt) {
-      return !data.includes(opt.value);
-    }) : options;
-  };
+  const getFilteredOptions = () => allowMultiple ? options.filter(opt => !data.includes(opt.value)) : options;
 
-  var selectedOption = React.useMemo(function () {
-    var option = options.find(function (o) {
-      return o.value === data;
-    });
+  const selectedOption = React.useMemo(() => {
+    const option = options.find(o => o.value === data);
+
     if (option) {
-      return _extends({}, option, {
+      return { ...option,
         label: option.label.length > MAX_LABEL_LENGTH ? option.label.slice(0, MAX_LABEL_LENGTH) + "..." : option.label
-      });
+      };
     }
   }, [options, data]);
-
-  return React.createElement(
-    React.Fragment,
-    null,
-    allowMultiple ? data.length ? React.createElement(
-      "div",
-      { className: styles$8.chipsWrapper },
-      data.map(function (val, i) {
-        var optLabel = (options.find(function (opt) {
-          return opt.value === val;
-        }) || {}).label || "";
-        return React.createElement(
-          OptionChip,
-          {
-            onRequestDelete: function onRequestDelete() {
-              return handleOptionDeleted(i);
-            },
-            key: val
-          },
-          optLabel
-        );
-      })
-    ) : null : data ? React.createElement(SelectedOption, {
-      wrapperRef: wrapper,
-      option: selectedOption,
-      onClick: openDrawer
-    }) : null,
-    (allowMultiple || !data) && React.createElement(
-      "div",
-      { className: styles$8.wrapper, ref: wrapper, onClick: openDrawer },
-      placeholder
-    ),
-    drawerOpen && React.createElement(
-      Portal$3,
-      null,
-      React.createElement(ContextMenu, {
-        x: drawerCoordinates.x,
-        y: drawerCoordinates.y,
-        emptyText: "There are no options",
-        options: getFilteredOptions(),
-        onOptionSelected: handleOptionSelected,
-        onRequestClose: closeDrawer
-      })
-    )
-  );
+  return /*#__PURE__*/React.createElement(React.Fragment, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$9,
+      lineNumber: 70,
+      columnNumber: 5
+    }
+  }, allowMultiple ? data.length ? /*#__PURE__*/React.createElement("div", {
+    className: styles$5.chipsWrapper,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$9,
+      lineNumber: 73,
+      columnNumber: 11
+    }
+  }, data.map((val, i) => {
+    const optLabel = (options.find(opt => opt.value === val) || {}).label || "";
+    return /*#__PURE__*/React.createElement(OptionChip, {
+      onRequestDelete: () => handleOptionDeleted(i),
+      key: val,
+      __self: undefined,
+      __source: {
+        fileName: _jsxFileName$9,
+        lineNumber: 78,
+        columnNumber: 17
+      }
+    }, optLabel);
+  })) : null : data ? /*#__PURE__*/React.createElement(SelectedOption, {
+    wrapperRef: wrapper,
+    option: selectedOption,
+    onClick: openDrawer,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$9,
+      lineNumber: 89,
+      columnNumber: 9
+    }
+  }) : null, (allowMultiple || !data) && /*#__PURE__*/React.createElement("div", {
+    className: styles$5.wrapper,
+    ref: wrapper,
+    onClick: openDrawer,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$9,
+      lineNumber: 97,
+      columnNumber: 9
+    }
+  }, placeholder), drawerOpen && /*#__PURE__*/React.createElement(Portal$1, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$9,
+      lineNumber: 102,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/React.createElement(ContextMenu, {
+    x: drawerCoordinates.x,
+    y: drawerCoordinates.y,
+    emptyText: "There are no options",
+    options: getFilteredOptions(),
+    onOptionSelected: handleOptionSelected,
+    onRequestClose: closeDrawer,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$9,
+      lineNumber: 103,
+      columnNumber: 11
+    }
+  })));
 };
 
-var SelectedOption = function SelectedOption(_ref2) {
-  var _ref2$option = _ref2.option;
-  _ref2$option = _ref2$option === undefined ? {} : _ref2$option;
-  var label = _ref2$option.label,
-      description = _ref2$option.description,
-      wrapperRef = _ref2.wrapperRef,
-      onClick = _ref2.onClick;
-  return React.createElement(
-    "div",
-    { className: styles$8.selectedWrapper, onClick: onClick, ref: wrapperRef, "data-flume-component": "select" },
-    React.createElement(
-      "label",
-      { "data-flume-component": "select-label" },
-      label
-    ),
-    description ? React.createElement(
-      "p",
-      { "data-flume-component": "select-desc" },
-      description
-    ) : null
-  );
-};
+const SelectedOption = ({
+  option: {
+    label,
+    description
+  } = {},
+  wrapperRef,
+  onClick
+}) => /*#__PURE__*/React.createElement("div", {
+  className: styles$5.selectedWrapper,
+  onClick: onClick,
+  ref: wrapperRef,
+  "data-flume-component": "select",
+  __self: undefined,
+  __source: {
+    fileName: _jsxFileName$9,
+    lineNumber: 124,
+    columnNumber: 3
+  }
+}, /*#__PURE__*/React.createElement("label", {
+  "data-flume-component": "select-label",
+  __self: undefined,
+  __source: {
+    fileName: _jsxFileName$9,
+    lineNumber: 125,
+    columnNumber: 5
+  }
+}, label), description ? /*#__PURE__*/React.createElement("p", {
+  "data-flume-component": "select-desc",
+  __self: undefined,
+  __source: {
+    fileName: _jsxFileName$9,
+    lineNumber: 126,
+    columnNumber: 20
+  }
+}, description) : null);
 
-var OptionChip = function OptionChip(_ref3) {
-  var children = _ref3.children,
-      onRequestDelete = _ref3.onRequestDelete;
-  return React.createElement(
-    "div",
-    { className: styles$8.chipWrapper },
-    children,
-    React.createElement(
-      "button",
-      {
-        className: styles$8.deleteButton,
-        onMouseDown: function onMouseDown(e) {
-          e.stopPropagation();
-        },
-        onClick: onRequestDelete
-      },
-      "\u2715"
-    )
-  );
-};
+const OptionChip = ({
+  children,
+  onRequestDelete
+}) => /*#__PURE__*/React.createElement("div", {
+  className: styles$5.chipWrapper,
+  __self: undefined,
+  __source: {
+    fileName: _jsxFileName$9,
+    lineNumber: 131,
+    columnNumber: 3
+  }
+}, children, /*#__PURE__*/React.createElement("button", {
+  className: styles$5.deleteButton,
+  onMouseDown: e => {
+    e.stopPropagation();
+  },
+  onClick: onRequestDelete,
+  __self: undefined,
+  __source: {
+    fileName: _jsxFileName$9,
+    lineNumber: 133,
+    columnNumber: 5
+  }
+}, "\u2715"));
 
-var Control = function Control(_ref) {
-  var type = _ref.type,
-      name = _ref.name,
-      nodeId = _ref.nodeId,
-      portName = _ref.portName,
-      label = _ref.label,
-      inputLabel = _ref.inputLabel,
-      data = _ref.data,
-      allData = _ref.allData,
-      render = _ref.render,
-      step = _ref.step,
-      _ref$options = _ref.options,
-      options = _ref$options === undefined ? [] : _ref$options,
-      placeholder = _ref.placeholder,
-      inputData = _ref.inputData,
-      triggerRecalculation = _ref.triggerRecalculation,
-      updateNodeConnections = _ref.updateNodeConnections,
-      getOptions = _ref.getOptions,
-      setValue = _ref.setValue,
-      defaultValue = _ref.defaultValue,
-      isMonoControl = _ref.isMonoControl;
+var _jsxFileName$8 = "/workspaces/flumeapi/src/components/Control/Control.js";
 
-  var nodesDispatch = React.useContext(NodeDispatchContext);
-  var executionContext = React.useContext(ContextContext);
+const Control = ({
+  type,
+  name,
+  nodeId,
+  portName,
+  label,
+  inputLabel,
+  data,
+  allData,
+  render,
+  step,
+  options = [],
+  placeholder,
+  inputData,
+  triggerRecalculation,
+  updateNodeConnections,
+  getOptions,
+  setValue,
+  defaultValue,
+  isMonoControl
+}) => {
+  const nodesDispatch = React.useContext(NodeDispatchContext);
+  const executionContext = React.useContext(ContextContext);
+  const calculatedLabel = isMonoControl ? inputLabel : label;
 
-  var calculatedLabel = isMonoControl ? inputLabel : label;
-
-  var onChange = function onChange(data) {
+  const onChange = data => {
     nodesDispatch({
       type: "SET_PORT_DATA",
-      data: data,
-      nodeId: nodeId,
-      portName: portName,
+      data,
+      nodeId,
+      portName,
       controlName: name,
-      setValue: setValue
+      setValue
     });
     triggerRecalculation();
   };
 
-  var getControlByType = function getControlByType(type) {
-    var commonProps = {
-      triggerRecalculation: triggerRecalculation,
-      updateNodeConnections: updateNodeConnections,
-      onChange: onChange,
-      data: data
+  const getControlByType = type => {
+    const commonProps = {
+      triggerRecalculation,
+      updateNodeConnections,
+      onChange,
+      data
     };
+
     switch (type) {
       case "select":
-        return React.createElement(Select, _extends({}, commonProps, {
+        return /*#__PURE__*/React.createElement(Select, babelHelpers.extends({}, commonProps, {
           options: getOptions ? getOptions(inputData, executionContext) : options,
-          placeholder: placeholder
+          placeholder: placeholder,
+          __self: undefined,
+          __source: {
+            fileName: _jsxFileName$8,
+            lineNumber: 56,
+            columnNumber: 11
+          }
         }));
+
       case "text":
-        return React.createElement(TextInput, _extends({}, commonProps, { placeholder: placeholder }));
+        return /*#__PURE__*/React.createElement(TextInput, babelHelpers.extends({}, commonProps, {
+          placeholder: placeholder,
+          __self: undefined,
+          __source: {
+            fileName: _jsxFileName$8,
+            lineNumber: 65,
+            columnNumber: 16
+          }
+        }));
+
       case "number":
-        return React.createElement(TextInput, _extends({}, commonProps, { step: step, type: "number", placeholder: placeholder }));
+        return /*#__PURE__*/React.createElement(TextInput, babelHelpers.extends({}, commonProps, {
+          step: step,
+          type: "number",
+          placeholder: placeholder,
+          __self: undefined,
+          __source: {
+            fileName: _jsxFileName$8,
+            lineNumber: 68,
+            columnNumber: 11
+          }
+        }));
+
       case "checkbox":
-        return React.createElement(Checkbox, _extends({}, commonProps, { label: calculatedLabel }));
+        return /*#__PURE__*/React.createElement(Checkbox, babelHelpers.extends({}, commonProps, {
+          label: calculatedLabel,
+          __self: undefined,
+          __source: {
+            fileName: _jsxFileName$8,
+            lineNumber: 71,
+            columnNumber: 16
+          }
+        }));
+
       case "multiselect":
-        return React.createElement(Select, _extends({
+        return /*#__PURE__*/React.createElement(Select, babelHelpers.extends({
           allowMultiple: true
         }, commonProps, {
           options: getOptions ? getOptions(inputData, executionContext) : options,
           placeholder: placeholder,
-          label: label
+          label: label,
+          __self: undefined,
+          __source: {
+            fileName: _jsxFileName$8,
+            lineNumber: 74,
+            columnNumber: 11
+          }
         }));
+
       case "custom":
         return render(data, onChange, executionContext, triggerRecalculation, {
-          label: label,
-          name: name,
-          portName: portName,
-          inputLabel: inputLabel,
-          defaultValue: defaultValue
+          label,
+          name,
+          portName,
+          inputLabel,
+          defaultValue
         }, allData);
+
       default:
-        return React.createElement(
-          "div",
-          null,
-          "Control"
-        );
+        return /*#__PURE__*/React.createElement("div", {
+          __self: undefined,
+          __source: {
+            fileName: _jsxFileName$8,
+            lineNumber: 93,
+            columnNumber: 16
+          }
+        }, "Control");
     }
   };
 
-  return React.createElement(
-    "div",
-    { className: styles$5.wrapper, "data-flume-component": "control" },
-    calculatedLabel && type !== "checkbox" && type !== "custom" && React.createElement(
-      "label",
-      { "data-flume-component": "control-label", className: styles$5.controlLabel },
-      calculatedLabel
-    ),
-    getControlByType(type)
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: styles$8.wrapper,
+    "data-flume-component": "control",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$8,
+      lineNumber: 98,
+      columnNumber: 5
+    }
+  }, calculatedLabel && type !== "checkbox" && type !== "custom" && /*#__PURE__*/React.createElement("label", {
+    "data-flume-component": "control-label",
+    className: styles$8.controlLabel,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$8,
+      lineNumber: 100,
+      columnNumber: 9
+    }
+  }, calculatedLabel), getControlByType(type));
 };
 
-var Connection = function Connection(_ref) {
-  var from = _ref.from,
-      to = _ref.to,
-      id = _ref.id,
-      lineRef = _ref.lineRef,
-      outputNodeId = _ref.outputNodeId,
-      outputPortName = _ref.outputPortName,
-      inputNodeId = _ref.inputNodeId,
-      inputPortName = _ref.inputPortName;
+var _jsxFileName$7 = "/workspaces/flumeapi/src/components/Connection/Connection.js";
 
-  var curve = calculateCurve(from, to);
-  return React.createElement(
-    "svg",
-    { className: styles$3.svg, "data-flume-component": "connection-svg" },
-    React.createElement("path", {
-      "data-connection-id": id,
-      "data-output-node-id": outputNodeId,
-      "data-output-port-name": outputPortName,
-      "data-input-node-id": inputNodeId,
-      "data-input-port-name": inputPortName,
-      "data-flume-component": "connection-path",
-      stroke: "rgb(185, 186, 189)",
-      fill: "none",
-      strokeWidth: 3,
-      strokeLinecap: "round",
-      d: curve,
-      ref: lineRef
-    })
-  );
+const Connection = ({
+  from,
+  to,
+  id,
+  lineRef,
+  outputNodeId,
+  outputPortName,
+  inputNodeId,
+  inputPortName
+}) => {
+  const curve = calculateCurve(from, to);
+  return /*#__PURE__*/React.createElement("svg", {
+    className: styles$a.svg,
+    "data-flume-component": "connection-svg",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$7,
+      lineNumber: 17,
+      columnNumber: 5
+    }
+  }, /*#__PURE__*/React.createElement("path", {
+    "data-connection-id": id,
+    "data-output-node-id": outputNodeId,
+    "data-output-port-name": outputPortName,
+    "data-input-node-id": inputNodeId,
+    "data-input-port-name": inputPortName,
+    "data-flume-component": "connection-path",
+    stroke: "rgb(185, 186, 189)",
+    fill: "none",
+    strokeWidth: 3,
+    strokeLinecap: "round",
+    d: curve,
+    ref: lineRef,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$7,
+      lineNumber: 18,
+      columnNumber: 7
+    }
+  }));
 };
 
-var usePrevious$1 = function usePrevious(value) {
-  var ref = React.useRef();
-  React.useEffect(function () {
+const usePrevious = value => {
+  const ref = React.useRef();
+  React.useEffect(() => {
     ref.current = value;
   }, [ref.current]);
   return ref.current;
 };
 
-function useTransputs(transputsFn, transputType, nodeId, inputData, connections) {
-  var nodesDispatch = React.useContext(NodeDispatchContext);
-  var executionContext = React.useContext(ContextContext);
+var _jsxFileName$6 = "/workspaces/flumeapi/src/components/IoPorts/IoPorts.js";
 
-  var transputs = React.useMemo(function () {
+function useTransputs(transputsFn, transputType, nodeId, inputData, connections) {
+  const nodesDispatch = React.useContext(NodeDispatchContext);
+  const executionContext = React.useContext(ContextContext);
+  const transputs = React.useMemo(() => {
     if (Array.isArray(transputsFn)) return transputsFn;
     return transputsFn(inputData, connections, executionContext, nodeId);
   }, [transputsFn, inputData, connections, executionContext]);
-  var prevTransputs = usePrevious$1(transputs);
-
-  React.useEffect(function () {
+  const prevTransputs = usePrevious(transputs);
+  React.useEffect(() => {
     if (!prevTransputs || Array.isArray(transputsFn)) return;
 
-    var _loop = function _loop(transput) {
-      var current = transputs.find(function (_ref) {
-        var name = _ref.name;
-        return transput.name === name;
-      });
+    for (const transput of prevTransputs) {
+      const current = transputs.find(({
+        name
+      }) => transput.name === name);
+
       if (!current) {
         nodesDispatch({
           type: 'DESTROY_TRANSPUT',
-          transputType: transputType,
-          transput: { nodeId: nodeId, portName: '' + transput.name }
+          transputType,
+          transput: {
+            nodeId,
+            portName: '' + transput.name
+          }
         });
-      }
-    };
-
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-      for (var _iterator = prevTransputs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var transput = _step.value;
-
-        _loop(transput);
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
       }
     }
   }, [transputsFn, transputs, prevTransputs, nodesDispatch, nodeId, transputType]);
-
   return transputs;
 }
 
-var IoPorts = function IoPorts(_ref2) {
-  var nodeId = _ref2.nodeId,
-      _ref2$inputs = _ref2.inputs,
-      inputs = _ref2$inputs === undefined ? [] : _ref2$inputs,
-      _ref2$outputs = _ref2.outputs,
-      outputs = _ref2$outputs === undefined ? [] : _ref2$outputs,
-      connections = _ref2.connections,
-      inputData = _ref2.inputData,
-      updateNodeConnections = _ref2.updateNodeConnections;
-
-  var inputTypes = React.useContext(PortTypesContext);
-  var triggerRecalculation = React.useContext(ConnectionRecalculateContext);
-  var resolvedInputs = useTransputs(inputs, 'input', nodeId, inputData, connections);
-  var resolvedOutputs = useTransputs(outputs, 'output', nodeId, inputData, connections);
-
-  return React.createElement(
-    "div",
-    { className: styles$4.wrapper, "data-flume-component": "ports" },
-    resolvedInputs.length ? React.createElement(
-      "div",
-      { className: styles$4.inputs, "data-flume-component": "ports-inputs" },
-      resolvedInputs.map(function (input) {
-        return React.createElement(Input, _extends({}, input, {
-          data: inputData[input.name] || {},
-          isConnected: !!connections.inputs[input.name],
-          triggerRecalculation: triggerRecalculation,
-          updateNodeConnections: updateNodeConnections,
-          inputTypes: inputTypes,
-          nodeId: nodeId,
-          inputData: inputData,
-          key: input.name
-        }));
-      })
-    ) : null,
-    !!resolvedOutputs.length && React.createElement(
-      "div",
-      { className: styles$4.outputs, "data-flume-component": "ports-outputs" },
-      resolvedOutputs.map(function (output) {
-        return React.createElement(Output, _extends({}, output, {
-          triggerRecalculation: triggerRecalculation,
-          inputTypes: inputTypes,
-          nodeId: nodeId,
-          inputData: inputData,
-          portOnRight: true,
-          key: output.name
-        }));
-      })
-    )
-  );
+const IoPorts = ({
+  nodeId,
+  inputs = [],
+  outputs = [],
+  connections,
+  inputData,
+  updateNodeConnections
+}) => {
+  const inputTypes = React.useContext(PortTypesContext);
+  const triggerRecalculation = React.useContext(ConnectionRecalculateContext);
+  const resolvedInputs = useTransputs(inputs, 'input', nodeId, inputData, connections);
+  const resolvedOutputs = useTransputs(outputs, 'output', nodeId, inputData, connections);
+  return /*#__PURE__*/React.createElement("div", {
+    className: styles$9.wrapper,
+    "data-flume-component": "ports",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 60,
+      columnNumber: 5
+    }
+  }, resolvedInputs.length ? /*#__PURE__*/React.createElement("div", {
+    className: styles$9.inputs,
+    "data-flume-component": "ports-inputs",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 62,
+      columnNumber: 9
+    }
+  }, resolvedInputs.map(input => /*#__PURE__*/React.createElement(Input, babelHelpers.extends({}, input, {
+    data: inputData[input.name] || {},
+    isConnected: !!connections.inputs[input.name],
+    triggerRecalculation: triggerRecalculation,
+    updateNodeConnections: updateNodeConnections,
+    inputTypes: inputTypes,
+    nodeId: nodeId,
+    inputData: inputData,
+    key: input.name,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 64,
+      columnNumber: 13
+    }
+  })))) : null, !!resolvedOutputs.length && /*#__PURE__*/React.createElement("div", {
+    className: styles$9.outputs,
+    "data-flume-component": "ports-outputs",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 79,
+      columnNumber: 9
+    }
+  }, resolvedOutputs.map(output => /*#__PURE__*/React.createElement(Output, babelHelpers.extends({}, output, {
+    triggerRecalculation: triggerRecalculation,
+    inputTypes: inputTypes,
+    nodeId: nodeId,
+    inputData: inputData,
+    portOnRight: true,
+    key: output.name,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 81,
+      columnNumber: 13
+    }
+  })))));
 };
 
-var Input = function Input(_ref3) {
-  var type = _ref3.type,
-      label = _ref3.label,
-      name = _ref3.name,
-      nodeId = _ref3.nodeId,
-      data = _ref3.data,
-      localControls = _ref3.controls,
-      inputTypes = _ref3.inputTypes,
-      noControls = _ref3.noControls,
-      triggerRecalculation = _ref3.triggerRecalculation,
-      updateNodeConnections = _ref3.updateNodeConnections,
-      isConnected = _ref3.isConnected,
-      inputData = _ref3.inputData,
-      hidePort = _ref3.hidePort,
-      extraProperties = _ref3.extraProperties;
-
-  var _ref4 = inputTypes[type] || {},
-      defaultLabel = _ref4.label,
-      color = _ref4.color,
-      _ref4$controls = _ref4.controls,
-      defaultControls = _ref4$controls === undefined ? [] : _ref4$controls;
-
-  var prevConnected = usePrevious$1(isConnected);
-
-  var controls = localControls || defaultControls;
-
-  React.useEffect(function () {
+const Input = ({
+  type,
+  label,
+  name,
+  nodeId,
+  data,
+  controls: localControls,
+  inputTypes,
+  noControls,
+  triggerRecalculation,
+  updateNodeConnections,
+  isConnected,
+  inputData,
+  hidePort,
+  extraProperties
+}) => {
+  const {
+    label: defaultLabel,
+    color,
+    controls: defaultControls = []
+  } = inputTypes[type] || {};
+  const prevConnected = usePrevious(isConnected);
+  const controls = localControls || defaultControls;
+  React.useEffect(() => {
     if (isConnected !== prevConnected) {
       triggerRecalculation();
     }
   }, [isConnected, prevConnected, triggerRecalculation]);
-
-  return React.createElement(
-    "div",
-    {
-      "data-flume-component": "port-input",
-      className: styles$4.transput,
-      "data-controlless": isConnected || noControls || !controls.length,
-      onDragStart: function onDragStart(e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+  return /*#__PURE__*/React.createElement("div", {
+    "data-flume-component": "port-input",
+    className: styles$9.transput,
+    "data-controlless": isConnected || noControls || !controls.length,
+    onDragStart: e => {
+      e.preventDefault();
+      e.stopPropagation();
     },
-    !hidePort ? React.createElement(Port, {
-      type: type,
-      color: color,
-      name: name,
-      nodeId: nodeId,
-      isInput: true,
-      triggerRecalculation: triggerRecalculation,
-      extraProperties: extraProperties
-    }) : null,
-    (!controls.length || noControls || isConnected) && React.createElement(
-      "label",
-      { "data-flume-component": "port-label", className: styles$4.portLabel },
-      label || defaultLabel
-    ),
-    !noControls && !isConnected ? React.createElement(
-      "div",
-      { className: styles$4.controls },
-      controls.map(function (control) {
-        return React.createElement(Control, _extends({}, control, {
-          nodeId: nodeId,
-          portName: name,
-          triggerRecalculation: triggerRecalculation,
-          updateNodeConnections: updateNodeConnections,
-          inputLabel: label,
-          data: data[control.name],
-          allData: data,
-          key: control.name,
-          inputData: inputData,
-          isMonoControl: controls.length === 1
-        }));
-      })
-    ) : null
-  );
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 128,
+      columnNumber: 5
+    }
+  }, !hidePort ? /*#__PURE__*/React.createElement(Port, {
+    type: type,
+    color: color,
+    name: name,
+    nodeId: nodeId,
+    isInput: true,
+    triggerRecalculation: triggerRecalculation,
+    extraProperties: extraProperties,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 138,
+      columnNumber: 9
+    }
+  }) : null, (!controls.length || noControls || isConnected) && /*#__PURE__*/React.createElement("label", {
+    "data-flume-component": "port-label",
+    className: styles$9.portLabel,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 149,
+      columnNumber: 9
+    }
+  }, label || defaultLabel), !noControls && !isConnected ? /*#__PURE__*/React.createElement("div", {
+    className: styles$9.controls,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 153,
+      columnNumber: 11
+    }
+  }, controls.map(control => /*#__PURE__*/React.createElement(Control, babelHelpers.extends({}, control, {
+    nodeId: nodeId,
+    portName: name,
+    triggerRecalculation: triggerRecalculation,
+    updateNodeConnections: updateNodeConnections,
+    inputLabel: label,
+    data: data[control.name],
+    allData: data,
+    key: control.name,
+    inputData: inputData,
+    isMonoControl: controls.length === 1,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 156,
+      columnNumber: 17
+    }
+  })))) : null);
 };
 
-var Output = function Output(_ref5) {
-  var label = _ref5.label,
-      name = _ref5.name,
-      nodeId = _ref5.nodeId,
-      type = _ref5.type,
-      inputTypes = _ref5.inputTypes,
-      triggerRecalculation = _ref5.triggerRecalculation,
-      extraProperties = _ref5.extraProperties;
-
-  var _ref6 = inputTypes[type] || {},
-      defaultLabel = _ref6.label,
-      color = _ref6.color;
-
-  return React.createElement(
-    "div",
-    {
-      "data-flume-component": "port-output",
-      className: styles$4.transput,
-      "data-controlless": true,
-      onDragStart: function onDragStart(e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+const Output = ({
+  label,
+  name,
+  nodeId,
+  type,
+  inputTypes,
+  triggerRecalculation,
+  extraProperties
+}) => {
+  const {
+    label: defaultLabel,
+    color
+  } = inputTypes[type] || {};
+  return /*#__PURE__*/React.createElement("div", {
+    "data-flume-component": "port-output",
+    className: styles$9.transput,
+    "data-controlless": true,
+    onDragStart: e => {
+      e.preventDefault();
+      e.stopPropagation();
     },
-    React.createElement(
-      "label",
-      { "data-flume-component": "port-label", className: styles$4.portLabel },
-      label || defaultLabel
-    ),
-    React.createElement(Port, {
-      type: type,
-      name: name,
-      color: color,
-      nodeId: nodeId,
-      triggerRecalculation: triggerRecalculation,
-      extraProperties: extraProperties
-    })
-  );
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 190,
+      columnNumber: 5
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    "data-flume-component": "port-label",
+    className: styles$9.portLabel,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 199,
+      columnNumber: 7
+    }
+  }, label || defaultLabel), /*#__PURE__*/React.createElement(Port, {
+    type: type,
+    name: name,
+    color: color,
+    nodeId: nodeId,
+    triggerRecalculation: triggerRecalculation,
+    extraProperties: extraProperties,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 200,
+      columnNumber: 7
+    }
+  }));
 };
 
-var Port = function Port(_ref7) {
-  var _ref7$color = _ref7.color,
-      color = _ref7$color === undefined ? "grey" : _ref7$color,
-      _ref7$name = _ref7.name,
-      name = _ref7$name === undefined ? "" : _ref7$name,
-      type = _ref7.type,
-      isInput = _ref7.isInput,
-      nodeId = _ref7.nodeId,
-      triggerRecalculation = _ref7.triggerRecalculation,
-      extraProperties = _ref7.extraProperties;
-
-  var nodesDispatch = React.useContext(NodeDispatchContext);
-  var stageState = React.useContext(StageContext);
-  var editorId = React.useContext(EditorIdContext);
-  var uiEvents = React.useContext(UIEventsContext);
-  var stageId = "" + STAGE_ID + editorId;
-  var inputTypes = React.useContext(PortTypesContext);
-
-  var _React$useState = React.useState(false),
-      _React$useState2 = slicedToArray(_React$useState, 2),
-      isDragging = _React$useState2[0],
-      setIsDragging = _React$useState2[1];
-
-  var _React$useState3 = React.useState({
+const Port = ({
+  color = "grey",
+  name = "",
+  type,
+  isInput,
+  nodeId,
+  triggerRecalculation,
+  extraProperties
+}) => {
+  const nodesDispatch = React.useContext(NodeDispatchContext);
+  const stageState = React.useContext(StageContext);
+  const editorId = React.useContext(EditorIdContext);
+  const uiEvents = React.useContext(UIEventsContext);
+  const stageId = `${STAGE_ID}${editorId}`;
+  const inputTypes = React.useContext(PortTypesContext);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragStartCoordinates, setDragStartCoordinates] = React.useState({
     x: 0,
     y: 0
-  }),
-      _React$useState4 = slicedToArray(_React$useState3, 2),
-      dragStartCoordinates = _React$useState4[0],
-      setDragStartCoordinates = _React$useState4[1];
+  });
+  const dragStartCoordinatesCache = React.useRef(dragStartCoordinates);
+  const port = React.useRef();
+  const line = React.useRef();
+  const lineInToPort = React.useRef();
 
-  var dragStartCoordinatesCache = React.useRef(dragStartCoordinates);
-  var port = React.useRef();
-  var line = React.useRef();
-  var lineInToPort = React.useRef();
+  const byScale = value => 1 / stageState.scale * value;
 
-  var byScale = function byScale(value) {
-    return 1 / stageState.scale * value;
-  };
-
-  var handleDrag = function handleDrag(e) {
-    var stage = document.getElementById(stageId).getBoundingClientRect();
+  const handleDrag = e => {
+    const stage = document.getElementById(stageId).getBoundingClientRect();
 
     if (isInput) {
-      var to = {
+      const to = {
         x: byScale(e.clientX - stage.x - stage.width / 2) + byScale(stageState.translate.x),
         y: byScale(e.clientY - stage.y - stage.height / 2) + byScale(stageState.translate.y)
       };
       lineInToPort.current.setAttribute("d", calculateCurve(dragStartCoordinatesCache.current, to));
     } else {
-      var _to = {
+      const to = {
         x: byScale(e.clientX - stage.x - stage.width / 2) + byScale(stageState.translate.x),
         y: byScale(e.clientY - stage.y - stage.height / 2) + byScale(stageState.translate.y)
       };
-      line.current.setAttribute("d", calculateCurve(dragStartCoordinatesCache.current, _to));
+      line.current.setAttribute("d", calculateCurve(dragStartCoordinatesCache.current, to));
     }
   };
 
-  var handleDragEnd = function handleDragEnd(e) {
-    var droppedOnPort = !!e.target.dataset.portName;
+  const handleDragEnd = e => {
+    const droppedOnPort = !!e.target.dataset.portName;
 
     if (isInput) {
-      var _lineInToPort$current = lineInToPort.current.dataset,
-          inputNodeId = _lineInToPort$current.inputNodeId,
-          inputPortName = _lineInToPort$current.inputPortName,
-          outputNodeId = _lineInToPort$current.outputNodeId,
-          outputPortName = _lineInToPort$current.outputPortName;
+      const {
+        inputNodeId,
+        inputPortName,
+        outputNodeId,
+        outputPortName
+      } = lineInToPort.current.dataset;
 
       if (uiEvents.portDisconnectRequest) {
         // Perform the disconnect through the uiEvents object
@@ -5931,30 +6553,45 @@ var Port = function Port(_ref7) {
       } else {
         nodesDispatch({
           type: "REMOVE_CONNECTION",
-          input: { nodeId: inputNodeId, portName: inputPortName },
-          output: { nodeId: outputNodeId, portName: outputPortName }
+          input: {
+            nodeId: inputNodeId,
+            portName: inputPortName
+          },
+          output: {
+            nodeId: outputNodeId,
+            portName: outputPortName
+          }
         });
       }
-      if (droppedOnPort) {
-        var _e$target$dataset = e.target.dataset,
-            connectToPortName = _e$target$dataset.portName,
-            connectToNodeId = _e$target$dataset.nodeId,
-            connectToPortType = _e$target$dataset.portType,
-            connectToTransputType = _e$target$dataset.portTransputType;
 
-        var isNotSameNode = outputNodeId !== connectToNodeId;
+      if (droppedOnPort) {
+        const {
+          portName: connectToPortName,
+          nodeId: connectToNodeId,
+          portType: connectToPortType,
+          portTransputType: connectToTransputType
+        } = e.target.dataset;
+        const isNotSameNode = outputNodeId !== connectToNodeId;
+
         if (isNotSameNode && connectToTransputType !== "output") {
           if (uiEvents.portConnectRequest) {
             // Do the connection through the uiEvents callback
             uiEvents.portConnectRequest(outputNodeId, outputPortName, connectToNodeId, connectToPortName);
           } else {
             // Do the connection ourselves
-            var inputWillAcceptConnection = inputTypes[connectToPortType].acceptTypes.includes(type);
+            const inputWillAcceptConnection = inputTypes[connectToPortType].acceptTypes.includes(type);
+
             if (inputWillAcceptConnection) {
               nodesDispatch({
                 type: "ADD_CONNECTION",
-                input: { nodeId: connectToNodeId, portName: connectToPortName },
-                output: { nodeId: outputNodeId, portName: outputPortName }
+                input: {
+                  nodeId: connectToNodeId,
+                  portName: connectToPortName
+                },
+                output: {
+                  nodeId: outputNodeId,
+                  portName: outputPortName
+                }
               });
             }
           }
@@ -5962,25 +6599,32 @@ var Port = function Port(_ref7) {
       }
     } else {
       if (droppedOnPort) {
-        var _e$target$dataset2 = e.target.dataset,
-            _inputPortName = _e$target$dataset2.portName,
-            _inputNodeId = _e$target$dataset2.nodeId,
-            inputNodeType = _e$target$dataset2.portType,
-            inputTransputType = _e$target$dataset2.portTransputType;
+        const {
+          portName: inputPortName,
+          nodeId: inputNodeId,
+          portType: inputNodeType,
+          portTransputType: inputTransputType
+        } = e.target.dataset;
+        const isNotSameNode = inputNodeId !== nodeId;
 
-        var _isNotSameNode = _inputNodeId !== nodeId;
-        if (_isNotSameNode && inputTransputType !== "output") {
+        if (isNotSameNode && inputTransputType !== "output") {
           if (uiEvents.portConnectRequest) {
             // Do the connection through the uiEvents callback
-            uiEvents.portConnectRequest(nodeId, name, _inputNodeId, _inputPortName);
+            uiEvents.portConnectRequest(nodeId, name, inputNodeId, inputPortName);
           } else {
+            const inputWillAcceptConnection = inputTypes[inputNodeType].acceptTypes.includes(type);
 
-            var _inputWillAcceptConnection = inputTypes[inputNodeType].acceptTypes.includes(type);
-            if (_inputWillAcceptConnection) {
+            if (inputWillAcceptConnection) {
               nodesDispatch({
                 type: "ADD_CONNECTION",
-                output: { nodeId: nodeId, portName: name },
-                input: { nodeId: _inputNodeId, portName: _inputPortName }
+                output: {
+                  nodeId,
+                  portName: name
+                },
+                input: {
+                  nodeId: inputNodeId,
+                  portName: inputPortName
+                }
               });
               triggerRecalculation();
             }
@@ -5988,26 +6632,31 @@ var Port = function Port(_ref7) {
         }
       }
     }
+
     setIsDragging(false);
     document.removeEventListener("mouseup", handleDragEnd);
     document.removeEventListener("mousemove", handleDrag);
   };
 
-  var handleDragStart = function handleDragStart(e) {
+  const handleDragStart = e => {
     e.preventDefault();
     e.stopPropagation();
-    var startPort = port.current.getBoundingClientRect();
-    var stage = document.getElementById(stageId).getBoundingClientRect();
-
-    uiEvents.portClicked && uiEvents.portClicked({ name: name, nodeId: nodeId, isInput: isInput });
+    const startPort = port.current.getBoundingClientRect();
+    const stage = document.getElementById(stageId).getBoundingClientRect();
+    uiEvents.portClicked && uiEvents.portClicked({
+      name,
+      nodeId,
+      isInput
+    });
 
     if (isInput) {
-      lineInToPort.current = document.querySelector("[data-input-node-id=\"" + nodeId + "\"][data-input-port-name=\"" + name + "\"]");
-      var portIsConnected = !!lineInToPort.current;
+      lineInToPort.current = document.querySelector(`[data-input-node-id="${nodeId}"][data-input-port-name="${name}"]`);
+      const portIsConnected = !!lineInToPort.current;
+
       if (portIsConnected) {
         lineInToPort.current.parentNode.style.zIndex = 9999;
-        var outputPort = getPortRect(lineInToPort.current.dataset.outputNodeId, lineInToPort.current.dataset.outputPortName, "output");
-        var coordinates = {
+        const outputPort = getPortRect(lineInToPort.current.dataset.outputNodeId, lineInToPort.current.dataset.outputPortName, "output");
+        const coordinates = {
           x: byScale(outputPort.x - stage.x + outputPort.width / 2 - stage.width / 2) + byScale(stageState.translate.x),
           y: byScale(outputPort.y - stage.y + outputPort.width / 2 - stage.height / 2) + byScale(stageState.translate.y)
         };
@@ -6018,12 +6667,12 @@ var Port = function Port(_ref7) {
         document.addEventListener("mousemove", handleDrag);
       }
     } else {
-      var _coordinates = {
+      const coordinates = {
         x: byScale(startPort.x - stage.x + startPort.width / 2 - stage.width / 2) + byScale(stageState.translate.x),
         y: byScale(startPort.y - stage.y + startPort.width / 2 - stage.height / 2) + byScale(stageState.translate.y)
       };
-      setDragStartCoordinates(_coordinates);
-      dragStartCoordinatesCache.current = _coordinates;
+      setDragStartCoordinates(coordinates);
+      dragStartCoordinatesCache.current = coordinates;
       setIsDragging(true);
       document.addEventListener("mouseup", handleDragEnd);
       document.addEventListener("mousemove", handleDrag);
@@ -6031,116 +6680,123 @@ var Port = function Port(_ref7) {
   };
 
   var extra = extraProperties ? extraProperties : {};
-
-  return React.createElement(
-    React.Fragment,
-    null,
-    React.createElement("div", _extends({
-      style: { zIndex: 999 },
-      onMouseDown: handleDragStart,
-      className: styles$4.port,
-      "data-port-color": color,
-      "data-port-name": name,
-      "data-port-type": type,
-      "data-port-transput-type": isInput ? "input" : "output",
-      "data-node-id": nodeId,
-      "data-flume-component": "port-handle",
-      onDragStart: function onDragStart(e) {
-        e.preventDefault();
-        e.stopPropagation();
-      },
-      ref: port
-    }, extra)),
-    isDragging && !isInput ? React.createElement(
-      Portal$3,
-      {
-        node: document.getElementById("" + DRAG_CONNECTION_ID + editorId)
-      },
-      React.createElement(Connection, {
-        from: dragStartCoordinates,
-        to: dragStartCoordinates,
-        lineRef: line
-      })
-    ) : null
-  );
+  return /*#__PURE__*/React.createElement(React.Fragment, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 420,
+      columnNumber: 5
+    }
+  }, /*#__PURE__*/React.createElement("div", babelHelpers.extends({
+    style: {
+      zIndex: 999
+    },
+    onMouseDown: handleDragStart,
+    className: styles$9.port,
+    "data-port-color": color,
+    "data-port-name": name,
+    "data-port-type": type,
+    "data-port-transput-type": isInput ? "input" : "output",
+    "data-node-id": nodeId,
+    "data-flume-component": "port-handle",
+    onDragStart: e => {
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    ref: port
+  }, extra, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 421,
+      columnNumber: 7
+    }
+  })), isDragging && !isInput ? /*#__PURE__*/React.createElement(Portal$1, {
+    node: document.getElementById(`${DRAG_CONNECTION_ID}${editorId}`),
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 439,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/React.createElement(Connection, {
+    from: dragStartCoordinates,
+    to: dragStartCoordinates,
+    lineRef: line,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$6,
+      lineNumber: 442,
+      columnNumber: 11
+    }
+  })) : null);
 };
 
-var Node = function Node(_ref) {
-  var id = _ref.id,
-      width = _ref.width,
-      x = _ref.x,
-      y = _ref.y,
-      stageRect = _ref.stageRect,
-      connections = _ref.connections,
-      type = _ref.type,
-      inputData = _ref.inputData,
-      onDragStart = _ref.onDragStart,
-      renderNodeHeader = _ref.renderNodeHeader,
-      _ref$extraProperties = _ref.extraProperties,
-      extraProperties = _ref$extraProperties === undefined ? {} : _ref$extraProperties;
+var _jsxFileName$5 = "/workspaces/flumeapi/src/components/Node/Node.js";
 
-  var cache = React.useContext(CacheContext);
-  var nodeTypes = React.useContext(NodeTypesContext);
-  var nodesDispatch = React.useContext(NodeDispatchContext);
-  var stageState = React.useContext(StageContext);
-  var uiEvents = React.useContext(UIEventsContext);
-  var currentNodeType = typeof type === "string" ? nodeTypes[type] : type;
-  var label = currentNodeType.label,
-      deletable = currentNodeType.deletable,
-      _currentNodeType$inpu = currentNodeType.inputs,
-      inputs = _currentNodeType$inpu === undefined ? [] : _currentNodeType$inpu,
-      _currentNodeType$outp = currentNodeType.outputs,
-      outputs = _currentNodeType$outp === undefined ? [] : _currentNodeType$outp;
+const Node = ({
+  id,
+  width,
+  x,
+  y,
+  stageRect,
+  connections,
+  type,
+  inputData,
+  onDragStart,
+  renderNodeHeader,
+  extraProperties = {}
+}) => {
+  const cache = React.useContext(CacheContext);
+  const nodeTypes = React.useContext(NodeTypesContext);
+  const nodesDispatch = React.useContext(NodeDispatchContext);
+  const stageState = React.useContext(StageContext);
+  const uiEvents = React.useContext(UIEventsContext);
+  const currentNodeType = typeof type === "string" ? nodeTypes[type] : type;
+  const {
+    label,
+    deletable,
+    inputs = [],
+    outputs = []
+  } = currentNodeType;
+  const nodeWrapper = React.useRef();
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [menuCoordinates, setMenuCoordinates] = React.useState({
+    x: 0,
+    y: 0
+  });
 
+  const byScale = value => 1 / stageState.scale * value;
 
-  var nodeWrapper = React.useRef();
+  const updateConnectionsByTransput = (transput = {}, isOutput) => {
+    Object.entries(transput).forEach(([portName, outputs]) => {
+      outputs.forEach(output => {
+        const toRect = getPortRect(id, portName, isOutput ? "output" : "input", cache);
+        const fromRect = getPortRect(output.nodeId, output.portName, isOutput ? "input" : "output", cache);
+        const portHalf = fromRect.width / 2;
+        let combined;
 
-  var _React$useState = React.useState(false),
-      _React$useState2 = slicedToArray(_React$useState, 2),
-      menuOpen = _React$useState2[0],
-      setMenuOpen = _React$useState2[1];
-
-  var _React$useState3 = React.useState({ x: 0, y: 0 }),
-      _React$useState4 = slicedToArray(_React$useState3, 2),
-      menuCoordinates = _React$useState4[0],
-      setMenuCoordinates = _React$useState4[1];
-
-  var byScale = function byScale(value) {
-    return 1 / stageState.scale * value;
-  };
-
-  var updateConnectionsByTransput = function updateConnectionsByTransput() {
-    var transput = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    var isOutput = arguments[1];
-
-    Object.entries(transput).forEach(function (_ref2) {
-      var _ref3 = slicedToArray(_ref2, 2),
-          portName = _ref3[0],
-          outputs = _ref3[1];
-
-      outputs.forEach(function (output) {
-        var toRect = getPortRect(id, portName, isOutput ? "output" : "input", cache);
-        var fromRect = getPortRect(output.nodeId, output.portName, isOutput ? "input" : "output", cache);
-        var portHalf = fromRect.width / 2;
-        var combined = void 0;
         if (isOutput) {
           combined = id + portName + output.nodeId + output.portName;
         } else {
           combined = output.nodeId + output.portName + id + portName;
         }
-        var cnx = void 0;
-        var cachedConnection = cache.current.connections[combined];
+
+        let cnx;
+        const cachedConnection = cache.current.connections[combined];
+
         if (cachedConnection) {
           cnx = cachedConnection;
         } else {
-          cnx = document.querySelector("[data-connection-id=\"" + combined + "\"]");
+          cnx = document.querySelector(`[data-connection-id="${combined}"]`);
           cache.current.connections[combined] = cnx;
         }
-        var from = {
+
+        const from = {
           x: byScale(toRect.x - stageRect.current.x + portHalf - stageRect.current.width / 2) + byScale(stageState.translate.x),
           y: byScale(toRect.y - stageRect.current.y + portHalf - stageRect.current.height / 2) + byScale(stageState.translate.y)
         };
-        var to = {
+        const to = {
           x: byScale(fromRect.x - stageRect.current.x + portHalf - stageRect.current.width / 2) + byScale(stageState.translate.x),
           y: byScale(fromRect.y - stageRect.current.y + portHalf - stageRect.current.height / 2) + byScale(stageState.translate.y)
         };
@@ -6149,167 +6805,186 @@ var Node = function Node(_ref) {
     });
   };
 
-  var updateNodeConnections = function updateNodeConnections() {
+  const updateNodeConnections = () => {
     if (connections) {
       updateConnectionsByTransput(connections.inputs);
       updateConnectionsByTransput(connections.outputs, true);
     }
   };
 
-  var stopDrag = function stopDrag(e, coordinates) {
-    nodesDispatch(_extends({
-      type: "SET_NODE_COORDINATES"
-    }, coordinates, {
+  const stopDrag = (e, coordinates) => {
+    nodesDispatch({
+      type: "SET_NODE_COORDINATES",
+      ...coordinates,
       nodeId: id
-    }));
+    });
   };
 
-  var handleDrag = function handleDrag(_ref4) {
-    var x = _ref4.x,
-        y = _ref4.y;
-
-    nodeWrapper.current.style.transform = "translate(" + x + "px," + y + "px)";
+  const handleDrag = ({
+    x,
+    y
+  }) => {
+    nodeWrapper.current.style.transform = `translate(${x}px,${y}px)`;
     updateNodeConnections();
   };
 
-  var startDrag = function startDrag(e) {
+  const startDrag = e => {
     onDragStart();
   };
 
-  var mouseDown = function mouseDown(e) {
+  const mouseDown = e => {
     uiEvents.nodeClicked && uiEvents.nodeClicked(id, e);
   };
 
-  var handleContextMenu = function handleContextMenu(e) {
+  const handleContextMenu = e => {
     e.preventDefault();
     e.stopPropagation();
-    setMenuCoordinates({ x: e.clientX, y: e.clientY });
+    setMenuCoordinates({
+      x: e.clientX,
+      y: e.clientY
+    });
     setMenuOpen(true);
     return false;
   };
 
-  var closeContextMenu = function closeContextMenu() {
+  const closeContextMenu = () => {
     setMenuOpen(false);
   };
 
-  var deleteNode = function deleteNode() {
+  const deleteNode = () => {
     nodesDispatch({
       type: "REMOVE_NODE",
       nodeId: id
     });
   };
 
-  var handleMenuOption = function handleMenuOption(_ref5) {
-    var value = _ref5.value;
-
+  const handleMenuOption = ({
+    value
+  }) => {
     switch (value) {
       case "deleteNode":
         deleteNode();
         break;
+
       default:
         return;
     }
   };
 
-  return React.createElement(
-    Draggable,
-    _extends({
-      className: styles$2.wrapper,
-      style: {
-        width: width,
-        transform: "translate(" + x + "px, " + y + "px)"
-      },
-      onMouseDown: mouseDown,
-      onDragStart: startDrag,
-      onDrag: handleDrag,
-      onDragEnd: stopDrag,
-      innerRef: nodeWrapper,
-      "data-node-id": id,
-      "data-flume-component": "node",
-      onContextMenu: handleContextMenu,
-      stageState: stageState,
-      stageRect: stageRect
-    }, extraProperties),
-    renderNodeHeader ? renderNodeHeader(NodeHeader, currentNodeType, {
-      openMenu: handleContextMenu,
-      closeMenu: closeContextMenu,
-      deleteNode: deleteNode
-    }) : React.createElement(
-      NodeHeader,
-      null,
-      label
-    ),
-    React.createElement(IoPorts, {
-      nodeId: id,
-      inputs: inputs,
-      outputs: outputs,
-      connections: connections,
-      updateNodeConnections: updateNodeConnections,
-      inputData: inputData
-    }),
-    menuOpen ? React.createElement(
-      Portal$3,
-      null,
-      React.createElement(ContextMenu, {
-        x: menuCoordinates.x,
-        y: menuCoordinates.y,
-        options: [].concat(toConsumableArray(deletable !== false ? [{
-          label: "Delete Node",
-          value: "deleteNode",
-          description: "Deletes a node and all of its connections."
-        }] : [])),
-        onRequestClose: closeContextMenu,
-        onOptionSelected: handleMenuOption,
-        hideFilter: true,
-        label: "Node Options",
-        emptyText: "This node has no options."
-      })
-    ) : null
-  );
+  return /*#__PURE__*/React.createElement(Draggable, babelHelpers.extends({
+    className: styles$b.wrapper,
+    style: {
+      width,
+      transform: `translate(${x}px, ${y}px)`
+    },
+    onMouseDown: mouseDown,
+    onDragStart: startDrag,
+    onDrag: handleDrag,
+    onDragEnd: stopDrag,
+    innerRef: nodeWrapper,
+    "data-node-id": id,
+    "data-flume-component": "node",
+    onContextMenu: handleContextMenu,
+    stageState: stageState,
+    stageRect: stageRect
+  }, extraProperties, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$5,
+      lineNumber: 168,
+      columnNumber: 5
+    }
+  }), renderNodeHeader ? renderNodeHeader(NodeHeader, currentNodeType, {
+    openMenu: handleContextMenu,
+    closeMenu: closeContextMenu,
+    deleteNode
+  }) : /*#__PURE__*/React.createElement(NodeHeader, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$5,
+      lineNumber: 193,
+      columnNumber: 9
+    }
+  }, label), /*#__PURE__*/React.createElement(IoPorts, {
+    nodeId: id,
+    inputs: inputs,
+    outputs: outputs,
+    connections: connections,
+    updateNodeConnections: updateNodeConnections,
+    inputData: inputData,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$5,
+      lineNumber: 195,
+      columnNumber: 7
+    }
+  }), menuOpen ? /*#__PURE__*/React.createElement(Portal$1, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$5,
+      lineNumber: 204,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/React.createElement(ContextMenu, {
+    x: menuCoordinates.x,
+    y: menuCoordinates.y,
+    options: [...(deletable !== false ? [{
+      label: "Delete Node",
+      value: "deleteNode",
+      description: "Deletes a node and all of its connections."
+    }] : [])],
+    onRequestClose: closeContextMenu,
+    onOptionSelected: handleMenuOption,
+    hideFilter: true,
+    label: "Node Options",
+    emptyText: "This node has no options.",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$5,
+      lineNumber: 205,
+      columnNumber: 11
+    }
+  })) : null);
 };
 
-var NodeHeader = function NodeHeader(_ref6) {
-  var children = _ref6.children,
-      _ref6$className = _ref6.className,
-      className = _ref6$className === undefined ? "" : _ref6$className,
-      props = objectWithoutProperties(_ref6, ["children", "className"]);
-  return React.createElement(
-    "h2",
-    _extends({}, props, { className: styles$2.label + (className ? " " + className : ""), "data-flume-component": "node-header" }),
-    children
-  );
-};
+const NodeHeader = ({
+  children,
+  className = "",
+  ...props
+}) => /*#__PURE__*/React.createElement("h2", babelHelpers.extends({}, props, {
+  className: styles$b.label + (className ? ` ${className}` : ""),
+  "data-flume-component": "node-header",
+  __self: undefined,
+  __source: {
+    fileName: _jsxFileName$5,
+    lineNumber: 232,
+    columnNumber: 3
+  }
+}), children);
 
-var css$9 = ".Comment_wrapper__1Pnbd {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  padding: 5px;\n  background: rgba(147, 154, 158, 0.7);\n  border-radius: 5px;\n  border-bottom-right-radius: 2px;\n  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);\n  min-width: 80px;\n  font-size: 14px;\n  display: flex;\n  text-shadow: 0px 1px rgba(255,255,255,.1);\n  border: 1px solid rgba(168, 176, 181, 0.7);\n  user-select: none;\n}\n  .Comment_wrapper__1Pnbd[data-color=\"red\"]{\n    background: rgba(213, 84, 103, 0.65);\n    border-color: rgba(227, 85, 119, 0.65);\n  }\n  .Comment_wrapper__1Pnbd[data-color=\"purple\"]{\n    background: rgba(153, 83, 196, 0.65);\n    border-color: rgba(156, 85, 227, 0.65);\n  }\n  .Comment_wrapper__1Pnbd[data-color=\"blue\"]{\n    background: rgba(76, 142, 203, 0.65);\n    border-color: rgba(85, 159, 227, 0.65);\n  }\n  .Comment_wrapper__1Pnbd[data-color=\"green\"]{\n    background: rgba(70, 200, 130, 0.65);\n    border-color: rgba(85, 227, 150, 0.65);\n  }\n  .Comment_wrapper__1Pnbd[data-color=\"yellow\"]{\n    background: rgba(200, 167, 63, 0.65);\n    border-color: rgba(227, 213, 85, 0.65);\n  }\n  .Comment_wrapper__1Pnbd[data-color=\"orange\"]{\n    background: rgba(215, 123, 64, 0.65);\n    border-color: rgba(227, 149, 85, 0.65);\n  }\n  .Comment_wrapper__1Pnbd[data-color=\"pink\"]{\n    background: rgba(255, 102, 208, 0.65);\n    border-color: rgba(242, 131, 228, 0.65);\n  }\n.Comment_text__Ie2nX{\n  width: 100%;\n  height: 100%;\n  overflow: auto;\n  white-space: pre-wrap;\n  cursor: default;\n}\n.Comment_resizeThumb__20KWn {\n  width: 10px;\n  height: 10px;\n  border-radius: 4px 0px 4px 0px;\n  position: absolute;\n  right: 0px;\n  bottom: 0px;\n  overflow: hidden;\n  cursor: nwse-resize;\n}\n.Comment_resizeThumb__20KWn::before,\n  .Comment_resizeThumb__20KWn::after {\n    content: \"\";\n    position: absolute;\n    right: 0px;\n    top: 0px;\n    width: 250%;\n    height: 0px;\n    border-top: 1px solid rgba(0, 0, 0, 0.7);\n    border-bottom: 2px solid rgba(255, 255, 255, 0.7);\n    transform-origin: center right;\n    transform: rotate(-45deg) scale(0.5);\n  }\n.Comment_resizeThumb__20KWn::after {\n    transform: rotate(-45deg) translateY(3px) scale(0.5);\n  }\n.Comment_textarea__2Rze3 {\n  resize: none;\n  width: calc(100% + 2px);\n  height: calc(100% + 2px);\n  border-radius: 3px;\n  background: rgba(255,255,255,.1);\n  border: none;\n  outline: none;\n  margin: -2px;\n  margin-top: -1px;\n  padding-top: 0px;\n  font-size: 14px;\n}\n.Comment_textarea__2Rze3::placeholder{\n    color: rgba(0,0,0,.5);\n  }\n";
-var styles$9 = { "wrapper": "Comment_wrapper__1Pnbd", "text": "Comment_text__Ie2nX", "resizeThumb": "Comment_resizeThumb__20KWn", "textarea": "Comment_textarea__2Rze3" };
-styleInject(css$9);
+var css_248z$4 = ".Comment_wrapper__2CG3I {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  padding: 5px;\n  background: rgba(147, 154, 158, 0.7);\n  border-radius: 5px;\n  border-bottom-right-radius: 2px;\n  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);\n  min-width: 80px;\n  font-size: 14px;\n  display: flex;\n  text-shadow: 0px 1px rgba(255,255,255,.1);\n  border: 1px solid rgba(168, 176, 181, 0.7);\n  user-select: none;\n}\n  .Comment_wrapper__2CG3I[data-color=\"red\"]{\n    background: rgba(213, 84, 103, 0.65);\n    border-color: rgba(227, 85, 119, 0.65);\n  }\n  .Comment_wrapper__2CG3I[data-color=\"purple\"]{\n    background: rgba(153, 83, 196, 0.65);\n    border-color: rgba(156, 85, 227, 0.65);\n  }\n  .Comment_wrapper__2CG3I[data-color=\"blue\"]{\n    background: rgba(76, 142, 203, 0.65);\n    border-color: rgba(85, 159, 227, 0.65);\n  }\n  .Comment_wrapper__2CG3I[data-color=\"green\"]{\n    background: rgba(70, 200, 130, 0.65);\n    border-color: rgba(85, 227, 150, 0.65);\n  }\n  .Comment_wrapper__2CG3I[data-color=\"yellow\"]{\n    background: rgba(200, 167, 63, 0.65);\n    border-color: rgba(227, 213, 85, 0.65);\n  }\n  .Comment_wrapper__2CG3I[data-color=\"orange\"]{\n    background: rgba(215, 123, 64, 0.65);\n    border-color: rgba(227, 149, 85, 0.65);\n  }\n  .Comment_wrapper__2CG3I[data-color=\"pink\"]{\n    background: rgba(255, 102, 208, 0.65);\n    border-color: rgba(242, 131, 228, 0.65);\n  }\n.Comment_text__wBsGB{\n  width: 100%;\n  height: 100%;\n  overflow: auto;\n  white-space: pre-wrap;\n  cursor: default;\n}\n.Comment_resizeThumb__e-57p {\n  width: 10px;\n  height: 10px;\n  border-radius: 4px 0px 4px 0px;\n  position: absolute;\n  right: 0px;\n  bottom: 0px;\n  overflow: hidden;\n  cursor: nwse-resize;\n}\n.Comment_resizeThumb__e-57p::before,\n  .Comment_resizeThumb__e-57p::after {\n    content: \"\";\n    position: absolute;\n    right: 0px;\n    top: 0px;\n    width: 250%;\n    height: 0px;\n    border-top: 1px solid rgba(0, 0, 0, 0.7);\n    border-bottom: 2px solid rgba(255, 255, 255, 0.7);\n    transform-origin: center right;\n    transform: rotate(-45deg) scale(0.5);\n  }\n.Comment_resizeThumb__e-57p::after {\n    transform: rotate(-45deg) translateY(3px) scale(0.5);\n  }\n.Comment_textarea__i7qnk {\n  resize: none;\n  width: calc(100% + 2px);\n  height: calc(100% + 2px);\n  border-radius: 3px;\n  background: rgba(255,255,255,.1);\n  border: none;\n  outline: none;\n  margin: -2px;\n  margin-top: -1px;\n  padding-top: 0px;\n  font-size: 14px;\n}\n.Comment_textarea__i7qnk::placeholder{\n    color: rgba(0,0,0,.5);\n  }\n";
+var styles$4 = {"wrapper":"Comment_wrapper__2CG3I","text":"Comment_text__wBsGB","resizeThumb":"Comment_resizeThumb__e-57p","textarea":"Comment_textarea__i7qnk"};
+styleInject(css_248z$4);
 
-var css$a = ".ColorPicker_wrapper__1M1j2{\n  position: fixed;\n  z-index: 9999;\n  background: rgba(29, 32, 34, 0.95);\n  border-radius: 5px;\n  box-shadow: 0px 6px 7px rgba(0,0,0,.3);\n  border: 1px solid rgba(0,0,0,.4);\n  color: #fff;\n  display: flex;\n  width: 102px;\n  flex-wrap: wrap;\n  padding: 2px;\n}\n@supports (backdrop-filter: blur(6px)){\n  .ColorPicker_wrapper__1M1j2{\n    backdrop-filter: blur(6px);\n    background: rgba(29, 32, 34, 0.8);\n  }\n}\n.ColorPicker_colorButtonWrapper__1ijdj{\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  padding: 2px;\n}\n.ColorPicker_colorButton__1Qcuq{\n  border-radius: 3px;\n  border: none;\n  width: 20px;\n  height: 20px;\n  background: rgba(204, 204, 204, 1);\n}\n.ColorPicker_colorButton__1Qcuq[data-color=\"red\"]{\n    background: rgba(210, 101, 111, 1)\n  }\n.ColorPicker_colorButton__1Qcuq[data-color=\"purple\"]{\n    background: rgba(159, 101, 210, 1)\n  }\n.ColorPicker_colorButton__1Qcuq[data-color=\"blue\"]{\n    background: rgba(101, 151, 210, 1)\n  }\n.ColorPicker_colorButton__1Qcuq[data-color=\"green\"]{\n    background: rgba(101, 210, 168, 1)\n  }\n.ColorPicker_colorButton__1Qcuq[data-color=\"orange\"]{\n    background: rgba(210, 137, 101, 1)\n  }\n.ColorPicker_colorButton__1Qcuq[data-color=\"yellow\"]{\n    background: rgba(210, 196, 101, 1)\n  }\n.ColorPicker_colorButton__1Qcuq[data-color=\"pink\"]{\n    background: rgba(241, 124, 226, 1)\n  }\n.ColorPicker_colorButton__1Qcuq:hover{\n    opacity: .8;\n  }\n";
-var styles$a = { "wrapper": "ColorPicker_wrapper__1M1j2", "colorButtonWrapper": "ColorPicker_colorButtonWrapper__1ijdj", "colorButton": "ColorPicker_colorButton__1Qcuq" };
-styleInject(css$a);
+var css_248z$3 = ".ColorPicker_wrapper__MW540{\n  position: fixed;\n  z-index: 9999;\n  background: rgba(29, 32, 34, 0.95);\n  border-radius: 5px;\n  box-shadow: 0px 6px 7px rgba(0,0,0,.3);\n  border: 1px solid rgba(0,0,0,.4);\n  color: #fff;\n  display: flex;\n  width: 102px;\n  flex-wrap: wrap;\n  padding: 2px;\n}\n@supports (backdrop-filter: blur(6px)){\n  .ColorPicker_wrapper__MW540{\n    backdrop-filter: blur(6px);\n    background: rgba(29, 32, 34, 0.8);\n  }\n}\n.ColorPicker_colorButtonWrapper__Z123Z{\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  padding: 2px;\n}\n.ColorPicker_colorButton__A82sm{\n  border-radius: 3px;\n  border: none;\n  width: 20px;\n  height: 20px;\n  background: rgba(204, 204, 204, 1);\n}\n.ColorPicker_colorButton__A82sm[data-color=\"red\"]{\n    background: rgba(210, 101, 111, 1)\n  }\n.ColorPicker_colorButton__A82sm[data-color=\"purple\"]{\n    background: rgba(159, 101, 210, 1)\n  }\n.ColorPicker_colorButton__A82sm[data-color=\"blue\"]{\n    background: rgba(101, 151, 210, 1)\n  }\n.ColorPicker_colorButton__A82sm[data-color=\"green\"]{\n    background: rgba(101, 210, 168, 1)\n  }\n.ColorPicker_colorButton__A82sm[data-color=\"orange\"]{\n    background: rgba(210, 137, 101, 1)\n  }\n.ColorPicker_colorButton__A82sm[data-color=\"yellow\"]{\n    background: rgba(210, 196, 101, 1)\n  }\n.ColorPicker_colorButton__A82sm[data-color=\"pink\"]{\n    background: rgba(241, 124, 226, 1)\n  }\n.ColorPicker_colorButton__A82sm:hover{\n    opacity: .8;\n  }\n";
+var styles$3 = {"wrapper":"ColorPicker_wrapper__MW540","colorButtonWrapper":"ColorPicker_colorButtonWrapper__Z123Z","colorButton":"ColorPicker_colorButton__A82sm"};
+styleInject(css_248z$3);
 
-var define = function define(value, defaultValue) {
-  return value !== undefined ? value : defaultValue;
-};
+const define = (value, defaultValue) => value !== undefined ? value : defaultValue;
 
-var buildControlType = function buildControlType(defaultConfig) {
-  var validate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
-  var setup = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {
-    return {};
+const buildControlType = (defaultConfig, validate = () => {}, setup = () => ({})) => config => {
+  validate(config);
+  return {
+    type: defaultConfig.type,
+    label: define(config.label, defaultConfig.label || ""),
+    name: define(config.name, defaultConfig.name || ""),
+    defaultValue: define(config.defaultValue, defaultConfig.defaultValue),
+    setValue: define(config.setValue, undefined),
+    ...setup(config)
   };
-  return function (config) {
-    validate(config);
-    return _extends({
-      type: defaultConfig.type,
-      label: define(config.label, defaultConfig.label || ""),
-      name: define(config.name, defaultConfig.name || ""),
-      defaultValue: define(config.defaultValue, defaultConfig.defaultValue),
-      setValue: define(config.setValue, undefined)
-    }, setup(config));
-  };
 };
 
-var Controls = {
+const Controls = {
   text: buildControlType({
     type: "text",
     name: "text",
@@ -6320,22 +6995,18 @@ var Controls = {
     name: "select",
     options: [],
     defaultValue: ""
-  }, function () {}, function (config) {
-    return {
-      options: define(config.options, []),
-      getOptions: define(config.getOptions, undefined),
-      placeholder: define(config.placeholder, undefined)
-    };
-  }),
+  }, () => {}, config => ({
+    options: define(config.options, []),
+    getOptions: define(config.getOptions, undefined),
+    placeholder: define(config.placeholder, undefined)
+  })),
   number: buildControlType({
     type: "number",
     name: "number",
     defaultValue: 0
-  }, function () {}, function (config) {
-    return {
-      step: define(config.step, undefined)
-    };
-  }),
+  }, () => {}, config => ({
+    step: define(config.step, undefined)
+  })),
   checkbox: buildControlType({
     type: "checkbox",
     name: "checkbox",
@@ -6346,26 +7017,21 @@ var Controls = {
     name: "multiselect",
     options: [],
     defaultValue: []
-  }, function () {}, function (config) {
-    return {
-      options: define(config.options, []),
-      getOptions: define(config.getOptions, undefined),
-      placeholder: define(config.placeholder, undefined)
-    };
-  }),
+  }, () => {}, config => ({
+    options: define(config.options, []),
+    getOptions: define(config.getOptions, undefined),
+    placeholder: define(config.placeholder, undefined)
+  })),
   custom: buildControlType({
     type: "custom",
     name: "custom",
-    render: function render() {},
+    render: () => {},
     defaultValue: undefined
-  }, function () {}, function (config) {
-    return {
-      render: define(config.render, function () {})
-    };
-  })
+  }, () => {}, config => ({
+    render: define(config.render, () => {})
+  }))
 };
-
-var Colors = {
+const Colors = {
   yellow: "yellow",
   orange: "orange",
   red: "red",
@@ -6375,693 +7041,746 @@ var Colors = {
   green: "green",
   grey: "grey"
 };
-
-var getPortBuilders = function getPortBuilders(ports) {
-  return Object.values(ports).reduce(function (obj, port) {
-    obj[port.type] = function () {
-      var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-      return {
-        type: port.type,
-        name: config.name || port.name,
-        label: config.label || port.label,
-        noControls: define(config.noControls, false),
-        color: config.color || port.color,
-        hidePort: define(config.hidePort, port.hidePort),
-        controls: define(config.controls, port.controls)
-      };
+const getPortBuilders = ports => Object.values(ports).reduce((obj, port) => {
+  obj[port.type] = (config = {}) => {
+    return {
+      type: port.type,
+      name: config.name || port.name,
+      label: config.label || port.label,
+      noControls: define(config.noControls, false),
+      color: config.color || port.color,
+      hidePort: define(config.hidePort, port.hidePort),
+      controls: define(config.controls, port.controls)
     };
-    return obj;
-  }, {});
-};
+  };
 
-var FlumeConfig = function () {
-  function FlumeConfig(config) {
-    classCallCheck(this, FlumeConfig);
-
+  return obj;
+}, {});
+class FlumeConfig {
+  constructor(config) {
     if (config) {
-      this.nodeTypes = _extends({}, config.nodeTypes);
-      this.portTypes = _extends({}, config.portTypes);
+      this.nodeTypes = { ...config.nodeTypes
+      };
+      this.portTypes = { ...config.portTypes
+      };
     } else {
       this.nodeTypes = {};
       this.portTypes = {};
     }
   }
 
-  createClass(FlumeConfig, [{
-    key: "addRootNodeType",
-    value: function addRootNodeType(config) {
-      this.addNodeType(_extends({}, config, {
-        root: true,
-        addable: false,
-        deletable: false
-      }));
-      return this;
+  addRootNodeType(config) {
+    this.addNodeType({ ...config,
+      root: true,
+      addable: false,
+      deletable: false
+    });
+    return this;
+  }
+
+  addNodeType(config) {
+    if (typeof config !== "object" && config !== null) {
+      throw new Error("You must provide a configuration object when calling addNodeType.");
     }
-  }, {
-    key: "addNodeType",
-    value: function addNodeType(config) {
-      if ((typeof config === "undefined" ? "undefined" : _typeof(config)) !== "object" && config !== null) {
-        throw new Error("You must provide a configuration object when calling addNodeType.");
-      }
-      if (typeof config.type !== "string") {
-        throw new Error("Required key, \"type\" must be a string when calling addNodeType.");
-      }
-      if (typeof config.initialWidth !== "undefined" && typeof config.initialWidth !== "number") {
-        throw new Error("Optional key, \"initialWidth\" must be a number when calling addNodeType.");
-      }
-      if (this.nodeTypes[config.type] !== undefined) {
-        throw new Error("A node with type \"" + config.type + "\" has already been declared.");
-      }
-      var node = {
-        type: config.type,
-        label: define(config.label, ""),
-        description: define(config.description, ""),
-        addable: define(config.addable, true),
-        deletable: define(config.deletable, true)
-      };
-      if (config.initialWidth) {
-        node.initialWidth = config.initialWidth;
-      }
-      if (config.sortIndex !== undefined) {
-        node.sortIndex = config.sortIndex;
-      }
-      if (typeof config.inputs === "function") {
-        var inputs = config.inputs(getPortBuilders(this.portTypes));
-        if (!Array.isArray(inputs) && typeof config.inputs !== 'function') {
-          throw new Error("When providing a function to the \"inputs\" key, you must return either an array or a function.");
-        }
-        node.inputs = inputs;
-      } else if (config.inputs === undefined) {
-        node.inputs = [];
-      } else if (!Array.isArray(config.inputs)) {
-        throw new Error("Optional key, \"inputs\" must be an array.");
-      } else {
-        node.inputs = config.inputs;
-      }
 
-      if (typeof config.outputs === "function") {
-        var outputs = config.outputs(getPortBuilders(this.portTypes));
-        if (!Array.isArray(outputs) && typeof config.outputs !== 'function') {
-          throw new Error("When providing a function to the \"outputs\" key, you must return either an array or a function.");
-        }
-        node.outputs = outputs;
-      } else if (config.outputs === undefined) {
-        node.outputs = [];
-      } else if (config.outputs !== undefined && !Array.isArray(config.outputs)) {
-        throw new Error("Optional key, \"outputs\" must be an array.");
-      } else {
-        node.outputs = config.outputs;
-      }
-
-      if (config.root !== undefined) {
-        if (typeof config.root !== "boolean") {
-          throw new Error("Optional key, \"root\" must be a boolean.");
-        } else {
-          node.root = config.root;
-        }
-      }
-
-      this.nodeTypes[config.type] = node;
-      return this;
+    if (typeof config.type !== "string") {
+      throw new Error(`Required key, "type" must be a string when calling addNodeType.`);
     }
-  }, {
-    key: "removeNodeType",
-    value: function removeNodeType(type) {
-      if (!this.nodeTypes[type]) {
-        console.error("Non-existent node type \"" + type + "\" cannot be removed.");
-      } else {
-        var _nodeTypes = this.nodeTypes,
-            deleted = _nodeTypes[type],
-            nodeTypes = objectWithoutProperties(_nodeTypes, [type]);
 
-        this.nodeTypes = nodeTypes;
-      }
-      return this;
+    if (typeof config.initialWidth !== "undefined" && typeof config.initialWidth !== "number") {
+      throw new Error(`Optional key, "initialWidth" must be a number when calling addNodeType.`);
     }
-  }, {
-    key: "addPortType",
-    value: function addPortType(config) {
-      if ((typeof config === "undefined" ? "undefined" : _typeof(config)) !== "object" && config !== null) {
-        throw new Error("You must provide a configuration object when calling addPortType");
-      }
-      if (typeof config.type !== "string") {
-        throw new Error("Required key, \"type\" must be a string when calling addPortType.");
-      }
-      if (this.portTypes[config.type] !== undefined) {
-        throw new Error("A port with type \"" + config.type + "\" has already been declared.");
-      }
-      if (typeof config.name !== "string") {
-        throw new Error("Required key, \"name\" must be a string when calling addPortType.");
-      }
 
-      var port = {
-        type: config.type,
-        name: config.name,
-        label: define(config.label, ""),
-        color: define(config.color, Colors.grey),
-        hidePort: define(config.hidePort, false)
-      };
-
-      if (config.acceptTypes === undefined) {
-        port.acceptTypes = [config.type];
-      } else if (!Array.isArray(config.acceptTypes)) {
-        throw new Error("Optional key, \"acceptTypes\" must be an array.");
-      } else {
-        port.acceptTypes = config.acceptTypes;
-      }
-
-      if (config.controls === undefined) {
-        port.controls = [];
-      } else if (!Array.isArray(config.controls)) {
-        throw new Error("Optional key, \"controls\" must be an array.");
-      } else {
-        port.controls = config.controls;
-      }
-
-      this.portTypes[config.type] = port;
-      return this;
+    if (this.nodeTypes[config.type] !== undefined) {
+      throw new Error(`A node with type "${config.type}" has already been declared.`);
     }
-  }, {
-    key: "removePortType",
-    value: function removePortType(type) {
-      var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-          _ref$skipDynamicNodes = _ref.skipDynamicNodesCheck,
-          skipDynamicNodesCheck = _ref$skipDynamicNodes === undefined ? false : _ref$skipDynamicNodes;
 
-      if (!this.portTypes[type]) {
-        console.error("Non-existent port type \"" + type + "\" cannot be removed.");
+    const node = {
+      type: config.type,
+      label: define(config.label, ""),
+      description: define(config.description, ""),
+      addable: define(config.addable, true),
+      deletable: define(config.deletable, true)
+    };
+
+    if (config.initialWidth) {
+      node.initialWidth = config.initialWidth;
+    }
+
+    if (config.sortIndex !== undefined) {
+      node.sortIndex = config.sortIndex;
+    }
+
+    if (typeof config.inputs === "function") {
+      const inputs = config.inputs(getPortBuilders(this.portTypes));
+
+      if (!Array.isArray(inputs) && typeof config.inputs !== 'function') {
+        throw new Error(`When providing a function to the "inputs" key, you must return either an array or a function.`);
+      }
+
+      node.inputs = inputs;
+    } else if (config.inputs === undefined) {
+      node.inputs = [];
+    } else if (!Array.isArray(config.inputs)) {
+      throw new Error(`Optional key, "inputs" must be an array.`);
+    } else {
+      node.inputs = config.inputs;
+    }
+
+    if (typeof config.outputs === "function") {
+      const outputs = config.outputs(getPortBuilders(this.portTypes));
+
+      if (!Array.isArray(outputs) && typeof config.outputs !== 'function') {
+        throw new Error(`When providing a function to the "outputs" key, you must return either an array or a function.`);
+      }
+
+      node.outputs = outputs;
+    } else if (config.outputs === undefined) {
+      node.outputs = [];
+    } else if (config.outputs !== undefined && !Array.isArray(config.outputs)) {
+      throw new Error(`Optional key, "outputs" must be an array.`);
+    } else {
+      node.outputs = config.outputs;
+    }
+
+    if (config.root !== undefined) {
+      if (typeof config.root !== "boolean") {
+        throw new Error(`Optional key, "root" must be a boolean.`);
       } else {
-        if (!skipDynamicNodesCheck) {
-          var dynamicNodes = Object.values(this.nodeTypes).filter(function (node) {
-            return typeof node.inputs === 'function' || typeof node.outputs === 'function';
-          });
-          if (dynamicNodes.length) {
-            console.warn("We've detected that one or more of your nodes is using dynamic inputs/outputs. This is a potentially dangerous operation as we are unable to detect if this portType is being used in one of those nodes. You can quiet this message by passing { skipDynamicNodesCheck: true } in as the second argument.");
-          }
-        }
-        var affectedNodes = Object.values(this.nodeTypes).filter(function (node) {
-          return Array.isArray(node.inputs) && node.inputs.find(function (p) {
-            return p.type === type;
-          }) || Array.isArray(node.outputs) && node.outputs.find(function (p) {
-            return p.type === type;
-          });
-        });
-        if (affectedNodes.length) {
-          throw new Error("Cannot delete port type \"" + type + "\" without first deleting all node types using these ports: [" + affectedNodes.map(function (n) {
-            return "" + n.type;
-          }).join(", ") + "]");
-        } else {
-          var _portTypes = this.portTypes,
-              deleted = _portTypes[type],
-              portTypes = objectWithoutProperties(_portTypes, [type]);
+        node.root = config.root;
+      }
+    }
 
-          this.portTypes = portTypes;
+    this.nodeTypes[config.type] = node;
+    return this;
+  }
+
+  removeNodeType(type) {
+    if (!this.nodeTypes[type]) {
+      console.error(`Non-existent node type "${type}" cannot be removed.`);
+    } else {
+      const {
+        [type]: deleted,
+        ...nodeTypes
+      } = this.nodeTypes;
+      this.nodeTypes = nodeTypes;
+    }
+
+    return this;
+  }
+
+  addPortType(config) {
+    if (typeof config !== "object" && config !== null) {
+      throw new Error("You must provide a configuration object when calling addPortType");
+    }
+
+    if (typeof config.type !== "string") {
+      throw new Error(`Required key, "type" must be a string when calling addPortType.`);
+    }
+
+    if (this.portTypes[config.type] !== undefined) {
+      throw new Error(`A port with type "${config.type}" has already been declared.`);
+    }
+
+    if (typeof config.name !== "string") {
+      throw new Error(`Required key, "name" must be a string when calling addPortType.`);
+    }
+
+    const port = {
+      type: config.type,
+      name: config.name,
+      label: define(config.label, ""),
+      color: define(config.color, Colors.grey),
+      hidePort: define(config.hidePort, false)
+    };
+
+    if (config.acceptTypes === undefined) {
+      port.acceptTypes = [config.type];
+    } else if (!Array.isArray(config.acceptTypes)) {
+      throw new Error(`Optional key, "acceptTypes" must be an array.`);
+    } else {
+      port.acceptTypes = config.acceptTypes;
+    }
+
+    if (config.controls === undefined) {
+      port.controls = [];
+    } else if (!Array.isArray(config.controls)) {
+      throw new Error(`Optional key, "controls" must be an array.`);
+    } else {
+      port.controls = config.controls;
+    }
+
+    this.portTypes[config.type] = port;
+    return this;
+  }
+
+  removePortType(type, {
+    skipDynamicNodesCheck = false
+  } = {}) {
+    if (!this.portTypes[type]) {
+      console.error(`Non-existent port type "${type}" cannot be removed.`);
+    } else {
+      if (!skipDynamicNodesCheck) {
+        const dynamicNodes = Object.values(this.nodeTypes).filter(node => typeof node.inputs === 'function' || typeof node.outputs === 'function');
+
+        if (dynamicNodes.length) {
+          console.warn(`We've detected that one or more of your nodes is using dynamic inputs/outputs. This is a potentially dangerous operation as we are unable to detect if this portType is being used in one of those nodes. You can quiet this message by passing { skipDynamicNodesCheck: true } in as the second argument.`);
         }
       }
-      return this;
+
+      const affectedNodes = Object.values(this.nodeTypes).filter(node => Array.isArray(node.inputs) && node.inputs.find(p => p.type === type) || Array.isArray(node.outputs) && node.outputs.find(p => p.type === type));
+
+      if (affectedNodes.length) {
+        throw new Error(`Cannot delete port type "${type}" without first deleting all node types using these ports: [${affectedNodes.map(n => `${n.type}`).join(", ")}]`);
+      } else {
+        const {
+          [type]: deleted,
+          ...portTypes
+        } = this.portTypes;
+        this.portTypes = portTypes;
+      }
     }
-  }]);
-  return FlumeConfig;
-}();
 
-var ColorPicker = (function (_ref) {
-  var x = _ref.x,
-      y = _ref.y,
-      onColorPicked = _ref.onColorPicked,
-      onRequestClose = _ref.onRequestClose;
+    return this;
+  }
 
-  var wrapper = React.useRef();
+}
 
-  var testClickOutside = React.useCallback(function (e) {
+var _jsxFileName$4 = "/workspaces/flumeapi/src/components/ColorPicker/ColorPicker.js";
+var ColorPicker = (({
+  x,
+  y,
+  onColorPicked,
+  onRequestClose
+}) => {
+  const wrapper = React.useRef();
+  const testClickOutside = React.useCallback(e => {
     if (wrapper.current && !wrapper.current.contains(e.target)) {
       onRequestClose();
       document.removeEventListener("click", testClickOutside);
       document.removeEventListener("contextmenu", testClickOutside);
     }
   }, [wrapper, onRequestClose]);
-
-  var testEscape = React.useCallback(function (e) {
+  const testEscape = React.useCallback(e => {
     if (e.keyCode === 27) {
       onRequestClose();
       document.removeEventListener("keydown", testEscape);
     }
   }, [onRequestClose]);
-
-  React.useEffect(function () {
+  React.useEffect(() => {
     document.addEventListener("keydown", testEscape);
     document.addEventListener("click", testClickOutside);
     document.addEventListener("contextmenu", testClickOutside);
-    return function () {
+    return () => {
       document.removeEventListener("click", testClickOutside);
       document.removeEventListener("contextmenu", testClickOutside);
       document.removeEventListener("keydown", testEscape);
     };
   }, [testClickOutside, testEscape]);
-
-  return React.createElement(
-    "div",
-    {
-      "data-flume-component": "color-picker",
-      ref: wrapper,
-      className: styles$a.wrapper,
-      style: {
-        left: x,
-        top: y
-      }
+  return /*#__PURE__*/React.createElement("div", {
+    "data-flume-component": "color-picker",
+    ref: wrapper,
+    className: styles$3.wrapper,
+    style: {
+      left: x,
+      top: y
     },
-    Object.values(Colors).map(function (color) {
-      return React.createElement(ColorButton, {
-        onSelected: function onSelected() {
-          onColorPicked(color);
-          onRequestClose();
-        },
-        color: color,
-        key: color
-      });
-    })
-  );
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$4,
+      lineNumber: 41,
+      columnNumber: 5
+    }
+  }, Object.values(Colors).map(color => /*#__PURE__*/React.createElement(ColorButton, {
+    onSelected: () => {
+      onColorPicked(color);
+      onRequestClose();
+    },
+    color: color,
+    key: color,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$4,
+      lineNumber: 51,
+      columnNumber: 9
+    }
+  })));
 });
 
-var ColorButton = function ColorButton(_ref2) {
-  var color = _ref2.color,
-      onSelected = _ref2.onSelected;
-  return React.createElement(
-    "div",
-    { className: styles$a.colorButtonWrapper },
-    React.createElement("button", {
-      "data-flume-component": "color-button",
-      className: styles$a.colorButton,
-      onClick: onSelected,
-      "data-color": color,
-      "aria-label": color
-    })
-  );
-};
+const ColorButton = ({
+  color,
+  onSelected
+}) => /*#__PURE__*/React.createElement("div", {
+  className: styles$3.colorButtonWrapper,
+  __self: undefined,
+  __source: {
+    fileName: _jsxFileName$4,
+    lineNumber: 65,
+    columnNumber: 3
+  }
+}, /*#__PURE__*/React.createElement("button", {
+  "data-flume-component": "color-button",
+  className: styles$3.colorButton,
+  onClick: onSelected,
+  "data-color": color,
+  "aria-label": color,
+  __self: undefined,
+  __source: {
+    fileName: _jsxFileName$4,
+    lineNumber: 66,
+    columnNumber: 5
+  }
+}));
 
-var Comment = (function (_ref) {
-  var dispatch = _ref.dispatch,
-      id = _ref.id,
-      x = _ref.x,
-      y = _ref.y,
-      width = _ref.width,
-      height = _ref.height,
-      color = _ref.color,
-      text = _ref.text,
-      stageRect = _ref.stageRect,
-      onDragStart = _ref.onDragStart,
-      isNew = _ref.isNew;
-
-  var stageState = React.useContext(StageContext);
-  var wrapper = React.useRef();
-  var textarea = React.useRef();
-
-  var _React$useState = React.useState(false),
-      _React$useState2 = slicedToArray(_React$useState, 2),
-      isEditing = _React$useState2[0],
-      setIsEditing = _React$useState2[1];
-
-  var _React$useState3 = React.useState(false),
-      _React$useState4 = slicedToArray(_React$useState3, 2),
-      isPickingColor = _React$useState4[0],
-      setIsPickingColor = _React$useState4[1];
-
-  var _React$useState5 = React.useState(false),
-      _React$useState6 = slicedToArray(_React$useState5, 2),
-      menuOpen = _React$useState6[0],
-      setMenuOpen = _React$useState6[1];
-
-  var _React$useState7 = React.useState({ x: 0, y: 0 }),
-      _React$useState8 = slicedToArray(_React$useState7, 2),
-      menuCoordinates = _React$useState8[0],
-      setMenuCoordinates = _React$useState8[1];
-
-  var _React$useState9 = React.useState({
+var _jsxFileName$3 = "/workspaces/flumeapi/src/components/Comment/Comment.js";
+var Comment = (({
+  dispatch,
+  id,
+  x,
+  y,
+  width,
+  height,
+  color,
+  text,
+  stageRect,
+  onDragStart,
+  isNew
+}) => {
+  const stageState = React.useContext(StageContext);
+  const wrapper = React.useRef();
+  const textarea = React.useRef();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [isPickingColor, setIsPickingColor] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [menuCoordinates, setMenuCoordinates] = React.useState({
     x: 0,
     y: 0
-  }),
-      _React$useState10 = slicedToArray(_React$useState9, 2),
-      colorPickerCoordinates = _React$useState10[0],
-      setColorPickerCoordinates = _React$useState10[1];
+  });
+  const [colorPickerCoordinates, setColorPickerCoordinates] = React.useState({
+    x: 0,
+    y: 0
+  });
 
-  var handleContextMenu = function handleContextMenu(e) {
+  const handleContextMenu = e => {
     e.preventDefault();
     e.stopPropagation();
-    setMenuCoordinates({ x: e.clientX, y: e.clientY });
+    setMenuCoordinates({
+      x: e.clientX,
+      y: e.clientY
+    });
     setMenuOpen(true);
     return false;
   };
 
-  var closeContextMenu = function closeContextMenu() {
-    return setMenuOpen(false);
-  };
+  const closeContextMenu = () => setMenuOpen(false);
 
-  var startDrag = function startDrag(e) {
+  const startDrag = e => {
     onDragStart();
   };
 
-  var handleDrag = function handleDrag(_ref2) {
-    var x = _ref2.x,
-        y = _ref2.y;
-
-    wrapper.current.style.transform = "translate(" + x + "px," + y + "px)";
+  const handleDrag = ({
+    x,
+    y
+  }) => {
+    wrapper.current.style.transform = `translate(${x}px,${y}px)`;
   };
 
-  var handleDragEnd = function handleDragEnd(_, _ref3) {
-    var x = _ref3.x,
-        y = _ref3.y;
-
+  const handleDragEnd = (_, {
+    x,
+    y
+  }) => {
     dispatch({
       type: "SET_COMMENT_COORDINATES",
-      id: id,
-      x: x,
-      y: y
+      id,
+      x,
+      y
     });
   };
 
-  var handleResize = function handleResize(coordinates) {
-    var width = clamp_1(coordinates.x - x + 10, 80, 10000);
-    var height = clamp_1(coordinates.y - y + 10, 30, 10000);
-    wrapper.current.style.width = width + "px";
-    wrapper.current.style.height = height + "px";
+  const handleResize = coordinates => {
+    const width = clamp_1(coordinates.x - x + 10, 80, 10000);
+    const height = clamp_1(coordinates.y - y + 10, 30, 10000);
+    wrapper.current.style.width = `${width}px`;
+    wrapper.current.style.height = `${height}px`;
   };
 
-  var handleResizeEnd = function handleResizeEnd(_, coordinates) {
-    var width = clamp_1(coordinates.x - x + 10, 80, 10000);
-    var height = clamp_1(coordinates.y - y + 10, 30, 10000);
+  const handleResizeEnd = (_, coordinates) => {
+    const width = clamp_1(coordinates.x - x + 10, 80, 10000);
+    const height = clamp_1(coordinates.y - y + 10, 30, 10000);
     dispatch({
       type: "SET_COMMENT_DIMENSIONS",
-      id: id,
-      width: width,
-      height: height
+      id,
+      width,
+      height
     });
   };
 
-  var handleMenuOption = function handleMenuOption(option, e) {
+  const handleMenuOption = (option, e) => {
     switch (option.value) {
       case "edit":
         startTextEdit();
         break;
+
       case "color":
         setColorPickerCoordinates(menuCoordinates);
         setIsPickingColor(true);
         break;
+
       case "delete":
         dispatch({
           type: "DELETE_COMMENT",
-          id: id
+          id
         });
         break;
-      default:
     }
   };
 
-  var startTextEdit = function startTextEdit() {
+  const startTextEdit = () => {
     setIsEditing(true);
   };
 
-  var endTextEdit = function endTextEdit() {
+  const endTextEdit = () => {
     setIsEditing(false);
   };
 
-  var handleTextChange = function handleTextChange(e) {
+  const handleTextChange = e => {
     dispatch({
       type: "SET_COMMENT_TEXT",
-      id: id,
+      id,
       text: e.target.value
     });
   };
 
-  var handleColorPicked = function handleColorPicked(color) {
+  const handleColorPicked = color => {
     dispatch({
       type: "SET_COMMENT_COLOR",
-      id: id,
-      color: color
+      id,
+      color
     });
   };
 
-  React.useEffect(function () {
+  React.useEffect(() => {
     if (isNew) {
       setIsEditing(true);
       dispatch({
         type: "REMOVE_COMMENT_NEW",
-        id: id
+        id
       });
     }
   }, [isNew, dispatch, id]);
-
-  return React.createElement(
-    Draggable,
-    {
-      innerRef: wrapper,
-      className: styles$9.wrapper,
-      style: {
-        transform: "translate(" + x + "px," + y + "px)",
-        width: width,
-        height: height,
-        zIndex: isEditing ? 999 : ""
-      },
-      stageState: stageState,
-      stageRect: stageRect,
-      onDragStart: startDrag,
-      onDrag: handleDrag,
-      onDragEnd: handleDragEnd,
-      onContextMenu: handleContextMenu,
-      onDoubleClick: startTextEdit,
-      onWheel: function onWheel(e) {
-        return e.stopPropagation();
-      },
-      "data-color": color,
-      "data-flume-component": "comment"
+  return /*#__PURE__*/React.createElement(Draggable, {
+    innerRef: wrapper,
+    className: styles$4.wrapper,
+    style: {
+      transform: `translate(${x}px,${y}px)`,
+      width,
+      height,
+      zIndex: isEditing ? 999 : ""
     },
-    isEditing ? React.createElement("textarea", {
-      "data-flume-component": "comment-textarea",
-      className: styles$9.textarea,
-      onChange: handleTextChange,
-      onMouseDown: function onMouseDown(e) {
-        return e.stopPropagation();
-      },
-      onBlur: endTextEdit,
-      placeholder: "Text of the comment...",
-      autoFocus: true,
-      value: text,
-      ref: textarea
-    }) : React.createElement(
-      "div",
-      { "data-flume-component": "comment-text", "data-comment": true, className: styles$9.text },
-      text
-    ),
-    React.createElement(Draggable, {
-      className: styles$9.resizeThumb,
-      stageState: stageState,
-      stageRect: stageRect,
-      onDrag: handleResize,
-      onDragEnd: handleResizeEnd,
-      "data-flume-component": "comment-resize-handle"
-    }),
-    menuOpen ? React.createElement(
-      Portal$3,
-      null,
-      React.createElement(ContextMenu, {
-        hideFilter: true,
-        label: "Comment Options",
-        x: menuCoordinates.x,
-        y: menuCoordinates.y,
-        options: [{
-          value: "edit",
-          label: "Edit Comment",
-          description: "Edit the text of the comment"
-        }, {
-          value: "color",
-          label: "Change Color",
-          description: "Change the color of the comment"
-        }, {
-          value: "delete",
-          label: "Delete Comment",
-          description: "Delete the comment"
-        }],
-        onRequestClose: closeContextMenu,
-        onOptionSelected: handleMenuOption
-      })
-    ) : null,
-    isPickingColor ? React.createElement(
-      Portal$3,
-      null,
-      React.createElement(ColorPicker, {
-        x: colorPickerCoordinates.x,
-        y: colorPickerCoordinates.y,
-        onRequestClose: function onRequestClose() {
-          return setIsPickingColor(false);
-        },
-        onColorPicked: handleColorPicked
-      })
-    ) : null
-  );
+    stageState: stageState,
+    stageRect: stageRect,
+    onDragStart: startDrag,
+    onDrag: handleDrag,
+    onDragEnd: handleDragEnd,
+    onContextMenu: handleContextMenu,
+    onDoubleClick: startTextEdit,
+    onWheel: e => e.stopPropagation(),
+    "data-color": color,
+    "data-flume-component": "comment",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$3,
+      lineNumber: 134,
+      columnNumber: 5
+    }
+  }, isEditing ? /*#__PURE__*/React.createElement("textarea", {
+    "data-flume-component": "comment-textarea",
+    className: styles$4.textarea,
+    onChange: handleTextChange,
+    onMouseDown: e => e.stopPropagation(),
+    onBlur: endTextEdit,
+    placeholder: "Text of the comment...",
+    autoFocus: true,
+    value: text,
+    ref: textarea,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$3,
+      lineNumber: 155,
+      columnNumber: 9
+    }
+  }) : /*#__PURE__*/React.createElement("div", {
+    "data-flume-component": "comment-text",
+    "data-comment": true,
+    className: styles$4.text,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$3,
+      lineNumber: 167,
+      columnNumber: 9
+    }
+  }, text), /*#__PURE__*/React.createElement(Draggable, {
+    className: styles$4.resizeThumb,
+    stageState: stageState,
+    stageRect: stageRect,
+    onDrag: handleResize,
+    onDragEnd: handleResizeEnd,
+    "data-flume-component": "comment-resize-handle",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$3,
+      lineNumber: 171,
+      columnNumber: 7
+    }
+  }), menuOpen ? /*#__PURE__*/React.createElement(Portal$1, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$3,
+      lineNumber: 180,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/React.createElement(ContextMenu, {
+    hideFilter: true,
+    label: "Comment Options",
+    x: menuCoordinates.x,
+    y: menuCoordinates.y,
+    options: [{
+      value: "edit",
+      label: "Edit Comment",
+      description: "Edit the text of the comment"
+    }, {
+      value: "color",
+      label: "Change Color",
+      description: "Change the color of the comment"
+    }, {
+      value: "delete",
+      label: "Delete Comment",
+      description: "Delete the comment"
+    }],
+    onRequestClose: closeContextMenu,
+    onOptionSelected: handleMenuOption,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$3,
+      lineNumber: 181,
+      columnNumber: 11
+    }
+  })) : null, isPickingColor ? /*#__PURE__*/React.createElement(Portal$1, {
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$3,
+      lineNumber: 209,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/React.createElement(ColorPicker, {
+    x: colorPickerCoordinates.x,
+    y: colorPickerCoordinates.y,
+    onRequestClose: () => setIsPickingColor(false),
+    onColorPicked: handleColorPicked,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$3,
+      lineNumber: 210,
+      columnNumber: 11
+    }
+  })) : null);
 });
 
-var css$b = ".Toaster_toaster__1eC3T{\n  position: absolute;\n  left: 0px;\n  bottom: 0px;\n  width: 100%;\n  height: 1px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  padding-bottom: 15px;\n  box-shadow: 0px 5px 10px -2px rgba(0,0,0,.3);\n  pointer-events: none;\n}\n.Toaster_toast__3YHVS{\n  position: absolute;\n  left: calc(50% - 200px);\n  top: 0px;\n  pointer-events: all;\n  width: 400px;\n  padding: 10px;\n  padding-top: 7px;\n  padding-right: 16px;\n  border-radius: 6px;\n  background: rgba(231, 231, 231, 1);\n  border: 1px solid;\n  margin-bottom: 5px;\n  transition: transform 300ms;\n  flex: 0 0 auto;\n  animation: Toaster_fade-in__2526Y 150ms;\n  user-select: none;\n  font-size: 14px;\n  display: flex;\n  flex-direction: column;\n  will-change: transform;\n}\n.Toaster_toast__3YHVS[data-type=\"danger\"]{\n    background: rgb(255, 116, 137);\n    border-color: rgb(254, 99, 136);\n    color: rgb(66, 6, 20);\n  }\n.Toaster_toast__3YHVS[data-type=\"info\"]{\n    background: rgb(76, 193, 250);\n    border-color: rgb(103, 182, 255);\n    color: rgb(5, 36, 64);\n  }\n.Toaster_toast__3YHVS[data-type=\"success\"]{\n    background: rgb(81, 230, 150);\n    border-color: rgb(85, 227, 150);\n    color: rgb(7, 57, 30);\n  }\n.Toaster_toast__3YHVS[data-type=\"warning\"]{\n    background: rgb(245, 208, 93);\n    border-color: rgb(247, 235, 125);\n    color: rgb(83, 75, 8);\n  }\n.Toaster_toast__3YHVS[data-exiting=true]{\n    animation: Toaster_fade-out__2lM6E 150ms;\n    animation-fill-mode: forwards;\n  }\n.Toaster_toast__3YHVS p{\n  margin: 0px;\n}\n.Toaster_title__4InNr{\n  font-size: 16px;\n  font-weight: bold;\n  margin-bottom: 5px;\n}\n.Toaster_timer__3dGzF{\n  position: absolute;\n  bottom: -1px;\n  left: -1px;\n  width: calc(100% + 2px);\n  height: 3px;\n  background: rgba(0,0,0,.4);\n  transform-origin: left center;\n  animation: Toaster_timer__3dGzF 1000ms linear;\n  animation-fill-mode: forwards;\n  z-index: 9;\n}\n.Toaster_exitButton__1S_Ks{\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  width: 20px;\n  height: 20px;\n  padding: 0px;\n  background: none;\n  border: none;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 14px;\n  color: inherit;\n  opacity: .6;\n}\n.Toaster_exitButton__1S_Ks:hover{\n  opacity: .9;\n}\n\n@keyframes Toaster_fade-in__2526Y {\n  from{\n    opacity: 0;\n  }\n  to{\n    opacity: 1;\n  }\n}\n\n@keyframes Toaster_fade-out__2lM6E {\n  from{\n    opacity: 1;\n  }\n  to{\n    opacity: 0;\n  }\n}\n\n@keyframes Toaster_timer__3dGzF {\n  from{\n    transform: scaleX(1);\n  }\n  to{\n    transform: scaleX(0);\n  }\n}\n";
-var styles$b = { "toaster": "Toaster_toaster__1eC3T", "toast": "Toaster_toast__3YHVS", "fade-in": "Toaster_fade-in__2526Y", "fade-out": "Toaster_fade-out__2lM6E", "title": "Toaster_title__4InNr", "timer": "Toaster_timer__3dGzF", "exitButton": "Toaster_exitButton__1S_Ks" };
-styleInject(css$b);
+var css_248z$2 = ".Toaster_toaster__E5R8O{\n  position: absolute;\n  left: 0px;\n  bottom: 0px;\n  width: 100%;\n  height: 1px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  padding-bottom: 15px;\n  box-shadow: 0px 5px 10px -2px rgba(0,0,0,.3);\n  pointer-events: none;\n}\n.Toaster_toast__2wgPt{\n  position: absolute;\n  left: calc(50% - 200px);\n  top: 0px;\n  pointer-events: all;\n  width: 400px;\n  padding: 10px;\n  padding-top: 7px;\n  padding-right: 16px;\n  border-radius: 6px;\n  background: rgba(231, 231, 231, 1);\n  border: 1px solid;\n  margin-bottom: 5px;\n  transition: transform 300ms;\n  flex: 0 0 auto;\n  animation: Toaster_fade-in__y8znw 150ms;\n  user-select: none;\n  font-size: 14px;\n  display: flex;\n  flex-direction: column;\n  will-change: transform;\n}\n.Toaster_toast__2wgPt[data-type=\"danger\"]{\n    background: rgb(255, 116, 137);\n    border-color: rgb(254, 99, 136);\n    color: rgb(66, 6, 20);\n  }\n.Toaster_toast__2wgPt[data-type=\"info\"]{\n    background: rgb(76, 193, 250);\n    border-color: rgb(103, 182, 255);\n    color: rgb(5, 36, 64);\n  }\n.Toaster_toast__2wgPt[data-type=\"success\"]{\n    background: rgb(81, 230, 150);\n    border-color: rgb(85, 227, 150);\n    color: rgb(7, 57, 30);\n  }\n.Toaster_toast__2wgPt[data-type=\"warning\"]{\n    background: rgb(245, 208, 93);\n    border-color: rgb(247, 235, 125);\n    color: rgb(83, 75, 8);\n  }\n.Toaster_toast__2wgPt[data-exiting=true]{\n    animation: Toaster_fade-out__XANRE 150ms;\n    animation-fill-mode: forwards;\n  }\n.Toaster_toast__2wgPt p{\n  margin: 0px;\n}\n.Toaster_title__UqwtP{\n  font-size: 16px;\n  font-weight: bold;\n  margin-bottom: 5px;\n}\n.Toaster_timer__P6Wpm{\n  position: absolute;\n  bottom: -1px;\n  left: -1px;\n  width: calc(100% + 2px);\n  height: 3px;\n  background: rgba(0,0,0,.4);\n  transform-origin: left center;\n  animation: Toaster_timer__P6Wpm 1000ms linear;\n  animation-fill-mode: forwards;\n  z-index: 9;\n}\n.Toaster_exitButton__8SpPt{\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  width: 20px;\n  height: 20px;\n  padding: 0px;\n  background: none;\n  border: none;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 14px;\n  color: inherit;\n  opacity: .6;\n}\n.Toaster_exitButton__8SpPt:hover{\n  opacity: .9;\n}\n\n@keyframes Toaster_fade-in__y8znw {\n  from{\n    opacity: 0;\n  }\n  to{\n    opacity: 1;\n  }\n}\n\n@keyframes Toaster_fade-out__XANRE {\n  from{\n    opacity: 1;\n  }\n  to{\n    opacity: 0;\n  }\n}\n\n@keyframes Toaster_timer__P6Wpm {\n  from{\n    transform: scaleX(1);\n  }\n  to{\n    transform: scaleX(0);\n  }\n}\n";
+var styles$2 = {"toaster":"Toaster_toaster__E5R8O","toast":"Toaster_toast__2wgPt","fade-in":"Toaster_fade-in__y8znw","fade-out":"Toaster_fade-out__XANRE","title":"Toaster_title__UqwtP","timer":"Toaster_timer__P6Wpm","exitButton":"Toaster_exitButton__8SpPt"};
+styleInject(css_248z$2);
 
-var Toaster = (function (_ref) {
-  var _ref$toasts = _ref.toasts,
-      toasts = _ref$toasts === undefined ? [] : _ref$toasts,
-      dispatchToasts = _ref.dispatchToasts;
-
-  var setHeight = React.useCallback(function (id, height) {
+var _jsxFileName$2 = "/workspaces/flumeapi/src/components/Toaster/Toaster.js";
+var Toaster = (({
+  toasts = [],
+  dispatchToasts
+}) => {
+  const setHeight = React.useCallback((id, height) => {
     dispatchToasts({
       type: "SET_HEIGHT",
-      id: id,
-      height: height
+      id,
+      height
     });
   }, [dispatchToasts]);
-
-  var startExit = React.useCallback(function (id) {
+  const startExit = React.useCallback(id => {
     dispatchToasts({
       type: "SET_EXITING",
-      id: id
+      id
     });
   }, [dispatchToasts]);
-
-  var removeToast = React.useCallback(function (id) {
+  const removeToast = React.useCallback(id => {
     dispatchToasts({
       type: "REMOVE_TOAST",
-      id: id
+      id
     });
   }, [dispatchToasts]);
-
-  return React.createElement(
-    "div",
-    { className: styles$b.toaster },
-    toasts.map(function (toast, i) {
-      return React.createElement(Toast, _extends({}, toast, {
-        onHeightReceived: setHeight,
-        onExitRequested: startExit,
-        onRemoveRequested: removeToast,
-        y: toasts.slice(0, i + 1).reduce(function (y, t) {
-          return t.height + y + 5;
-        }, 0),
-        key: toast.id
-      }));
-    })
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: styles$2.toaster,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$2,
+      lineNumber: 37,
+      columnNumber: 5
+    }
+  }, toasts.map((toast, i) => {
+    return /*#__PURE__*/React.createElement(Toast, babelHelpers.extends({}, toast, {
+      onHeightReceived: setHeight,
+      onExitRequested: startExit,
+      onRemoveRequested: removeToast,
+      y: toasts.slice(0, i + 1).reduce((y, t) => t.height + y + 5, 0),
+      key: toast.id,
+      __self: undefined,
+      __source: {
+        fileName: _jsxFileName$2,
+        lineNumber: 40,
+        columnNumber: 11
+      }
+    }));
+  }));
 });
 
-var Toast = function Toast(_ref2) {
-  var id = _ref2.id,
-      title = _ref2.title,
-      message = _ref2.message,
-      duration = _ref2.duration,
-      type = _ref2.type,
-      exiting = _ref2.exiting,
-      y = _ref2.y,
-      onHeightReceived = _ref2.onHeightReceived,
-      onExitRequested = _ref2.onExitRequested,
-      onRemoveRequested = _ref2.onRemoveRequested;
-
-  var _React$useState = React.useState(false),
-      _React$useState2 = slicedToArray(_React$useState, 2),
-      paused = _React$useState2[0],
-      setPaused = _React$useState2[1];
-
-  var wrapper = React.useRef();
-  var timer = React.useRef();
-
-  var stopTimer = React.useCallback(function () {
+const Toast = ({
+  id,
+  title,
+  message,
+  duration,
+  type,
+  exiting,
+  y,
+  onHeightReceived,
+  onExitRequested,
+  onRemoveRequested
+}) => {
+  const [paused, setPaused] = React.useState(false);
+  const wrapper = React.useRef();
+  const timer = React.useRef();
+  const stopTimer = React.useCallback(() => {
     setPaused(true);
     clearTimeout(timer.current);
   }, []);
-
-  var resumeTimer = React.useCallback(function () {
+  const resumeTimer = React.useCallback(() => {
     setPaused(false);
-    timer.current = setTimeout(function () {
-      return onExitRequested(id);
-    }, duration);
+    timer.current = setTimeout(() => onExitRequested(id), duration);
   }, [id, duration, onExitRequested]);
-
-  React.useLayoutEffect(function () {
-    var _wrapper$current$getB = wrapper.current.getBoundingClientRect(),
-        height = _wrapper$current$getB.height;
-
+  React.useLayoutEffect(() => {
+    const {
+      height
+    } = wrapper.current.getBoundingClientRect();
     onHeightReceived(id, height);
   }, [onHeightReceived, id]);
-
-  React.useEffect(function () {
+  React.useEffect(() => {
     resumeTimer();
     return stopTimer;
   }, [resumeTimer, stopTimer]);
 
-  var handleAnimationEnd = function handleAnimationEnd() {
+  const handleAnimationEnd = () => {
     if (exiting) {
       onRemoveRequested(id);
     }
   };
 
-  return React.createElement(
-    "div",
-    {
-      "data-flume-component": "toast",
-      ref: wrapper,
-      className: styles$b.toast,
-      "data-type": type,
-      style: { transform: "translateY(-" + y + "px)" },
-      "data-exiting": exiting,
-      onAnimationEnd: handleAnimationEnd,
-      onMouseEnter: stopTimer,
-      onMouseLeave: resumeTimer,
-      role: "alert"
+  return /*#__PURE__*/React.createElement("div", {
+    "data-flume-component": "toast",
+    ref: wrapper,
+    className: styles$2.toast,
+    "data-type": type,
+    style: {
+      transform: `translateY(-${y}px)`
     },
-    title ? React.createElement(
-      "span",
-      { "data-flume-component": "toast-title", className: styles$b.title },
-      title
-    ) : null,
-    React.createElement(
-      "p",
-      { "data-flume-component": "toast-message" },
-      message
-    ),
-    !paused && React.createElement("div", {
-      className: styles$b.timer,
-      style: { animationDuration: duration + "ms" },
-      onAnimationEnd: function onAnimationEnd(e) {
-        return e.stopPropagation();
-      }
-    }),
-    React.createElement(
-      "button",
-      { "data-flume-component": "toast-close", className: styles$b.exitButton, onClick: function onClick() {
-          stopTimer();
-          onExitRequested(id);
-        } },
-      "\u2715"
-    )
-  );
+    "data-exiting": exiting,
+    onAnimationEnd: handleAnimationEnd,
+    onMouseEnter: stopTimer,
+    onMouseLeave: resumeTimer,
+    role: "alert",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$2,
+      lineNumber: 97,
+      columnNumber: 5
+    }
+  }, title ? /*#__PURE__*/React.createElement("span", {
+    "data-flume-component": "toast-title",
+    className: styles$2.title,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$2,
+      lineNumber: 110,
+      columnNumber: 17
+    }
+  }, title) : null, /*#__PURE__*/React.createElement("p", {
+    "data-flume-component": "toast-message",
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$2,
+      lineNumber: 112,
+      columnNumber: 7
+    }
+  }, message), !paused && /*#__PURE__*/React.createElement("div", {
+    className: styles$2.timer,
+    style: {
+      animationDuration: `${duration}ms`
+    },
+    onAnimationEnd: e => e.stopPropagation(),
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$2,
+      lineNumber: 114,
+      columnNumber: 9
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    "data-flume-component": "toast-close",
+    className: styles$2.exitButton,
+    onClick: () => {
+      stopTimer();
+      onExitRequested(id);
+    },
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$2,
+      lineNumber: 120,
+      columnNumber: 7
+    }
+  }, "\u2715"));
 };
 
-var css$c = ".Connections_svgWrapper__3mXcU{\n  position: absolute;\n  left: 0px;\n  height: 0px;\n}\n";
-var styles$c = { "svgWrapper": "Connections_svgWrapper__3mXcU" };
-styleInject(css$c);
+var css_248z$1 = ".Connections_svgWrapper__6Rcg4{\n  position: absolute;\n  left: 0px;\n  height: 0px;\n}\n";
+var styles$1 = {"svgWrapper":"Connections_svgWrapper__6Rcg4"};
+styleInject(css_248z$1);
 
-var Connections = function Connections(_ref) {
-  var nodes = _ref.nodes,
-      editorId = _ref.editorId;
+var _jsxFileName$1 = "/workspaces/flumeapi/src/components/Connections/Connections.js";
 
-
-  return React.createElement('div', { className: styles$c.svgWrapper, id: '' + CONNECTIONS_ID + editorId });
+const Connections = ({
+  nodes,
+  editorId
+}) => {
+  return /*#__PURE__*/React.createElement("div", {
+    className: styles$1.svgWrapper,
+    id: `${CONNECTIONS_ID}${editorId}`,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName$1,
+      lineNumber: 8,
+      columnNumber: 5
+    }
+  });
 };
 
-var checkForCircularNodes = function checkForCircularNodes(nodes, startNodeId) {
-  var isCircular = false;
-  var walk = function walk(nodeId) {
-    var outputs = Object.values(nodes[nodeId].connections.outputs);
+const checkForCircularNodes = (nodes, startNodeId) => {
+  let isCircular = false;
+
+  const walk = nodeId => {
+    const outputs = Object.values(nodes[nodeId].connections.outputs);
+
     for (var i = 0; i < outputs.length; i++) {
       if (isCircular) {
         break;
       }
-      var outputConnections = outputs[i];
+
+      const outputConnections = outputs[i];
+
       for (var k = 0; k < outputConnections.length; k++) {
-        var connectedTo = outputConnections[k];
+        const connectedTo = outputConnections[k];
+
         if (connectedTo.nodeId === startNodeId) {
           isCircular = true;
           break;
@@ -7071,138 +7790,140 @@ var checkForCircularNodes = function checkForCircularNodes(nodes, startNodeId) {
       }
     }
   };
+
   walk(startNodeId);
   return isCircular;
 };
 
-var addConnection = function addConnection(nodes, input, output, portTypes) {
-  var _babelHelpers$extends3;
-
-  var newNodes = _extends({}, nodes, (_babelHelpers$extends3 = {}, defineProperty(_babelHelpers$extends3, input.nodeId, _extends({}, nodes[input.nodeId], {
-    connections: _extends({}, nodes[input.nodeId].connections, {
-      inputs: _extends({}, nodes[input.nodeId].connections.inputs, defineProperty({}, input.portName, [].concat(toConsumableArray(nodes[input.nodeId].connections.inputs[input.portName] || []), [{
-        nodeId: output.nodeId,
-        portName: output.portName
-      }])))
-    })
-  })), defineProperty(_babelHelpers$extends3, output.nodeId, _extends({}, nodes[output.nodeId], {
-    connections: _extends({}, nodes[output.nodeId].connections, {
-      outputs: _extends({}, nodes[output.nodeId].connections.outputs, defineProperty({}, output.portName, [].concat(toConsumableArray(nodes[output.nodeId].connections.outputs[output.portName] || []), [{
-        nodeId: input.nodeId,
-        portName: input.portName
-      }])))
-    })
-  })), _babelHelpers$extends3));
+const addConnection = (nodes, input, output, portTypes) => {
+  const newNodes = { ...nodes,
+    [input.nodeId]: { ...nodes[input.nodeId],
+      connections: { ...nodes[input.nodeId].connections,
+        inputs: { ...nodes[input.nodeId].connections.inputs,
+          [input.portName]: [...(nodes[input.nodeId].connections.inputs[input.portName] || []), {
+            nodeId: output.nodeId,
+            portName: output.portName
+          }]
+        }
+      }
+    },
+    [output.nodeId]: { ...nodes[output.nodeId],
+      connections: { ...nodes[output.nodeId].connections,
+        outputs: { ...nodes[output.nodeId].connections.outputs,
+          [output.portName]: [...(nodes[output.nodeId].connections.outputs[output.portName] || []), {
+            nodeId: input.nodeId,
+            portName: input.portName
+          }]
+        }
+      }
+    }
+  };
   return newNodes;
 };
 
-var removeConnection = function removeConnection(nodes, input, output) {
-  var _babelHelpers$extends5;
-
-  var inputNode = nodes[input.nodeId];
-  var _inputNode$connection = inputNode.connections.inputs,
-      removedInputPort = _inputNode$connection[input.portName],
-      newInputNodeConnectionsInputs = objectWithoutProperties(_inputNode$connection, [input.portName]);
-
-  var newInputNode = _extends({}, inputNode, {
-    connections: _extends({}, inputNode.connections, {
+const removeConnection = (nodes, input, output) => {
+  const inputNode = nodes[input.nodeId];
+  const {
+    [input.portName]: removedInputPort,
+    ...newInputNodeConnectionsInputs
+  } = inputNode.connections.inputs;
+  const newInputNode = { ...inputNode,
+    connections: { ...inputNode.connections,
       inputs: newInputNodeConnectionsInputs
-    })
-  });
-
-  var outputNode = nodes[output.nodeId];
-  var filteredOutputNodes = outputNode.connections.outputs[output.portName].filter(function (cnx) {
+    }
+  };
+  const outputNode = nodes[output.nodeId];
+  const filteredOutputNodes = outputNode.connections.outputs[output.portName].filter(cnx => {
     return cnx.nodeId === input.nodeId ? cnx.portName !== input.portName : true;
   });
-  var newOutputNode = _extends({}, outputNode, {
-    connections: _extends({}, outputNode.connections, {
-      outputs: _extends({}, outputNode.connections.outputs, defineProperty({}, output.portName, filteredOutputNodes))
-    })
-  });
-
-  return _extends({}, nodes, (_babelHelpers$extends5 = {}, defineProperty(_babelHelpers$extends5, input.nodeId, newInputNode), defineProperty(_babelHelpers$extends5, output.nodeId, newOutputNode), _babelHelpers$extends5));
-};
-
-var getFilteredTransputs = function getFilteredTransputs(transputs, nodeId) {
-  return Object.entries(transputs).reduce(function (obj, _ref) {
-    var _ref2 = slicedToArray(_ref, 2),
-        portName = _ref2[0],
-        transput = _ref2[1];
-
-    var newTransputs = transput.filter(function (t) {
-      return t.nodeId !== nodeId;
-    });
-    if (newTransputs.length) {
-      obj[portName] = newTransputs;
+  const newOutputNode = { ...outputNode,
+    connections: { ...outputNode.connections,
+      outputs: { ...outputNode.connections.outputs,
+        [output.portName]: filteredOutputNodes
+      }
     }
-    return obj;
-  }, {});
-};
-
-var removeConnections = function removeConnections(connections, nodeId) {
-  return {
-    inputs: getFilteredTransputs(connections.inputs, nodeId),
-    outputs: getFilteredTransputs(connections.outputs, nodeId)
+  };
+  return { ...nodes,
+    [input.nodeId]: newInputNode,
+    [output.nodeId]: newOutputNode
   };
 };
 
-var removeNode = function removeNode(startNodes, nodeId) {
-  var deletedNode = startNodes[nodeId],
-      nodes = objectWithoutProperties(startNodes, [nodeId]);
+const getFilteredTransputs = (transputs, nodeId) => Object.entries(transputs).reduce((obj, [portName, transput]) => {
+  const newTransputs = transput.filter(t => t.nodeId !== nodeId);
 
-  nodes = Object.values(nodes).reduce(function (obj, node) {
-    obj[node.id] = _extends({}, node, {
+  if (newTransputs.length) {
+    obj[portName] = newTransputs;
+  }
+
+  return obj;
+}, {});
+
+const removeConnections = (connections, nodeId) => ({
+  inputs: getFilteredTransputs(connections.inputs, nodeId),
+  outputs: getFilteredTransputs(connections.outputs, nodeId)
+});
+
+const removeNode = (startNodes, nodeId) => {
+  let {
+    [nodeId]: deletedNode,
+    ...nodes
+  } = startNodes;
+  nodes = Object.values(nodes).reduce((obj, node) => {
+    obj[node.id] = { ...node,
       connections: removeConnections(node.connections, nodeId)
-    });
-
+    };
     return obj;
   }, {});
   deleteConnectionsByNodeId(nodeId);
   return nodes;
 };
 
-var reconcileNodes = function reconcileNodes(initialNodes, nodeTypes, portTypes, context) {
-  var nodes = _extends({}, initialNodes);
+const reconcileNodes = (initialNodes, nodeTypes, portTypes, context) => {
+  let nodes = { ...initialNodes
+  }; // Delete extraneous nodes
 
-  // Delete extraneous nodes
-  var nodesToDelete = Object.values(nodes).map(function (node) {
-    return !nodeTypes[node.type] ? node.id : undefined;
-  }).filter(function (x) {
-    return x;
-  });
-
-  nodesToDelete.forEach(function (nodeId) {
+  let nodesToDelete = Object.values(nodes).map(node => !nodeTypes[node.type] ? node.id : undefined).filter(x => x);
+  nodesToDelete.forEach(nodeId => {
     nodes = nodesReducer(nodes, {
       type: "REMOVE_NODE",
-      nodeId: nodeId
-    }, { nodeTypes: nodeTypes, portTypes: portTypes, context: context });
-  });
+      nodeId
+    }, {
+      nodeTypes,
+      portTypes,
+      context
+    });
+  }); // Reconcile input data for each node
 
-  // Reconcile input data for each node
-  var reconciledNodes = Object.values(nodes).reduce(function (nodesObj, node) {
-    var nodeType = nodeTypes[node.type];
-    var defaultInputData = getDefaultData({ node: node, nodeType: nodeType, portTypes: portTypes, context: context });
-    var currentInputData = Object.entries(node.inputData).reduce(function (dataObj, _ref3) {
-      var _ref4 = slicedToArray(_ref3, 2),
-          key = _ref4[0],
-          data = _ref4[1];
-
+  let reconciledNodes = Object.values(nodes).reduce((nodesObj, node) => {
+    const nodeType = nodeTypes[node.type];
+    const defaultInputData = getDefaultData({
+      node,
+      nodeType,
+      portTypes,
+      context
+    });
+    const currentInputData = Object.entries(node.inputData).reduce((dataObj, [key, data]) => {
       if (defaultInputData[key] !== undefined) {
         dataObj[key] = data;
       }
+
       return dataObj;
     }, {});
-    var newInputData = _extends({}, defaultInputData, currentInputData);
-    nodesObj[node.id] = _extends({}, node, {
+    const newInputData = { ...defaultInputData,
+      ...currentInputData
+    };
+    nodesObj[node.id] = { ...node,
       inputData: newInputData
-    });
+    };
     return nodesObj;
-  }, {});
+  }, {}); // Reconcile node attributes for each node
 
-  // Reconcile node attributes for each node
-  reconciledNodes = Object.values(reconciledNodes).reduce(function (nodesObj, node) {
-    var newNode = _extends({}, node);
-    var nodeType = nodeTypes[node.type];
+  reconciledNodes = Object.values(reconciledNodes).reduce((nodesObj, node) => {
+    let newNode = { ...node
+    };
+    const nodeType = nodeTypes[node.type];
+
     if (nodeType.root !== node.root) {
       if (nodeType.root && !node.root) {
         newNode.root = nodeType.root;
@@ -7210,50 +7931,49 @@ var reconcileNodes = function reconcileNodes(initialNodes, nodeTypes, portTypes,
         delete newNode.root;
       }
     }
+
     nodesObj[node.id] = newNode;
     return nodesObj;
   }, {});
-
   return reconciledNodes;
 };
 
-var getInitialNodes = function getInitialNodes() {
-  var initialNodes = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var defaultNodes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-  var nodeTypes = arguments[2];
-  var portTypes = arguments[3];
-  var context = arguments[4];
+const getInitialNodes = (initialNodes = {}, defaultNodes = [], nodeTypes, portTypes, context) => {
+  const reconciledNodes = reconcileNodes(initialNodes, nodeTypes, portTypes, context);
+  return { ...reconciledNodes,
+    ...defaultNodes.reduce((nodes, dNode, i) => {
+      const nodeNotAdded = !Object.values(initialNodes).find(n => n.type === dNode.type);
 
-  var reconciledNodes = reconcileNodes(initialNodes, nodeTypes, portTypes, context);
+      if (nodeNotAdded) {
+        nodes = nodesReducer(nodes, {
+          type: "ADD_NODE",
+          id: `default-${i}`,
+          defaultNode: true,
+          x: dNode.x || 0,
+          y: dNode.y || 0,
+          nodeType: dNode.type
+        }, {
+          nodeTypes,
+          portTypes,
+          context
+        });
+      }
 
-  return _extends({}, reconciledNodes, defaultNodes.reduce(function (nodes, dNode, i) {
-    var nodeNotAdded = !Object.values(initialNodes).find(function (n) {
-      return n.type === dNode.type;
-    });
-    if (nodeNotAdded) {
-      nodes = nodesReducer(nodes, {
-        type: "ADD_NODE",
-        id: "default-" + i,
-        defaultNode: true,
-        x: dNode.x || 0,
-        y: dNode.y || 0,
-        nodeType: dNode.type
-      }, { nodeTypes: nodeTypes, portTypes: portTypes, context: context });
-    }
-    return nodes;
-  }, {}));
+      return nodes;
+    }, {})
+  };
 };
 
-var getDefaultData = function getDefaultData(_ref5) {
-  var node = _ref5.node,
-      nodeType = _ref5.nodeType,
-      portTypes = _ref5.portTypes,
-      context = _ref5.context;
-
-  var inputs = Array.isArray(nodeType.inputs) ? nodeType.inputs : nodeType.inputs(node.inputData, node.connections, context);
-  return inputs.reduce(function (obj, input) {
-    var inputType = portTypes[input.type];
-    obj[input.name || inputType.name] = (input.controls || inputType.controls || []).reduce(function (obj2, control) {
+const getDefaultData = ({
+  node,
+  nodeType,
+  portTypes,
+  context
+}) => {
+  const inputs = Array.isArray(nodeType.inputs) ? nodeType.inputs : nodeType.inputs(node.inputData, node.connections, context);
+  return inputs.reduce((obj, input) => {
+    const inputType = portTypes[input.type];
+    obj[input.name || inputType.name] = (input.controls || inputType.controls || []).reduce((obj2, control) => {
       obj2[control.name] = control.defaultValue;
       return obj2;
     }, {});
@@ -7261,27 +7981,27 @@ var getDefaultData = function getDefaultData(_ref5) {
   }, {});
 };
 
-var nodesReducer = function nodesReducer(nodes) {
-  var action = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var _ref6 = arguments[2];
-  var nodeTypes = _ref6.nodeTypes,
-      portTypes = _ref6.portTypes,
-      cache = _ref6.cache,
-      circularBehavior = _ref6.circularBehavior,
-      context = _ref6.context;
-  var dispatchToasts = arguments[3];
-
+const nodesReducer = (nodes, action = {}, {
+  nodeTypes,
+  portTypes,
+  cache,
+  circularBehavior,
+  context
+}, dispatchToasts) => {
   switch (action.type) {
     case "ADD_CONNECTION":
       {
-        var input = action.input,
-            output = action.output;
+        const {
+          input,
+          output
+        } = action;
+        const inputIsNotConnected = !nodes[input.nodeId].connections.inputs[input.portName];
 
-        var inputIsNotConnected = !nodes[input.nodeId].connections.inputs[input.portName];
         if (inputIsNotConnected) {
-          var allowCircular = circularBehavior === "warn" || circularBehavior === "allow";
-          var newNodes = addConnection(nodes, input, output, portTypes);
-          var isCircular = checkForCircularNodes(newNodes, output.nodeId);
+          const allowCircular = circularBehavior === "warn" || circularBehavior === "allow";
+          const newNodes = addConnection(nodes, input, output);
+          const isCircular = checkForCircularNodes(newNodes, output.nodeId);
+
           if (isCircular && !allowCircular) {
             dispatchToasts({
               type: "ADD_TOAST",
@@ -7301,6 +8021,7 @@ var nodesReducer = function nodesReducer(nodes) {
                 duration: 5000
               });
             }
+
             return newNodes;
           }
         } else return nodes;
@@ -7308,54 +8029,55 @@ var nodesReducer = function nodesReducer(nodes) {
 
     case "REMOVE_CONNECTION":
       {
-        var _input = action.input,
-            _output = action.output;
-
-        var id = _output.nodeId + _output.portName + _input.nodeId + _input.portName;
+        const {
+          input,
+          output
+        } = action;
+        const id = output.nodeId + output.portName + input.nodeId + input.portName;
         delete cache.current.connections[id];
-        deleteConnection({ id: id });
-        return removeConnection(nodes, _input, _output);
+        deleteConnection({
+          id
+        });
+        return removeConnection(nodes, input, output);
       }
 
     case "DESTROY_TRANSPUT":
       {
-        var transput = action.transput,
-            transputType = action.transputType;
-
-        var portId = transput.nodeId + transput.portName + transputType;
+        const {
+          transput,
+          transputType
+        } = action;
+        const portId = transput.nodeId + transput.portName + transputType;
         delete cache.current.ports[portId];
-
-        var cnxType = transputType === 'input' ? 'inputs' : 'outputs';
-        var connections = nodes[transput.nodeId].connections[cnxType][transput.portName];
+        const cnxType = transputType === 'input' ? 'inputs' : 'outputs';
+        const connections = nodes[transput.nodeId].connections[cnxType][transput.portName];
         if (!connections || !connections.length) return nodes;
-
-        return connections.reduce(function (nodes, cnx) {
-          var _ref7 = transputType === 'input' ? [transput, cnx] : [cnx, transput],
-              _ref8 = slicedToArray(_ref7, 2),
-              input = _ref8[0],
-              output = _ref8[1];
-
-          var id = output.nodeId + output.portName + input.nodeId + input.portName;
+        return connections.reduce((nodes, cnx) => {
+          const [input, output] = transputType === 'input' ? [transput, cnx] : [cnx, transput];
+          const id = output.nodeId + output.portName + input.nodeId + input.portName;
           delete cache.current.connections[id];
-          deleteConnection({ id: id });
+          deleteConnection({
+            id
+          });
           return removeConnection(nodes, input, output);
         }, nodes);
       }
 
     case "ADD_NODE":
       {
-        var x = action.x,
-            y = action.y,
-            nodeType = action.nodeType,
-            _id = action.id,
-            defaultNode = action.defaultNode,
-            extraProperties = action.extraProperties;
-
-        var newNodeId = _id || nanoid(10);
-        var newNode = {
+        const {
+          x,
+          y,
+          nodeType,
+          id,
+          defaultNode,
+          extraProperties
+        } = action;
+        const newNodeId = id || nanoid(10);
+        const newNode = {
           id: newNodeId,
-          x: x,
-          y: y,
+          x,
+          y,
           extraProperties: extraProperties,
           type: nodeType,
           width: nodeTypes[nodeType].initialWidth || 200,
@@ -7368,90 +8090,119 @@ var nodesReducer = function nodesReducer(nodes) {
         newNode.inputData = getDefaultData({
           node: newNode,
           nodeType: nodeTypes[nodeType],
-          portTypes: portTypes,
-          context: context
+          portTypes,
+          context
         });
+
         if (defaultNode) {
           newNode.defaultNode = true;
         }
+
         if (nodeTypes[nodeType].root) {
           newNode.root = true;
         }
-        return _extends({}, nodes, defineProperty({}, newNodeId, newNode));
+
+        return { ...nodes,
+          [newNodeId]: newNode
+        };
       }
 
     case "REMOVE_NODE":
       {
-        var nodeId = action.nodeId;
-
+        const {
+          nodeId
+        } = action;
         return removeNode(nodes, nodeId);
       }
 
     case "HYDRATE_DEFAULT_NODES":
       {
-        var _newNodes = _extends({}, nodes);
-        for (var key in _newNodes) {
-          if (_newNodes[key].defaultNode) {
-            var _newNodeId = nanoid(10);
-            var _newNodes$key = _newNodes[key],
-                _id2 = _newNodes$key.id,
-                _defaultNode = _newNodes$key.defaultNode,
-                node = objectWithoutProperties(_newNodes$key, ["id", "defaultNode"]);
+        const newNodes = { ...nodes
+        };
 
-            _newNodes[_newNodeId] = _extends({}, node, { id: _newNodeId });
-            delete _newNodes[key];
+        for (const key in newNodes) {
+          if (newNodes[key].defaultNode) {
+            const newNodeId = nanoid(10);
+            const {
+              id,
+              defaultNode,
+              ...node
+            } = newNodes[key];
+            newNodes[newNodeId] = { ...node,
+              id: newNodeId
+            };
+            delete newNodes[key];
           }
         }
-        return _newNodes;
+
+        return newNodes;
       }
 
     case "SET_PORT_DATA":
       {
-        var _nodeId = action.nodeId,
-            portName = action.portName,
-            controlName = action.controlName,
-            data = action.data,
-            setValue = action.setValue;
+        const {
+          nodeId,
+          portName,
+          controlName,
+          data,
+          setValue
+        } = action;
+        let newData = { ...nodes[nodeId].inputData,
+          [portName]: { ...nodes[nodeId].inputData[portName],
+            [controlName]: data
+          }
+        };
 
-        var newData = _extends({}, nodes[_nodeId].inputData, defineProperty({}, portName, _extends({}, nodes[_nodeId].inputData[portName], defineProperty({}, controlName, data))));
         if (setValue) {
-          newData = setValue(newData, nodes[_nodeId].inputData);
+          newData = setValue(newData, nodes[nodeId].inputData);
         }
-        return _extends({}, nodes, defineProperty({}, _nodeId, _extends({}, nodes[_nodeId], {
-          inputData: newData
-        })));
+
+        return { ...nodes,
+          [nodeId]: { ...nodes[nodeId],
+            inputData: newData
+          }
+        };
       }
 
     case "UPDATE_TYPE":
       {
-        var _nodeId2 = action.nodeId,
-            newtype = action.newtype;
-
-        return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2], {
-          type: newtype
-        })));
+        const {
+          nodeId,
+          newtype
+        } = action;
+        return { ...nodes,
+          [nodeId]: { ...nodes[nodeId],
+            type: newtype
+          }
+        };
       }
 
     case "UPDATE_PROPERTIES":
       {
-        var _nodeId3 = action.nodeId,
-            properties = action.properties;
-
-        return _extends({}, nodes, defineProperty({}, _nodeId3, _extends({}, nodes[_nodeId3], {
-          extraProperties: properties
-        })));
+        const {
+          nodeId,
+          properties
+        } = action;
+        return { ...nodes,
+          [nodeId]: { ...nodes[nodeId],
+            extraProperties: properties
+          }
+        };
       }
 
     case "SET_NODE_COORDINATES":
       {
-        var _x4 = action.x,
-            _y = action.y,
-            _nodeId4 = action.nodeId;
-
-        return _extends({}, nodes, defineProperty({}, _nodeId4, _extends({}, nodes[_nodeId4], {
-          x: _x4,
-          y: _y
-        })));
+        const {
+          x,
+          y,
+          nodeId
+        } = action;
+        return { ...nodes,
+          [nodeId]: { ...nodes[nodeId],
+            x,
+            y
+          }
+        };
       }
 
     default:
@@ -7459,24 +8210,19 @@ var nodesReducer = function nodesReducer(nodes) {
   }
 };
 
-var connectNodesReducer = function connectNodesReducer(reducer, environment, dispatchToasts) {
-  return function (state, action) {
-    return reducer(state, action, environment, dispatchToasts);
-  };
-};
+const connectNodesReducer = (reducer, environment, dispatchToasts) => (state, action) => reducer(state, action, environment, dispatchToasts);
 
-var setComment = function setComment(comments, id, merge) {
-  return _extends({}, comments, defineProperty({}, id, _extends({}, comments[id], merge)));
-};
+const setComment = (comments, id, merge) => ({ ...comments,
+  [id]: { ...comments[id],
+    ...merge
+  }
+});
 
-var commentsReducer = (function () {
-  var comments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var action = arguments[1];
-
+var commentsReducer = ((comments = {}, action) => {
   switch (action.type) {
     case "ADD_COMMENT":
       {
-        var _comment = {
+        const comment = {
           id: nanoid(10),
           text: "",
           x: action.x,
@@ -7486,18 +8232,28 @@ var commentsReducer = (function () {
           color: "blue",
           isNew: true
         };
-        return _extends({}, comments, defineProperty({}, _comment.id, _comment));
+        return { ...comments,
+          [comment.id]: comment
+        };
       }
-    case "REMOVE_COMMENT_NEW":
-      var _comments$action$id = comments[action.id],
-          toDelete = _comments$action$id.isNew,
-          comment = objectWithoutProperties(_comments$action$id, ["isNew"]);
 
-      return _extends({}, comments, defineProperty({}, action.id, comment));
+    case "REMOVE_COMMENT_NEW":
+      const {
+        isNew: toDelete,
+        ...comment
+      } = comments[action.id];
+      return { ...comments,
+        [action.id]: comment
+      };
+
     case "SET_COMMENT_COORDINATES":
       {
-        return setComment(comments, action.id, { x: action.x, y: action.y });
+        return setComment(comments, action.id, {
+          x: action.x,
+          y: action.y
+        });
       }
+
     case "SET_COMMENT_DIMENSIONS":
       {
         return setComment(comments, action.id, {
@@ -7505,30 +8261,36 @@ var commentsReducer = (function () {
           height: action.height
         });
       }
+
     case "SET_COMMENT_TEXT":
       {
-        return setComment(comments, action.id, { text: action.text });
+        return setComment(comments, action.id, {
+          text: action.text
+        });
       }
+
     case "SET_COMMENT_COLOR":
       {
-        return setComment(comments, action.id, { color: action.color });
+        return setComment(comments, action.id, {
+          color: action.color
+        });
       }
+
     case "DELETE_COMMENT":
       {
-        var _toDelete = comments[action.id],
-            newComments = objectWithoutProperties(comments, [action.id]);
-
+        const {
+          [action.id]: toDelete,
+          ...newComments
+        } = comments;
         return newComments;
       }
+
     default:
       return comments;
   }
 });
 
-var toastsReducer = (function () {
-  var toasts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-  var action = arguments[1];
-
+var toastsReducer = ((toasts = [], action) => {
   switch (action.type) {
     case "ADD_TOAST":
       return [{
@@ -7539,211 +8301,149 @@ var toastsReducer = (function () {
         duration: action.duration || 10000,
         height: 0,
         exiting: false
-      }].concat(toConsumableArray(toasts));
+      }, ...toasts];
+
     case "SET_HEIGHT":
       {
-        var index = toasts.findIndex(function (t) {
-          return t.id === action.id;
-        });
-        return [].concat(toConsumableArray(toasts.slice(0, index)), [_extends({}, toasts[index], {
+        const index = toasts.findIndex(t => t.id === action.id);
+        return [...toasts.slice(0, index), { ...toasts[index],
           height: action.height
-        })], toConsumableArray(toasts.slice(index + 1)));
+        }, ...toasts.slice(index + 1)];
       }
+
     case "SET_EXITING":
       {
-        var _index = toasts.findIndex(function (t) {
-          return t.id === action.id;
-        });
-        return [].concat(toConsumableArray(toasts.slice(0, _index)), [_extends({}, toasts[_index], {
+        const index = toasts.findIndex(t => t.id === action.id);
+        return [...toasts.slice(0, index), { ...toasts[index],
           exiting: true
-        })], toConsumableArray(toasts.slice(_index + 1)));
+        }, ...toasts.slice(index + 1)];
       }
+
     case "REMOVE_TOAST":
       {
-        var _index2 = toasts.findIndex(function (t) {
-          return t.id === action.id;
-        });
-        return [].concat(toConsumableArray(toasts.slice(0, _index2)), toConsumableArray(toasts.slice(_index2 + 1)));
+        const index = toasts.findIndex(t => t.id === action.id);
+        return [...toasts.slice(0, index), ...toasts.slice(index + 1)];
       }
+
     default:
       return toasts;
   }
 });
 
-var stageReducer = (function (state, incomingAction) {
-  var action = typeof incomingAction === 'function' ? incomingAction(state) : incomingAction;
+var stageReducer = ((state, incomingAction) => {
+  let action = typeof incomingAction === 'function' ? incomingAction(state) : incomingAction;
+
   switch (action.type) {
     case 'SET_SCALE':
-      return _extends({}, state, { scale: action.scale });
+      return { ...state,
+        scale: action.scale
+      };
+
     case 'SET_TRANSLATE':
-      return _extends({}, state, { translate: action.translate });
+      return { ...state,
+        translate: action.translate
+      };
+
     case 'SET_TRANSLATE_SCALE':
-      return _extends({}, state, { translate: action.translate, scale: action.scale });
+      return { ...state,
+        translate: action.translate,
+        scale: action.scale
+      };
+
     default:
       return state;
   }
 });
 
-var Cache = function Cache() {
-  classCallCheck(this, Cache);
-
-  this.ports = {};
-  this.connections = {};
-};
-
-var css$d = ".styles_dragWrapper__1P7RD{\n  z-index: 9999;\n  position: absolute;\n  left: 0px;\n  top: 0px;\n}\n.styles_debugWrapper__2OSbY{\n  display: flex;\n  position: absolute;\n  left: 10px;\n  bottom: 10px;\n  gap: 15px;\n}\n";
-var styles$d = { "dragWrapper": "styles_dragWrapper__1P7RD", "debugWrapper": "styles_debugWrapper__2OSbY" };
-styleInject(css$d);
-
-function CreateAPI(dispatchNodes, dispatchToasts) {
-    return {
-        addNode: function addNode(info) {
-            dispatchNodes(_extends({
-                "type": "ADD_NODE"
-            }, info));
-        },
-        removeNode: function removeNode(id) {
-            dispatchNodes({
-                "type": "REMOVE_NODE",
-                "nodeId": id
-            });
-        },
-        updateType: function updateType(id, newtype) {
-            dispatchNodes({
-                "type": "UPDATE_TYPE",
-                "nodeId": id,
-                "newtype": newtype
-            });
-        },
-        updateProperties: function updateProperties(id, properties) {
-            dispatchNodes({
-                "type": "UPDATE_PROPERTIES",
-                "nodeId": id,
-                "properties": properties
-            });
-        },
-        addConnection: function addConnection(fromId, fromPort, toId, toPort) {
-            dispatchNodes({
-                "type": "ADD_CONNECTION",
-                "output": {
-                    "nodeId": fromId,
-                    "portName": fromPort
-                },
-                "input": {
-                    "nodeId": toId,
-                    "portName": toPort
-                }
-            });
-        },
-        removeConnection: function removeConnection(fromId, fromPort, toId, toPort) {
-            dispatchNodes({
-                "type": "REMOVE_CONNECTION",
-                "output": {
-                    "nodeId": fromId,
-                    "portName": fromPort
-                },
-                "input": {
-                    "nodeId": toId,
-                    "portName": toPort
-                }
-            });
-        },
-        showToast: function showToast(title, message, type, duration) {
-            dispatchToasts({
-                "type": "ADD_TOAST",
-                "title": title,
-                "message": message,
-                "toastType": type,
-                "duration": duration
-            });
-        }
-    };
-}
-
-var LoopError = function (_Error) {
-  inherits(LoopError, _Error);
-
-  function LoopError(message, code) {
-    classCallCheck(this, LoopError);
-
-    var _this = possibleConstructorReturn(this, (LoopError.__proto__ || Object.getPrototypeOf(LoopError)).call(this, message));
-
-    _this.code = code;
-    return _this;
+class Cache {
+  constructor() {
+    this.ports = {};
+    this.connections = {};
   }
 
-  return LoopError;
-}(Error);
+}
 
-LoopError.maxLoopsExceeded = 1;
+var css_248z = ".styles_dragWrapper__A5S3T{\n  z-index: 9999;\n  position: absolute;\n  left: 0px;\n  top: 0px;\n}\n.styles_debugWrapper__LEI-b{\n  display: flex;\n  position: absolute;\n  left: 10px;\n  bottom: 10px;\n  gap: 15px;\n}\n";
+var styles = {"dragWrapper":"styles_dragWrapper__A5S3T","debugWrapper":"styles_debugWrapper__LEI-b"};
+styleInject(css_248z);
 
-
-var RootEngine = function () {
-  function RootEngine(config, resolveInputControls, fireNodeFunction) {
-    var _this2 = this;
-
-    classCallCheck(this, RootEngine);
-
-    this.resetLoops = function (maxLoops) {
-      _this2.maxLoops = maxLoops !== undefined ? maxLoops : 1000;
-      _this2.loops = 0;
-    };
-
-    this.checkLoops = function () {
-      if (_this2.maxLoops >= 0 && _this2.loops > _this2.maxLoops) {
-        throw new LoopError("Max loop count exceeded.", LoopError.maxLoopsExceeded);
-      } else {
-        _this2.loops++;
-      }
-    };
-
-    this.getRootNode = function (nodes) {
-      var roots = Object.values(nodes).filter(function (n) {
-        return n.root;
+function CreateAPI(dispatchNodes, dispatchToasts) {
+  return {
+    addNode: info => {
+      dispatchNodes({
+        "type": "ADD_NODE",
+        ...info
       });
-      if (roots.length > 1) {
-        throw new Error("The root engine must not be called with more than one root node.");
-      }
-      return roots[0];
-    };
-
-    this.reduceRootInputs = function (inputs, callback) {
-      return Object.entries(inputs).reduce(function (obj, _ref) {
-        var _ref2 = slicedToArray(_ref, 2),
-            inputName = _ref2[0],
-            connection = _ref2[1];
-
-        var input = callback(inputName, connection);
-        obj[input.name] = input.value;
-        return obj;
-      }, {});
-    };
-
-    this.resolveInputValues = function (node, nodeType, nodes, context) {
-      var inputs = nodeType.inputs;
-      if (typeof inputs === 'function') {
-        inputs = inputs(node.inputData, node.connections, context);
-      }
-      return inputs.reduce(function (obj, input) {
-        var inputConnections = node.connections.inputs[input.name] || [];
-        if (inputConnections.length > 0) {
-          obj[input.name] = _this2.getValueOfConnection(inputConnections[0], nodes, context);
-        } else {
-          obj[input.name] = _this2.resolveInputControls(input.type, node.inputData[input.name] || {}, context);
+    },
+    removeNode: id => {
+      dispatchNodes({
+        "type": "REMOVE_NODE",
+        "nodeId": id
+      });
+    },
+    updateType: (id, newtype) => {
+      dispatchNodes({
+        "type": "UPDATE_TYPE",
+        "nodeId": id,
+        "newtype": newtype
+      });
+    },
+    updateProperties: (id, properties) => {
+      dispatchNodes({
+        "type": "UPDATE_PROPERTIES",
+        "nodeId": id,
+        "properties": properties
+      });
+    },
+    addConnection: (fromId, fromPort, toId, toPort) => {
+      dispatchNodes({
+        "type": "ADD_CONNECTION",
+        "output": {
+          "nodeId": fromId,
+          "portName": fromPort
+        },
+        "input": {
+          "nodeId": toId,
+          "portName": toPort
         }
-        return obj;
-      }, {});
-    };
+      });
+    },
+    removeConnection: (fromId, fromPort, toId, toPort) => {
+      dispatchNodes({
+        "type": "REMOVE_CONNECTION",
+        "output": {
+          "nodeId": fromId,
+          "portName": fromPort
+        },
+        "input": {
+          "nodeId": toId,
+          "portName": toPort
+        }
+      });
+    },
+    showToast: (title, message, type, duration) => {
+      dispatchToasts({
+        "type": "ADD_TOAST",
+        "title": title,
+        "message": message,
+        "toastType": type,
+        "duration": duration
+      });
+    }
+  };
+}
 
-    this.getValueOfConnection = function (connection, nodes, context) {
-      _this2.checkLoops();
-      var outputNode = nodes[connection.nodeId];
-      var outputNodeType = _this2.config.nodeTypes[outputNode.type];
-      var inputValues = _this2.resolveInputValues(outputNode, outputNodeType, nodes, context);
-      var outputResult = _this2.fireNodeFunction(outputNode, inputValues, outputNodeType, context)[connection.portName];
-      return outputResult;
-    };
+class LoopError extends Error {
+  constructor(message, code) {
+    super(message);
+    this.code = code;
+  }
 
+  static maxLoopsExceeded = 1;
+}
+
+class RootEngine {
+  constructor(config, resolveInputControls, fireNodeFunction) {
     this.config = config;
     this.fireNodeFunction = fireNodeFunction;
     this.resolveInputControls = resolveInputControls;
@@ -7751,318 +8451,404 @@ var RootEngine = function () {
     this.maxLoops = 1000;
   }
 
-  createClass(RootEngine, [{
-    key: "resolveRootNode",
-    value: function resolveRootNode(nodes) {
-      var _this3 = this;
-
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-      var rootNode = options.rootNodeId ? nodes[options.rootNodeId] : this.getRootNode(nodes);
-      if (rootNode) {
-        var inputs = this.config.nodeTypes[rootNode.type].inputs;
-        if (typeof inputs === 'function') {
-          inputs = inputs(rootNode.inputData, rootNode.connections, options.context);
-        }
-        var controlValues = inputs.reduce(function (obj, input) {
-          obj[input.name] = _this3.resolveInputControls(input.type, rootNode.inputData[input.name] || {}, options.context);
-          return obj;
-        }, {});
-        var inputValues = this.reduceRootInputs(rootNode.connections.inputs, function (inputName, connection) {
-          _this3.resetLoops(options.maxLoops);
-          var value = void 0;
-          try {
-            value = _this3.getValueOfConnection(connection[0], nodes, options.context);
-          } catch (e) {
-            if (e.code === LoopError.maxLoopsExceeded) {
-              console.error(e.message + " Circular nodes detected in " + inputName + " port.");
-            } else {
-              console.error(e);
-            }
-          } finally {
-            return {
-              name: inputName,
-              value: value
-            };
-          }
-        });
-        if (options.onlyResolveConnected) {
-          return inputValues;
-        } else {
-          return _extends({}, controlValues, inputValues);
-        }
-      } else {
-        console.error("A root node was not found. The Root Engine requires that exactly one node be marked as the root node.");
-        return {};
-      }
+  resetLoops = maxLoops => {
+    this.maxLoops = maxLoops !== undefined ? maxLoops : 1000;
+    this.loops = 0;
+  };
+  checkLoops = () => {
+    if (this.maxLoops >= 0 && this.loops > this.maxLoops) {
+      throw new LoopError("Max loop count exceeded.", LoopError.maxLoopsExceeded);
+    } else {
+      this.loops++;
     }
-  }]);
-  return RootEngine;
-}();
+  };
+  getRootNode = nodes => {
+    const roots = Object.values(nodes).filter(n => n.root);
 
-var defaultContext = {};
+    if (roots.length > 1) {
+      throw new Error("The root engine must not be called with more than one root node.");
+    }
 
-var NodeEditor = function NodeEditor(_ref, ref) {
-  var initialComments = _ref.comments,
-      initialNodes = _ref.nodes,
-      _ref$nodeTypes = _ref.nodeTypes,
-      nodeTypes = _ref$nodeTypes === undefined ? {} : _ref$nodeTypes,
-      _ref$portTypes = _ref.portTypes,
-      portTypes = _ref$portTypes === undefined ? {} : _ref$portTypes,
-      _ref$defaultNodes = _ref.defaultNodes,
-      defaultNodes = _ref$defaultNodes === undefined ? [] : _ref$defaultNodes,
-      _ref$context = _ref.context,
-      context = _ref$context === undefined ? defaultContext : _ref$context,
-      _ref$uiEvents = _ref.uiEvents,
-      uiEvents = _ref$uiEvents === undefined ? {} : _ref$uiEvents,
-      onChange = _ref.onChange,
-      onCommentsChange = _ref.onCommentsChange,
-      initialScale = _ref.initialScale,
-      _ref$spaceToPan = _ref.spaceToPan,
-      spaceToPan = _ref$spaceToPan === undefined ? false : _ref$spaceToPan,
-      _ref$hideComments = _ref.hideComments,
-      hideComments = _ref$hideComments === undefined ? false : _ref$hideComments,
-      _ref$disableComments = _ref.disableComments,
-      disableComments = _ref$disableComments === undefined ? false : _ref$disableComments,
-      _ref$disableZoom = _ref.disableZoom,
-      disableZoom = _ref$disableZoom === undefined ? false : _ref$disableZoom,
-      _ref$disablePan = _ref.disablePan,
-      disablePan = _ref$disablePan === undefined ? false : _ref$disablePan,
-      circularBehavior = _ref.circularBehavior,
-      renderNodeHeader = _ref.renderNodeHeader,
-      debug = _ref.debug,
-      apiCallback = _ref.apiCallback;
+    return roots[0];
+  };
+  reduceRootInputs = (inputs, callback) => Object.entries(inputs).reduce((obj, [inputName, connection]) => {
+    const input = callback(inputName, connection);
+    obj[input.name] = input.value;
+    return obj;
+  }, {});
+  resolveInputValues = (node, nodeType, nodes, context) => {
+    let inputs = nodeType.inputs;
 
-  var editorId = useId();
-  var cache = React.useRef(new Cache());
-  var stage = React.useRef();
+    if (typeof inputs === 'function') {
+      inputs = inputs(node.inputData, node.connections, context);
+    }
 
-  var _React$useState = React.useState(),
-      _React$useState2 = slicedToArray(_React$useState, 2),
-      sideEffectToasts = _React$useState2[0],
-      setSideEffectToasts = _React$useState2[1];
+    return inputs.reduce((obj, input) => {
+      const inputConnections = node.connections.inputs[input.name] || [];
 
-  var _React$useReducer = React.useReducer(toastsReducer, []),
-      _React$useReducer2 = slicedToArray(_React$useReducer, 2),
-      toasts = _React$useReducer2[0],
-      dispatchToasts = _React$useReducer2[1];
+      if (inputConnections.length > 0) {
+        obj[input.name] = this.getValueOfConnection(inputConnections[0], nodes, context);
+      } else {
+        obj[input.name] = this.resolveInputControls(input.type, node.inputData[input.name] || {}, context);
+      }
 
-  var _React$useReducer3 = React.useReducer(connectNodesReducer(nodesReducer, { nodeTypes: nodeTypes, portTypes: portTypes, cache: cache, circularBehavior: circularBehavior, context: context }, setSideEffectToasts), {}, function () {
-    return getInitialNodes(initialNodes, defaultNodes, nodeTypes, portTypes, context);
-  }),
-      _React$useReducer4 = slicedToArray(_React$useReducer3, 2),
-      nodes = _React$useReducer4[0],
-      dispatchNodes = _React$useReducer4[1];
+      return obj;
+    }, {});
+  };
+  getValueOfConnection = (connection, nodes, context) => {
+    this.checkLoops();
+    const outputNode = nodes[connection.nodeId];
+    const outputNodeType = this.config.nodeTypes[outputNode.type];
+    const inputValues = this.resolveInputValues(outputNode, outputNodeType, nodes, context);
+    const outputResult = this.fireNodeFunction(outputNode, inputValues, outputNodeType, context)[connection.portName];
+    return outputResult;
+  };
 
-  var _React$useReducer5 = React.useReducer(commentsReducer, initialComments || {}),
-      _React$useReducer6 = slicedToArray(_React$useReducer5, 2),
-      comments = _React$useReducer6[0],
-      dispatchComments = _React$useReducer6[1];
+  resolveRootNode(nodes, options = {}) {
+    const rootNode = options.rootNodeId ? nodes[options.rootNodeId] : this.getRootNode(nodes);
 
-  React.useEffect(function () {
-    dispatchNodes({ type: "HYDRATE_DEFAULT_NODES" });
+    if (rootNode) {
+      let inputs = this.config.nodeTypes[rootNode.type].inputs;
+
+      if (typeof inputs === 'function') {
+        inputs = inputs(rootNode.inputData, rootNode.connections, options.context);
+      }
+
+      const controlValues = inputs.reduce((obj, input) => {
+        obj[input.name] = this.resolveInputControls(input.type, rootNode.inputData[input.name] || {}, options.context);
+        return obj;
+      }, {});
+      const inputValues = this.reduceRootInputs(rootNode.connections.inputs, (inputName, connection) => {
+        this.resetLoops(options.maxLoops);
+        let value;
+
+        try {
+          value = this.getValueOfConnection(connection[0], nodes, options.context);
+        } catch (e) {
+          if (e.code === LoopError.maxLoopsExceeded) {
+            console.error(`${e.message} Circular nodes detected in ${inputName} port.`);
+          } else {
+            console.error(e);
+          }
+        } finally {
+          return {
+            name: inputName,
+            value
+          };
+        }
+      });
+
+      if (options.onlyResolveConnected) {
+        return inputValues;
+      } else {
+        return { ...controlValues,
+          ...inputValues
+        };
+      }
+    } else {
+      console.error("A root node was not found. The Root Engine requires that exactly one node be marked as the root node.");
+      return {};
+    }
+  }
+
+}
+
+var _jsxFileName = "/workspaces/flumeapi/src/index.js";
+const defaultContext = {};
+let NodeEditor = ({
+  comments: initialComments,
+  nodes: initialNodes,
+  nodeTypes = {},
+  portTypes = {},
+  defaultNodes = [],
+  context = defaultContext,
+  uiEvents = {},
+  onChange,
+  onCommentsChange,
+  initialScale,
+  spaceToPan = false,
+  hideComments = false,
+  disableComments = false,
+  disableZoom = false,
+  disablePan = false,
+  circularBehavior,
+  renderNodeHeader,
+  debug,
+  apiCallback
+}, ref) => {
+  const editorId = React.useId();
+  const cache = React.useRef(new Cache());
+  const stage = React.useRef();
+  const [sideEffectToasts, setSideEffectToasts] = React.useState();
+  const [toasts, dispatchToasts] = React.useReducer(toastsReducer, []);
+  const [nodes, dispatchNodes] = React.useReducer(connectNodesReducer(nodesReducer, {
+    nodeTypes,
+    portTypes,
+    cache,
+    circularBehavior,
+    context
+  }, setSideEffectToasts), {}, () => getInitialNodes(initialNodes, defaultNodes, nodeTypes, portTypes, context));
+  const [comments, dispatchComments] = React.useReducer(commentsReducer, initialComments || {});
+  React.useEffect(() => {
+    dispatchNodes({
+      type: "HYDRATE_DEFAULT_NODES"
+    });
   }, []);
-
-  var _React$useState3 = React.useState(true),
-      _React$useState4 = slicedToArray(_React$useState3, 2),
-      shouldRecalculateConnections = _React$useState4[0],
-      setShouldRecalculateConnections = _React$useState4[1];
-
-  var _React$useReducer7 = React.useReducer(stageReducer, {
+  const [shouldRecalculateConnections, setShouldRecalculateConnections] = React.useState(true);
+  const [stageState, dispatchStageState] = React.useReducer(stageReducer, {
     scale: typeof initialScale === "number" ? clamp_1(initialScale, 0.1, 7) : 1,
-    translate: { x: 0, y: 0 }
-  }),
-      _React$useReducer8 = slicedToArray(_React$useReducer7, 2),
-      stageState = _React$useReducer8[0],
-      dispatchStageState = _React$useReducer8[1];
-
-  var recalculateConnections = React.useCallback(function () {
+    translate: {
+      x: 0,
+      y: 0
+    }
+  });
+  const recalculateConnections = React.useCallback(() => {
     createConnections(nodes, stageState, editorId);
   }, [nodes, editorId, stageState]);
 
-  var recalculateStageRect = function recalculateStageRect() {
-    stage.current = document.getElementById("" + STAGE_ID + editorId).getBoundingClientRect();
+  const recalculateStageRect = () => {
+    stage.current = document.getElementById(`${STAGE_ID}${editorId}`).getBoundingClientRect();
   };
 
-  React.useEffect(function () {
+  React.useEffect(() => {
     if (apiCallback) {
       apiCallback(CreateAPI(dispatchNodes, dispatchToasts));
     }
   }, [apiCallback]);
-
-  React.useLayoutEffect(function () {
+  React.useLayoutEffect(() => {
     if (shouldRecalculateConnections) {
       recalculateConnections();
       setShouldRecalculateConnections(false);
     }
   }, [shouldRecalculateConnections, recalculateConnections]);
 
-  var triggerRecalculation = function triggerRecalculation() {
+  const triggerRecalculation = () => {
     setShouldRecalculateConnections(true);
   };
 
-  React.useImperativeHandle(ref, function () {
-    return {
-      getNodes: function getNodes() {
-        return nodes;
-      },
-      getComments: function getComments() {
-        return comments;
-      }
-    };
-  });
-
-  var previousNodes = usePrevious$1(nodes);
-
-  React.useEffect(function () {
+  React.useImperativeHandle(ref, () => ({
+    getNodes: () => {
+      return nodes;
+    },
+    getComments: () => {
+      return comments;
+    }
+  }));
+  const previousNodes = usePrevious(nodes);
+  React.useEffect(() => {
     if (previousNodes && onChange && nodes !== previousNodes) {
       onChange(nodes);
     }
   }, [nodes, previousNodes, onChange]);
-
-  var previousComments = usePrevious$1(comments);
-
-  React.useEffect(function () {
+  const previousComments = usePrevious(comments);
+  React.useEffect(() => {
     if (previousComments && onCommentsChange && comments !== previousComments) {
       onCommentsChange(comments);
     }
   }, [comments, previousComments, onCommentsChange]);
-
-  React.useEffect(function () {
+  React.useEffect(() => {
     if (sideEffectToasts) {
       dispatchToasts(sideEffectToasts);
       setSideEffectToasts(null);
     }
   }, [sideEffectToasts]);
-
-  return React.createElement(
-    PortTypesContext.Provider,
-    { value: portTypes },
-    React.createElement(
-      NodeTypesContext.Provider,
-      { value: nodeTypes },
-      React.createElement(
-        NodeDispatchContext.Provider,
-        { value: dispatchNodes },
-        React.createElement(
-          ConnectionRecalculateContext.Provider,
-          { value: triggerRecalculation },
-          React.createElement(
-            ContextContext.Provider,
-            { value: context },
-            React.createElement(
-              StageContext.Provider,
-              { value: stageState },
-              React.createElement(
-                CacheContext.Provider,
-                { value: cache },
-                React.createElement(
-                  EditorIdContext.Provider,
-                  { value: editorId },
-                  React.createElement(
-                    RecalculateStageRectContext.Provider,
-                    {
-                      value: recalculateStageRect
-                    },
-                    React.createElement(
-                      UIEventsContext.Provider,
-                      { value: uiEvents },
-                      React.createElement(
-                        Stage,
-                        {
-                          editorId: editorId,
-                          scale: stageState.scale,
-                          translate: stageState.translate,
-                          spaceToPan: spaceToPan,
-                          disablePan: disablePan,
-                          disableZoom: disableZoom,
-                          dispatchStageState: dispatchStageState,
-                          dispatchComments: dispatchComments,
-                          disableComments: disableComments || hideComments,
-                          stageRef: stage,
-                          numNodes: Object.keys(nodes).length,
-                          outerStageChildren: React.createElement(
-                            React.Fragment,
-                            null,
-                            debug && React.createElement(
-                              "div",
-                              { className: styles$d.debugWrapper },
-                              React.createElement(
-                                "button",
-                                {
-                                  className: styles$d.debugButton,
-                                  onClick: function onClick() {
-                                    return console.log(nodes);
-                                  }
-                                },
-                                "Log Nodes"
-                              ),
-                              React.createElement(
-                                "button",
-                                {
-                                  className: styles$d.debugButton,
-                                  onClick: function onClick() {
-                                    return console.log(JSON.stringify(nodes));
-                                  }
-                                },
-                                "Export Nodes"
-                              ),
-                              React.createElement(
-                                "button",
-                                {
-                                  className: styles$d.debugButton,
-                                  onClick: function onClick() {
-                                    return console.log(comments);
-                                  }
-                                },
-                                "Log Comments"
-                              )
-                            ),
-                            React.createElement(Toaster, {
-                              toasts: toasts,
-                              dispatchToasts: dispatchToasts
-                            })
-                          )
-                        },
-                        !hideComments && Object.values(comments).map(function (comment) {
-                          return React.createElement(Comment, _extends({}, comment, {
-                            stageRect: stage,
-                            dispatch: dispatchComments,
-                            onDragStart: recalculateStageRect,
-                            key: comment.id
-                          }));
-                        }),
-                        Object.values(nodes).map(function (node) {
-                          return React.createElement(Node, _extends({}, node, {
-                            stageRect: stage,
-                            onDragEnd: triggerRecalculation,
-                            onDragStart: recalculateStageRect,
-                            renderNodeHeader: renderNodeHeader,
-                            key: node.id
-                          }));
-                        }),
-                        React.createElement(Connections, { nodes: nodes, editorId: editorId }),
-                        React.createElement("div", {
-                          className: styles$d.dragWrapper,
-                          id: "" + DRAG_CONNECTION_ID + editorId
-                        })
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  );
+  return /*#__PURE__*/React.createElement(PortTypesContext.Provider, {
+    value: portTypes,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 150,
+      columnNumber: 5
+    }
+  }, /*#__PURE__*/React.createElement(NodeTypesContext.Provider, {
+    value: nodeTypes,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 151,
+      columnNumber: 7
+    }
+  }, /*#__PURE__*/React.createElement(NodeDispatchContext.Provider, {
+    value: dispatchNodes,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 152,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/React.createElement(ConnectionRecalculateContext.Provider, {
+    value: triggerRecalculation,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 153,
+      columnNumber: 11
+    }
+  }, /*#__PURE__*/React.createElement(ContextContext.Provider, {
+    value: context,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 154,
+      columnNumber: 13
+    }
+  }, /*#__PURE__*/React.createElement(StageContext.Provider, {
+    value: stageState,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 155,
+      columnNumber: 15
+    }
+  }, /*#__PURE__*/React.createElement(CacheContext.Provider, {
+    value: cache,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 156,
+      columnNumber: 17
+    }
+  }, /*#__PURE__*/React.createElement(EditorIdContext.Provider, {
+    value: editorId,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 157,
+      columnNumber: 19
+    }
+  }, /*#__PURE__*/React.createElement(RecalculateStageRectContext.Provider, {
+    value: recalculateStageRect,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 158,
+      columnNumber: 21
+    }
+  }, /*#__PURE__*/React.createElement(UIEventsContext.Provider, {
+    value: uiEvents,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 161,
+      columnNumber: 23
+    }
+  }, /*#__PURE__*/React.createElement(Stage, {
+    editorId: editorId,
+    scale: stageState.scale,
+    translate: stageState.translate,
+    spaceToPan: spaceToPan,
+    disablePan: disablePan,
+    disableZoom: disableZoom,
+    dispatchStageState: dispatchStageState,
+    dispatchComments: dispatchComments,
+    disableComments: disableComments || hideComments,
+    stageRef: stage,
+    numNodes: Object.keys(nodes).length,
+    outerStageChildren: /*#__PURE__*/React.createElement(React.Fragment, {
+      __self: undefined,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 175,
+        columnNumber: 29
+      }
+    }, debug && /*#__PURE__*/React.createElement("div", {
+      className: styles.debugWrapper,
+      __self: undefined,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 177,
+        columnNumber: 33
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      className: styles.debugButton,
+      onClick: () => console.log(nodes),
+      __self: undefined,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 178,
+        columnNumber: 35
+      }
+    }, "Log Nodes"), /*#__PURE__*/React.createElement("button", {
+      className: styles.debugButton,
+      onClick: () => console.log(JSON.stringify(nodes)),
+      __self: undefined,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 184,
+        columnNumber: 35
+      }
+    }, "Export Nodes"), /*#__PURE__*/React.createElement("button", {
+      className: styles.debugButton,
+      onClick: () => console.log(comments),
+      __self: undefined,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 192,
+        columnNumber: 35
+      }
+    }, "Log Comments")), /*#__PURE__*/React.createElement(Toaster, {
+      toasts: toasts,
+      dispatchToasts: dispatchToasts,
+      __self: undefined,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 200,
+        columnNumber: 31
+      }
+    })),
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 162,
+      columnNumber: 25
+    }
+  }, !hideComments && Object.values(comments).map(comment => /*#__PURE__*/React.createElement(Comment, babelHelpers.extends({}, comment, {
+    stageRect: stage,
+    dispatch: dispatchComments,
+    onDragStart: recalculateStageRect,
+    key: comment.id,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 209,
+      columnNumber: 31
+    }
+  }))), Object.values(nodes).map(node => /*#__PURE__*/React.createElement(Node, babelHelpers.extends({}, node, {
+    stageRect: stage,
+    onDragEnd: triggerRecalculation,
+    onDragStart: recalculateStageRect,
+    renderNodeHeader: renderNodeHeader,
+    key: node.id,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 218,
+      columnNumber: 29
+    }
+  }))), /*#__PURE__*/React.createElement(Connections, {
+    nodes: nodes,
+    editorId: editorId,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 227,
+      columnNumber: 27
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: styles.dragWrapper,
+    id: `${DRAG_CONNECTION_ID}${editorId}`,
+    __self: undefined,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 228,
+      columnNumber: 27
+    }
+  }))))))))))));
 };
-NodeEditor = React.forwardRef(NodeEditor);
-var useRootEngine = function useRootEngine(nodes, engine, context) {
-  var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-  return Object.keys(nodes).length ? engine.resolveRootNode(nodes, _extends({}, options, { context: context })) : {};
-};
+NodeEditor = /*#__PURE__*/React.forwardRef(NodeEditor);
+const useRootEngine = (nodes, engine, context, options = {}) => Object.keys(nodes).length ? engine.resolveRootNode(nodes, { ...options,
+  context
+}) : {};
 
-export { NodeEditor, useRootEngine, FlumeConfig, Controls, Colors, RootEngine };
+export { Colors, Controls, FlumeConfig, NodeEditor, RootEngine, useRootEngine };
 //# sourceMappingURL=index.es.js.map

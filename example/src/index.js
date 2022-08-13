@@ -1,25 +1,28 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import App from "./App";
 import TestEditor from './TestRoutes/TestEditor'
 import Form from "./pages/Form/Form";
 import Forms from "./pages/Forms/Forms";
 import Records from "./pages/Records/Records";
+import { createRoot } from 'react-dom/client';
 import "./index.css";
+
 
 const FormStyles = () => (
   <style>{`body{background: rgb(198, 203, 208);}`}</style>
 );
 
-ReactDOM.render(
+const container = document.getElementById("root")
+const root = createRoot(container);
+root.render(
   <Router>
-    <Route exact path="/" render={() => <App />} />
-    <Switch>
+    <Routes>
+      <Route path="/" element={<App />} />
       <Route
-        exact
         path="/records"
-        render={() => (
+        element={(
           <React.Fragment>
             <FormStyles />
             <Records />
@@ -27,9 +30,8 @@ ReactDOM.render(
         )}
       />
       <Route
-        exact
         path="/forms"
-        render={() => (
+        element={(
           <React.Fragment>
             <FormStyles />
             <Forms />
@@ -37,9 +39,8 @@ ReactDOM.render(
         )}
       />
       <Route
-        exact
         path="/form/:formId"
-        render={() => (
+        element={(
           <React.Fragment>
             <FormStyles />
             <Form />
@@ -47,9 +48,8 @@ ReactDOM.render(
         )}
       />
       <Route
-        exact
         path="/form"
-        render={() => (
+        element={(
           <React.Fragment>
             <FormStyles />
             <Form />
@@ -57,13 +57,10 @@ ReactDOM.render(
         )}
       />
       <Route
-        exact
         path="/test"
-        render={() => (
+        element={(
           <TestEditor />
         )}
       />
-    </Switch>
-  </Router>,
-  document.getElementById("root")
-);
+    </Routes>
+  </Router>);

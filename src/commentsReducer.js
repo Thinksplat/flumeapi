@@ -1,4 +1,4 @@
-import { nanoid }from "nanoid/non-secure/index";
+import { nanoid }from "nanoid";
 
 const setComment = (comments, id, merge) => ({
   ...comments,

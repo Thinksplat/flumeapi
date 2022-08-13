@@ -1,5 +1,4 @@
 import React from "react";
-import { useId } from "@reach/auto-id";
 import Stage from "./components/Stage/Stage";
 import Node from "./components/Node/Node";
 import Comment from "./components/Comment/Comment";
@@ -58,7 +57,7 @@ export let NodeEditor = (
   },
   ref
 ) => {
-  const editorId = useId();
+  const editorId = React.useId();
   const cache = React.useRef(new Cache());
   const stage = React.useRef();
   const [sideEffectToasts, setSideEffectToasts] = React.useState()
