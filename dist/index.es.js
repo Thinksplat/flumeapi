@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { randomFillSync } from 'crypto';
 
 function _extends() {
   _extends = Object.assign || function (target) {
@@ -711,30 +710,20 @@ function clamp(number, lower, upper) {
 
 var clamp_1 = clamp;
 
-const urlAlphabet =
-  'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';
-
-const POOL_SIZE_MULTIPLIER = 128;
-let pool, poolOffset;
-let fillPool = bytes => {
-  if (!pool || pool.length < bytes) {
-    pool = Buffer.allocUnsafe(bytes * POOL_SIZE_MULTIPLIER);
-    randomFillSync(pool);
-    poolOffset = 0;
-  } else if (poolOffset + bytes > pool.length) {
-    randomFillSync(pool);
-    poolOffset = 0;
-  }
-  poolOffset += bytes;
-};
-let nanoid = (size = 21) => {
-  fillPool((size -= 0));
-  let id = '';
-  for (let i = poolOffset - size; i < poolOffset; i++) {
-    id += urlAlphabet[pool[i] & 63];
-  }
-  return id
-};
+let nanoid = (size = 21) =>
+  crypto.getRandomValues(new Uint8Array(size)).reduce((id, byte) => {
+    byte &= 63;
+    if (byte < 36) {
+      id += byte.toString(36);
+    } else if (byte < 62) {
+      id += (byte - 26).toString(36).toUpperCase();
+    } else if (byte > 62) {
+      id += '-';
+    } else {
+      id += '_';
+    }
+    return id
+  }, '');
 
 var _jsxFileName$e = "/workspaces/flumeapi/src/components/ContextMenu/ContextMenu.js";
 
@@ -2558,9 +2547,9 @@ var _equalArrays = equalArrays$2;
 var root$4 = _root;
 
 /** Built-in value references. */
-var Uint8Array$1 = root$4.Uint8Array;
+var Uint8Array$2 = root$4.Uint8Array;
 
-var _Uint8Array = Uint8Array$1;
+var _Uint8Array = Uint8Array$2;
 
 /**
  * Converts `map` to its key-value pairs.
@@ -2603,7 +2592,7 @@ function setToArray$1(set) {
 var _setToArray = setToArray$1;
 
 var Symbol = _Symbol,
-    Uint8Array = _Uint8Array,
+    Uint8Array$1 = _Uint8Array,
     eq = eq_1,
     equalArrays$1 = _equalArrays,
     mapToArray = _mapToArray,
@@ -2660,7 +2649,7 @@ function equalByTag$1(object, other, tag, bitmask, customizer, equalFunc, stack)
 
     case arrayBufferTag$1:
       if ((object.byteLength != other.byteLength) ||
-          !equalFunc(new Uint8Array(object), new Uint8Array(other))) {
+          !equalFunc(new Uint8Array$1(object), new Uint8Array$1(other))) {
         return false;
       }
       return true;
@@ -8573,6 +8562,7 @@ class RootEngine {
 
 var _jsxFileName = "/workspaces/flumeapi/src/index.js";
 const defaultContext = {};
+window.Buffer = window.Buffer || require("buffer").Buffer;
 let NodeEditor = ({
   comments: initialComments,
   nodes: initialNodes,
@@ -8675,7 +8665,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 151,
+      lineNumber: 153,
       columnNumber: 5
     }
   }, /*#__PURE__*/React.createElement(NodeTypesContext.Provider, {
@@ -8683,7 +8673,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 152,
+      lineNumber: 154,
       columnNumber: 7
     }
   }, /*#__PURE__*/React.createElement(NodeDispatchContext.Provider, {
@@ -8691,7 +8681,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 153,
+      lineNumber: 155,
       columnNumber: 9
     }
   }, /*#__PURE__*/React.createElement(ConnectionRecalculateContext.Provider, {
@@ -8699,7 +8689,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 154,
+      lineNumber: 156,
       columnNumber: 11
     }
   }, /*#__PURE__*/React.createElement(ContextContext.Provider, {
@@ -8707,7 +8697,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 155,
+      lineNumber: 157,
       columnNumber: 13
     }
   }, /*#__PURE__*/React.createElement(StageContext.Provider, {
@@ -8715,7 +8705,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 156,
+      lineNumber: 158,
       columnNumber: 15
     }
   }, /*#__PURE__*/React.createElement(CacheContext.Provider, {
@@ -8723,7 +8713,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 157,
+      lineNumber: 159,
       columnNumber: 17
     }
   }, /*#__PURE__*/React.createElement(EditorIdContext.Provider, {
@@ -8731,7 +8721,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 158,
+      lineNumber: 160,
       columnNumber: 19
     }
   }, /*#__PURE__*/React.createElement(RecalculateStageRectContext.Provider, {
@@ -8739,7 +8729,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 159,
+      lineNumber: 161,
       columnNumber: 21
     }
   }, /*#__PURE__*/React.createElement(UIEventsContext.Provider, {
@@ -8747,7 +8737,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 162,
+      lineNumber: 164,
       columnNumber: 23
     }
   }, /*#__PURE__*/React.createElement(Stage, {
@@ -8766,7 +8756,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 176,
+        lineNumber: 178,
         columnNumber: 29
       }
     }, debug && /*#__PURE__*/React.createElement("div", {
@@ -8774,7 +8764,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 178,
+        lineNumber: 180,
         columnNumber: 33
       }
     }, /*#__PURE__*/React.createElement("button", {
@@ -8783,7 +8773,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 179,
+        lineNumber: 181,
         columnNumber: 35
       }
     }, "Log Nodes"), /*#__PURE__*/React.createElement("button", {
@@ -8792,7 +8782,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 185,
+        lineNumber: 187,
         columnNumber: 35
       }
     }, "Export Nodes"), /*#__PURE__*/React.createElement("button", {
@@ -8801,7 +8791,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 193,
+        lineNumber: 195,
         columnNumber: 35
       }
     }, "Log Comments")), /*#__PURE__*/React.createElement(Toaster, {
@@ -8810,14 +8800,14 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 201,
+        lineNumber: 203,
         columnNumber: 31
       }
     })),
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 163,
+      lineNumber: 165,
       columnNumber: 25
     }
   }, !hideComments && Object.values(comments).map(comment => /*#__PURE__*/React.createElement(Comment, _extends({}, comment, {
@@ -8828,7 +8818,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 210,
+      lineNumber: 212,
       columnNumber: 31
     }
   }))), Object.values(nodes).map(node => /*#__PURE__*/React.createElement(Node, _extends({}, node, {
@@ -8840,7 +8830,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 219,
+      lineNumber: 221,
       columnNumber: 29
     }
   }))), /*#__PURE__*/React.createElement(Connections, {
@@ -8849,7 +8839,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 228,
+      lineNumber: 230,
       columnNumber: 27
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -8858,7 +8848,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 229,
+      lineNumber: 231,
       columnNumber: 27
     }
   }))))))))))));

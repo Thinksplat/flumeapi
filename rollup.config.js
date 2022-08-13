@@ -25,7 +25,7 @@ export default {
       sourcemap: true
     }
   ],
-  external: [ 'react', 'react-dom' ],
+  external: ['react', 'react-dom'],
   plugins: [
     peerDepsExternal(),
     postcss({
@@ -39,7 +39,10 @@ export default {
       "plugins": ["@babel/plugin-transform-runtime"],
       babelHelpers: 'runtime'
     }),
-    resolve(),
+    resolve({
+      browser: true, // This instructs the plugin to use
+      // the "browser" property in package.json
+    }),
     commonjs()
   ]
 }

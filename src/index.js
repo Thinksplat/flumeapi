@@ -33,6 +33,8 @@ import { CreateAPI } from "./CreateAPI";
 
 const defaultContext = {};
 
+window.Buffer = window.Buffer || require("buffer").Buffer; 
+
 
 export let NodeEditor = (
   {
