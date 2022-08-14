@@ -8652,7 +8652,9 @@ let NodeEditor = ({
   }, [shouldRecalculateConnections, recalculateConnections]);
 
   const triggerRecalculation = () => {
-    setShouldRecalculateConnections(true);
+    if (shouldRecalculateConnections === false) {
+      setShouldRecalculateConnections(true);
+    }
   };
 
   React.useImperativeHandle(ref, () => ({
@@ -8686,7 +8688,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 153,
+      lineNumber: 155,
       columnNumber: 5
     }
   }, /*#__PURE__*/React.createElement(NodeTypesContext.Provider, {
@@ -8694,7 +8696,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 154,
+      lineNumber: 156,
       columnNumber: 7
     }
   }, /*#__PURE__*/React.createElement(NodeDispatchContext.Provider, {
@@ -8702,7 +8704,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 155,
+      lineNumber: 157,
       columnNumber: 9
     }
   }, /*#__PURE__*/React.createElement(ConnectionRecalculateContext.Provider, {
@@ -8710,7 +8712,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 156,
+      lineNumber: 158,
       columnNumber: 11
     }
   }, /*#__PURE__*/React.createElement(ContextContext.Provider, {
@@ -8718,7 +8720,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 157,
+      lineNumber: 159,
       columnNumber: 13
     }
   }, /*#__PURE__*/React.createElement(StageContext.Provider, {
@@ -8726,7 +8728,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 158,
+      lineNumber: 160,
       columnNumber: 15
     }
   }, /*#__PURE__*/React.createElement(CacheContext.Provider, {
@@ -8734,7 +8736,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 159,
+      lineNumber: 161,
       columnNumber: 17
     }
   }, /*#__PURE__*/React.createElement(EditorIdContext.Provider, {
@@ -8742,7 +8744,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 160,
+      lineNumber: 162,
       columnNumber: 19
     }
   }, /*#__PURE__*/React.createElement(RecalculateStageRectContext.Provider, {
@@ -8750,7 +8752,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 161,
+      lineNumber: 163,
       columnNumber: 21
     }
   }, /*#__PURE__*/React.createElement(UIEventsContext.Provider, {
@@ -8758,7 +8760,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 164,
+      lineNumber: 166,
       columnNumber: 23
     }
   }, /*#__PURE__*/React.createElement(Stage, {
@@ -8777,7 +8779,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 178,
+        lineNumber: 180,
         columnNumber: 29
       }
     }, debug && /*#__PURE__*/React.createElement("div", {
@@ -8785,7 +8787,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 180,
+        lineNumber: 182,
         columnNumber: 33
       }
     }, /*#__PURE__*/React.createElement("button", {
@@ -8794,7 +8796,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 181,
+        lineNumber: 183,
         columnNumber: 35
       }
     }, "Log Nodes"), /*#__PURE__*/React.createElement("button", {
@@ -8803,7 +8805,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 187,
+        lineNumber: 189,
         columnNumber: 35
       }
     }, "Export Nodes"), /*#__PURE__*/React.createElement("button", {
@@ -8812,7 +8814,7 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 195,
+        lineNumber: 197,
         columnNumber: 35
       }
     }, "Log Comments")), /*#__PURE__*/React.createElement(Toaster, {
@@ -8821,14 +8823,14 @@ let NodeEditor = ({
       __self: undefined,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 203,
+        lineNumber: 205,
         columnNumber: 31
       }
     })),
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 165,
+      lineNumber: 167,
       columnNumber: 25
     }
   }, !hideComments && Object.values(comments).map(comment => /*#__PURE__*/React.createElement(Comment, _extends({}, comment, {
@@ -8839,7 +8841,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 212,
+      lineNumber: 214,
       columnNumber: 31
     }
   }))), Object.values(nodes).map(node => /*#__PURE__*/React.createElement(Node, _extends({}, node, {
@@ -8851,7 +8853,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 221,
+      lineNumber: 223,
       columnNumber: 29
     }
   }))), /*#__PURE__*/React.createElement(Connections, {
@@ -8860,7 +8862,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 230,
+      lineNumber: 232,
       columnNumber: 27
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -8869,7 +8871,7 @@ let NodeEditor = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 231,
+      lineNumber: 233,
       columnNumber: 27
     }
   }))))))))))));

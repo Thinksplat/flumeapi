@@ -33,7 +33,7 @@ import { CreateAPI } from "./CreateAPI";
 
 const defaultContext = {};
 
-window.Buffer = window.Buffer || require("buffer").Buffer; 
+window.Buffer = window.Buffer || require("buffer").Buffer;
 
 
 export let NodeEditor = (
@@ -101,8 +101,8 @@ export let NodeEditor = (
   };
 
   React.useEffect(() => {
-    if(apiCallback) {
-      apiCallback(CreateAPI(dispatchNodes,dispatchToasts))
+    if (apiCallback) {
+      apiCallback(CreateAPI(dispatchNodes, dispatchToasts))
     }
   }, [apiCallback]);
 
@@ -114,7 +114,9 @@ export let NodeEditor = (
   }, [shouldRecalculateConnections, recalculateConnections]);
 
   const triggerRecalculation = () => {
-    setShouldRecalculateConnections(true);
+    if (shouldRecalculateConnections === false) {
+      setShouldRecalculateConnections(true);
+    }
   };
 
   React.useImperativeHandle(ref, () => ({
