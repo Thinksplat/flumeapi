@@ -100,9 +100,54 @@ test("api can create a Two Differnt nodes", async () => {
   const api = createAPI();
   expect(api).toBeTruthy();
 
-  act(() => api.addNode(NewNode("Custom Node")).addNode(NewNode("Custom Node 2")));
+  await act(() => api.addNode(NewNode("Custom Node")).addNode(NewNode("Custom Node 2")));
 
   expect(screen.getByText("Custom Node")).toBeInTheDocument();
   expect(screen.getByText("Custom Node 2")).toBeInTheDocument();
 
+});
+
+test("uiEvents to not be injected", async () => {
+  render(<NodeEditor />)
+
+  const stage = screen.getByTestId("stage");
+  expect(stage.getAttribute("data-hasuievents")).toBeNull()
+
+  // expect(stageclick).toBeFalsy();
+  // act(() => screen.getByTestId("stage").click());
+  // expect(stageclick).toBeTruthy();
+});
+
+test("uiEvents to be injected", async () => {
+  let stageclick = false;
+  const uievents = {
+    onStageClick: () => stageclick=true
+  }
+  render(<NodeEditor uiEvents={uievents} />)
+
+  const stage = screen.getByTestId("stage");
+  expect(stage.getAttribute("foobar")).toBeNull()
+  expect(stage.getAttribute("data-testid")).not.toBeNull()
+  expect(stage.getAttribute("data-hasuievents")).not.toBeNull()
+
+  // expect(stageclick).toBeFalsy();
+  // act(() => screen.getByTestId("stage").click());
+  // expect(stageclick).toBeTruthy();
+});
+
+test("uiEvents stage click to work", async () => {
+  let stageclick = false;
+  const uievents = {
+    onStageClick: () => stageclick=true
+  }
+  render(<NodeEditor uiEvents={uievents} />)
+
+  const stage = screen.getByTestId("stage");
+  expect(stage.getAttribute("foobar")).toBeNull()
+  expect(stage.getAttribute("data-testid")).not.toBeNull()
+  expect(stage.getAttribute("data-hasuievents")).not.toBeNull()
+
+  // expect(stageclick).toBeFalsy();
+  // act(() => screen.getByTestId("stage").click());
+  // expect(stageclick).toBeTruthy();
 });

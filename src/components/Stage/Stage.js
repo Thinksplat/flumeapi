@@ -222,6 +222,7 @@ const Stage = ({
     <Draggable
       data-flume-component="stage"
       data-testid="stage"
+      data-hasstageclick={!!uiEvents.onStageClick}
       id={`${STAGE_ID}${editorId}`}
       className={styles.wrapper}
       innerRef={wrapper}

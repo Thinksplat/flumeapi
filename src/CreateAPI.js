@@ -1,16 +1,20 @@
+import APITest from "../example_api/src/App";
+
 export function CreateAPI(dispatchNodes, dispatchToasts) {
-    return {
+    const api = {
         addNode: info => {
             dispatchNodes({
                 "type": "ADD_NODE",
                 ...info
             });
+            return api
         },
         removeNode: id => {
             dispatchNodes({
                 "type": "REMOVE_NODE",
                 "nodeId": id
             });
+            return api
         },
         updateType: (id, newtype) => {
             dispatchNodes({
@@ -18,6 +22,7 @@ export function CreateAPI(dispatchNodes, dispatchToasts) {
                 "nodeId": id,
                 "newtype": newtype
             })
+            return api
         },
         updateProperties: (id, properties) => {
             dispatchNodes({
@@ -25,6 +30,7 @@ export function CreateAPI(dispatchNodes, dispatchToasts) {
                 "nodeId": id,
                 "properties": properties
             });
+            return api
         },
         addConnection: (fromId, fromPort, toId, toPort) => {
             dispatchNodes({
@@ -38,6 +44,7 @@ export function CreateAPI(dispatchNodes, dispatchToasts) {
                     "portName": toPort
                 }
             });
+            return api
         },
         removeConnection: (fromId, fromPort, toId, toPort) => {
             dispatchNodes({
@@ -51,6 +58,7 @@ export function CreateAPI(dispatchNodes, dispatchToasts) {
                     "portName": toPort
                 }
             });
+            return api
         },
         showToast: (title, message, type, duration) => {
             dispatchToasts({
@@ -60,6 +68,8 @@ export function CreateAPI(dispatchNodes, dispatchToasts) {
                 "toastType": type,
                 "duration": duration
             });
+            return api
         }
     };
+    return api;
 }

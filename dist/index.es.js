@@ -4670,6 +4670,7 @@ const Stage = ({
   return /*#__PURE__*/React.createElement(Draggable, {
     "data-flume-component": "stage",
     "data-testid": "stage",
+    "data-hasstageclick": !!uiEvents.onStageClick,
     id: `${STAGE_ID}${editorId}`,
     className: styles$d.wrapper,
     innerRef: wrapper,
@@ -4700,7 +4701,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 242,
+      lineNumber: 243,
       columnNumber: 9
     }
   }, /*#__PURE__*/React.createElement(ContextMenu, {
@@ -4713,7 +4714,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 243,
+      lineNumber: 244,
       columnNumber: 11
     }
   })) : null, /*#__PURE__*/React.createElement("div", {
@@ -4725,7 +4726,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 253,
+      lineNumber: 254,
       columnNumber: 7
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -4736,7 +4737,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 258,
+      lineNumber: 259,
       columnNumber: 9
     }
   }, children)), outerStageChildren);
