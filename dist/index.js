@@ -8401,6 +8401,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "type": "REMOVE_NODE",
         "nodeId": id
       });
+      return api;
     },
     updateType: (id, newtype) => {
       dispatchNodes({
@@ -8408,6 +8409,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "nodeId": id,
         "newtype": newtype
       });
+      return api;
     },
     updateProperties: (id, properties) => {
       dispatchNodes({
@@ -8415,6 +8417,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "nodeId": id,
         "properties": properties
       });
+      return api;
     },
     addConnection: (fromId, fromPort, toId, toPort) => {
       dispatchNodes({
@@ -8428,6 +8431,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
           "portName": toPort
         }
       });
+      return api;
     },
     removeConnection: (fromId, fromPort, toId, toPort) => {
       dispatchNodes({
@@ -8441,6 +8445,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
           "portName": toPort
         }
       });
+      return api;
     },
     showToast: (title, message, type, duration) => {
       dispatchToasts({
@@ -8450,6 +8455,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "toastType": type,
         "duration": duration
       });
+      return api;
     }
   };
   return api;
