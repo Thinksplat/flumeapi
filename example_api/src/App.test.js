@@ -1,7 +1,7 @@
 import { fireEvent, getByText, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { nanoid } from 'nanoid'
-import { NodeEditor } from 'node-editor';
+import { FlumeConfig, NodeEditor } from 'node-editor';
 import { act } from 'react-dom/test-utils';
 import App from './App';
 
@@ -13,6 +13,7 @@ Object.defineProperty(global.self, 'crypto', {
   }
 });
 
+const expectNoNodes = () => expect(screen.queryByTestId("node")).toBeNull();
 
 test('Has an API Test title', () => {
   render(<App />);
@@ -26,7 +27,7 @@ test("Empty Node Editor Has No Nodes", () => {
   render(<NodeEditor />)
   const noeditor = screen.getByTestId("stage");
   expect(noeditor).toBeInTheDocument();
-  expect(screen.queryByTestId("node")).toBeNull();
+  expectNoNodes();
 });
 
 test("apiCallback should be called if provided", () => {
@@ -108,6 +109,20 @@ test("api can create a Two Differnt nodes", async () => {
 
 });
 
+test("api can remove nodes nodes", async () => {
+  const api = createAPI();
+  let node = NewNode("ToRemove");
+
+  // no nodes
+  expectNoNodes();
+  act(() => api.addNode(node));
+
+  expect(screen.getByText("ToRemove")).toBeInTheDocument();
+
+  act(() => api.removeNode(node.id));
+  expectNoNodes();
+});
+
 test("uiEvents to not be injected", async () => {
   render(<NodeEditor />)
 
@@ -161,12 +176,73 @@ test("uiEvents stage click to work", async () => {
   await user.click(stage);
 
   expect(stageclick).toBe(true);
+});
 
-  // expect(stage.getAttribute("foobar")).toBeNull()
-  // expect(stage.getAttribute("data-testid")).not.toBeNull()
-  // expect(stage.getAttribute("data-hasuievents")).not.toBeNull()
+test("uiEvents context menu create node", async () => {
+  const user = userEvent.setup();
 
-  // expect(stageclick).toBeFalsy();
-  // act(() => screen.getByTestId("stage").click());
-  // expect(stageclick).toBeTruthy();
+  const flumeConfig = new FlumeConfig();
+  flumeConfig.addNodeType({
+    type: "number",
+    label: "Number",
+    description: "Outputs a number",
+    initialWidth: 150,
+  })
+
+  render(<NodeEditor nodeTypes={flumeConfig.nodeTypes} />)
+
+  const stage = screen.getByTestId("stage");
+  expect(stage).toBeInTheDocument()
+
+  expectNoNodes();
+
+  fireEvent.contextMenu(stage)
+
+  expect(screen.getByText("Add Node")).toBeInTheDocument();
+
+  // no nodes
+  expect(screen.queryByTestId("node")).toBeNull();
+
+  await user.click(screen.getByText("Outputs a number"));
+
+  // Context menu went away
+  expect(screen.queryByText("Add Node")).toBeNull();
+
+  // Node
+  expect(screen.getByTestId("node")).toBeInTheDocument();
+});
+
+
+test("uiEvents context menu asks node to be created when uiEvents is set", async () => {
+  let request = null;
+  const uievents = {
+    addNodeRequest: (type, x, y) => request = { type, x, y }
+  }
+  const user = userEvent.setup();
+
+  const flumeConfig = new FlumeConfig();
+  flumeConfig.addNodeType({
+    type: "number",
+    label: "Number",
+    description: "Outputs a number",
+    initialWidth: 150,
+  })
+
+  render(<NodeEditor nodeTypes={flumeConfig.nodeTypes} uiEvents={uievents} />)
+
+  const stage = screen.getByTestId("stage");
+
+  // no nodes
+  expectNoNodes();
+
+  fireEvent.contextMenu(stage)
+  await user.click(screen.getByText("Outputs a number"));
+
+  // Context menu went aweay
+  expect(screen.queryByText("Add Node")).toBeNull();
+  // Still no nodes created
+  expectNoNodes();
+
+  expect(request).toBeTruthy();
+  expect(request.type).toBe("number");
 });
