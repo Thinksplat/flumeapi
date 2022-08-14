@@ -7,6 +7,7 @@ import Forms from "./pages/Forms/Forms";
 import Records from "./pages/Records/Records";
 import { createRoot } from 'react-dom/client';
 import "./index.css";
+import APITest from "./APITest";
 
 
 const FormStyles = () => (
@@ -18,6 +19,7 @@ root.render(
   <Router>
     <Routes>
       <Route path="/" element={<App />} />
+      <Route path="/test" element={<APITest />} />
       <Route
         path="/records"
         element={(

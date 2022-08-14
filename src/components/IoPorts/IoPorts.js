@@ -102,6 +102,7 @@ const Input = ({
   name,
   nodeId,
   data,
+  color,
   controls: localControls,
   inputTypes,
   noControls,
@@ -112,7 +113,7 @@ const Input = ({
   hidePort,
   extraProperties
 }) => {
-  const { label: defaultLabel, color, controls: defaultControls = [] } =
+  const { label: defaultLabel, controls: defaultControls = [] } =
     inputTypes[type] || {};
   const prevConnected = usePrevious(isConnected);
 
@@ -178,13 +179,14 @@ const Input = ({
 const Output = ({
   label,
   name,
+  color,
   nodeId,
   type,
   inputTypes,
   triggerRecalculation,
   extraProperties
 }) => {
-  const { label: defaultLabel, color } = inputTypes[type] || {};
+  const { label: defaultLabel } = inputTypes[type] || {};
 
   return (
     <div

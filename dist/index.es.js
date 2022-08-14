@@ -4669,6 +4669,7 @@ const Stage = ({
   }, [nodeTypes, disableComments]);
   return /*#__PURE__*/React.createElement(Draggable, {
     "data-flume-component": "stage",
+    "data-testid": "stage",
     id: `${STAGE_ID}${editorId}`,
     className: styles$d.wrapper,
     innerRef: wrapper,
@@ -4699,7 +4700,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 241,
+      lineNumber: 242,
       columnNumber: 9
     }
   }, /*#__PURE__*/React.createElement(ContextMenu, {
@@ -4712,7 +4713,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 242,
+      lineNumber: 243,
       columnNumber: 11
     }
   })) : null, /*#__PURE__*/React.createElement("div", {
@@ -4724,7 +4725,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 252,
+      lineNumber: 253,
       columnNumber: 7
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -4735,7 +4736,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 257,
+      lineNumber: 258,
       columnNumber: 9
     }
   }, children)), outerStageChildren);
@@ -6359,6 +6360,7 @@ const Input = ({
   name,
   nodeId,
   data,
+  color,
   controls: localControls,
   inputTypes,
   noControls,
@@ -6371,7 +6373,6 @@ const Input = ({
 }) => {
   const {
     label: defaultLabel,
-    color,
     controls: defaultControls = []
   } = inputTypes[type] || {};
   const prevConnected = usePrevious(isConnected);
@@ -6392,7 +6393,7 @@ const Input = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 128,
+      lineNumber: 129,
       columnNumber: 5
     }
   }, !hidePort ? /*#__PURE__*/React.createElement(Port, {
@@ -6406,7 +6407,7 @@ const Input = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 138,
+      lineNumber: 139,
       columnNumber: 9
     }
   }) : null, (!controls.length || noControls || isConnected) && /*#__PURE__*/React.createElement("label", {
@@ -6415,7 +6416,7 @@ const Input = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 149,
+      lineNumber: 150,
       columnNumber: 9
     }
   }, label || defaultLabel), !noControls && !isConnected ? /*#__PURE__*/React.createElement("div", {
@@ -6423,7 +6424,7 @@ const Input = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 153,
+      lineNumber: 154,
       columnNumber: 11
     }
   }, controls.map(control => /*#__PURE__*/React.createElement(Control, _extends({}, control, {
@@ -6440,7 +6441,7 @@ const Input = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 156,
+      lineNumber: 157,
       columnNumber: 17
     }
   })))) : null);
@@ -6449,6 +6450,7 @@ const Input = ({
 const Output = ({
   label,
   name,
+  color,
   nodeId,
   type,
   inputTypes,
@@ -6456,8 +6458,7 @@ const Output = ({
   extraProperties
 }) => {
   const {
-    label: defaultLabel,
-    color
+    label: defaultLabel
   } = inputTypes[type] || {};
   return /*#__PURE__*/React.createElement("div", {
     "data-flume-component": "port-output",
@@ -6470,7 +6471,7 @@ const Output = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 190,
+      lineNumber: 192,
       columnNumber: 5
     }
   }, /*#__PURE__*/React.createElement("label", {
@@ -6479,7 +6480,7 @@ const Output = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 199,
+      lineNumber: 201,
       columnNumber: 7
     }
   }, label || defaultLabel), /*#__PURE__*/React.createElement(Port, {
@@ -6492,7 +6493,7 @@ const Output = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 200,
+      lineNumber: 202,
       columnNumber: 7
     }
   }));
@@ -6691,7 +6692,7 @@ const Port = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 420,
+      lineNumber: 422,
       columnNumber: 5
     }
   }, /*#__PURE__*/React.createElement("div", _extends({
@@ -6715,7 +6716,7 @@ const Port = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 421,
+      lineNumber: 423,
       columnNumber: 7
     }
   })), isDragging && !isInput ? /*#__PURE__*/React.createElement(Portal$1, {
@@ -6723,7 +6724,7 @@ const Port = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 439,
+      lineNumber: 441,
       columnNumber: 9
     }
   }, /*#__PURE__*/React.createElement(Connection, {
@@ -6733,7 +6734,7 @@ const Port = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$6,
-      lineNumber: 442,
+      lineNumber: 444,
       columnNumber: 11
     }
   })) : null);
@@ -6884,6 +6885,7 @@ const Node = ({
       width,
       transform: `translate(${x}px, ${y}px)`
     },
+    "data-testid": "node",
     onMouseDown: mouseDown,
     onDragStart: startDrag,
     onDrag: handleDrag,
@@ -6909,7 +6911,7 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 193,
+      lineNumber: 194,
       columnNumber: 9
     }
   }, label), /*#__PURE__*/React.createElement(IoPorts, {
@@ -6922,14 +6924,14 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 195,
+      lineNumber: 196,
       columnNumber: 7
     }
   }), menuOpen ? /*#__PURE__*/React.createElement(Portal$1, {
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 204,
+      lineNumber: 205,
       columnNumber: 9
     }
   }, /*#__PURE__*/React.createElement(ContextMenu, {
@@ -6948,7 +6950,7 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 205,
+      lineNumber: 206,
       columnNumber: 11
     }
   })) : null);
@@ -6964,7 +6966,7 @@ const NodeHeader = ({
   __self: undefined,
   __source: {
     fileName: _jsxFileName$5,
-    lineNumber: 232,
+    lineNumber: 233,
     columnNumber: 3
   }
 }), children);
@@ -8077,26 +8079,27 @@ const nodesReducer = (nodes, action = {}, {
           y,
           nodeType,
           id,
+          inputData,
           defaultNode,
           extraProperties
         } = action;
         const newNodeId = id || nanoid(10);
+        const type = typeof nodeType !== 'string' ? nodeType : nodeTypes[nodeType];
         const newNode = {
           id: newNodeId,
           x,
           y,
           extraProperties: extraProperties,
           type: nodeType,
-          width: nodeTypes[nodeType].initialWidth || 200,
+          width: type.initialWidth || 200,
           connections: {
             inputs: {},
             outputs: {}
-          },
-          inputData: {}
+          }
         };
-        newNode.inputData = getDefaultData({
+        newNode.inputData = inputData || getDefaultData({
           node: newNode,
-          nodeType: nodeTypes[nodeType],
+          nodeType: type,
           portTypes,
           context
         });
@@ -8105,7 +8108,7 @@ const nodesReducer = (nodes, action = {}, {
           newNode.defaultNode = true;
         }
 
-        if (nodeTypes[nodeType].root) {
+        if (type.root) {
           newNode.root = true;
         }
 

@@ -171,6 +171,7 @@ const Node = ({
         width,
         transform: `translate(${x}px, ${y}px)`
       }}
+      data-testid="node"
       onMouseDown={mouseDown}
       onDragStart={startDrag}
       onDrag={handleDrag}
