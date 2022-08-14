@@ -8388,12 +8388,13 @@ var styles = {"dragWrapper":"styles_dragWrapper__A5S3T","debugWrapper":"styles_d
 styleInject(css_248z);
 
 function CreateAPI(dispatchNodes, dispatchToasts) {
-  return {
+  const api = {
     addNode: info => {
       dispatchNodes({
         "type": "ADD_NODE",
         ...info
       });
+      return api;
     },
     removeNode: id => {
       dispatchNodes({
@@ -8451,6 +8452,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
       });
     }
   };
+  return api;
 }
 
 class LoopError extends Error {
