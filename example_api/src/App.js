@@ -80,10 +80,17 @@ function APIGraph() {
     })
   }, [])
 
+  const uiEvents = {
+    onStageClick: () => {
+      console.log("onStageClick");
+    }
+  }
+
+
   return (
     <div style={{ width: 400, height: 400, margin: 5 }}>
       <NodeEditor
-
+        uiEvents={uiEvents}
         apiCallback={apiCallback} />
     </div>
   )
@@ -117,7 +124,7 @@ export default function APITest() {
         <APIGraph title="three" />
         <Graph title="four" />
         <Graph title="five" />
-        <Graph title="six" />
+      <Graph title="six" />
         <Graph title="seven" />
       </div>
     </div>)

@@ -1,4 +1,5 @@
-import { getByText, render, screen } from '@testing-library/react';
+import { fireEvent, getByText, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { nanoid } from 'nanoid'
 import { NodeEditor } from 'node-editor';
 import { act } from 'react-dom/test-utils';
@@ -111,7 +112,7 @@ test("uiEvents to not be injected", async () => {
   render(<NodeEditor />)
 
   const stage = screen.getByTestId("stage");
-  expect(stage.getAttribute("data-hasuievents")).toBeNull()
+  expect(stage.getAttribute("data-hasstageclick")).toBe('false')
 
   // expect(stageclick).toBeFalsy();
   // act(() => screen.getByTestId("stage").click());
@@ -121,31 +122,49 @@ test("uiEvents to not be injected", async () => {
 test("uiEvents to be injected", async () => {
   let stageclick = false;
   const uievents = {
-    onStageClick: () => stageclick=true
+    onStageClick: () => stageclick = true
   }
   render(<NodeEditor uiEvents={uievents} />)
 
   const stage = screen.getByTestId("stage");
   expect(stage.getAttribute("foobar")).toBeNull()
   expect(stage.getAttribute("data-testid")).not.toBeNull()
-  expect(stage.getAttribute("data-hasuievents")).not.toBeNull()
+  expect(stage.getAttribute("data-hasstageclick")).toBe('true')
 
   // expect(stageclick).toBeFalsy();
   // act(() => screen.getByTestId("stage").click());
   // expect(stageclick).toBeTruthy();
 });
 
+test("clicky things work", async () => {
+  let clicked = false;
+  const onClick = () => clicked = true;
+  const user = userEvent.setup();
+  render(<button onClick={onClick}>Click Me</button>)
+  await user.click(screen.getByRole('button'));
+  expect(clicked).toBe(true);
+});
+
 test("uiEvents stage click to work", async () => {
   let stageclick = false;
   const uievents = {
-    onStageClick: () => stageclick=true
+    onStageClick: () => stageclick = true
   }
+  const user = userEvent.setup();
   render(<NodeEditor uiEvents={uievents} />)
 
   const stage = screen.getByTestId("stage");
-  expect(stage.getAttribute("foobar")).toBeNull()
-  expect(stage.getAttribute("data-testid")).not.toBeNull()
-  expect(stage.getAttribute("data-hasuievents")).not.toBeNull()
+  expect(stage.getAttribute("data-hasstageclick")).toBe('true')
+
+  expect(stageclick).toBe(false);
+
+  await user.click(stage);
+
+  expect(stageclick).toBe(true);
+
+  // expect(stage.getAttribute("foobar")).toBeNull()
+  // expect(stage.getAttribute("data-testid")).not.toBeNull()
+  // expect(stage.getAttribute("data-hasuievents")).not.toBeNull()
 
   // expect(stageclick).toBeFalsy();
   // act(() => screen.getByTestId("stage").click());

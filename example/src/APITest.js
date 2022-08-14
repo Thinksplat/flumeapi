@@ -27,6 +27,7 @@ function Graph({title}) {
 
     });
 
+ 
     return (
         <div style={{ width: 400, height: 400, margin: 5 }}>
             <NodeEditor 

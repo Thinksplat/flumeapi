@@ -4538,8 +4538,11 @@ const Stage = ({
     wrapper.current.focus();
   };
 
-  const handleDragStart = e => {
+  const handleMouseDown = e => {
     uiEvents.onStageClick && uiEvents.onStageClick(e);
+  };
+
+  const handleDragStart = e => {
     e.preventDefault();
     dragData.current = {
       x: e.clientX,
@@ -4670,12 +4673,13 @@ const Stage = ({
   return /*#__PURE__*/React.createElement(Draggable, {
     "data-flume-component": "stage",
     "data-testid": "stage",
-    "data-hasstageclick": !!uiEvents.onStageClick,
+    "data-hasstageclick": uiEvents.onStageClick ? 'true' : 'false',
     id: `${STAGE_ID}${editorId}`,
     className: styles$d.wrapper,
     innerRef: wrapper,
     onContextMenu: handleContextMenu,
     onMouseEnter: handleMouseEnter,
+    onMouseDown: handleMouseDown,
     onDragDelayStart: handleDragDelayStart,
     onDragStart: handleDragStart,
     onDrag: handleMouseDrag,
@@ -4694,14 +4698,14 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 222,
+      lineNumber: 225,
       columnNumber: 5
     }
   }, menuOpen ? /*#__PURE__*/React.createElement(Portal$1, {
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 243,
+      lineNumber: 247,
       columnNumber: 9
     }
   }, /*#__PURE__*/React.createElement(ContextMenu, {
@@ -4714,7 +4718,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 244,
+      lineNumber: 248,
       columnNumber: 11
     }
   })) : null, /*#__PURE__*/React.createElement("div", {
@@ -4726,7 +4730,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 254,
+      lineNumber: 258,
       columnNumber: 7
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -4737,7 +4741,7 @@ const Stage = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$c,
-      lineNumber: 259,
+      lineNumber: 263,
       columnNumber: 9
     }
   }, children)), outerStageChildren);
@@ -8379,18 +8383,20 @@ var styles = {"dragWrapper":"styles_dragWrapper__A5S3T","debugWrapper":"styles_d
 styleInject(css_248z);
 
 function CreateAPI(dispatchNodes, dispatchToasts) {
-  return {
+  const api = {
     addNode: info => {
       dispatchNodes({
         "type": "ADD_NODE",
         ...info
       });
+      return api;
     },
     removeNode: id => {
       dispatchNodes({
         "type": "REMOVE_NODE",
         "nodeId": id
       });
+      return api;
     },
     updateType: (id, newtype) => {
       dispatchNodes({
@@ -8398,6 +8404,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "nodeId": id,
         "newtype": newtype
       });
+      return api;
     },
     updateProperties: (id, properties) => {
       dispatchNodes({
@@ -8405,6 +8412,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "nodeId": id,
         "properties": properties
       });
+      return api;
     },
     addConnection: (fromId, fromPort, toId, toPort) => {
       dispatchNodes({
@@ -8418,6 +8426,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
           "portName": toPort
         }
       });
+      return api;
     },
     removeConnection: (fromId, fromPort, toId, toPort) => {
       dispatchNodes({
@@ -8431,6 +8440,7 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
           "portName": toPort
         }
       });
+      return api;
     },
     showToast: (title, message, type, duration) => {
       dispatchToasts({
@@ -8440,8 +8450,10 @@ function CreateAPI(dispatchNodes, dispatchToasts) {
         "toastType": type,
         "duration": duration
       });
+      return api;
     }
   };
+  return api;
 }
 
 class LoopError extends Error {

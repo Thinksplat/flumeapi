@@ -89,8 +89,11 @@ const Stage = ({
     wrapper.current.focus();
   };
 
-  const handleDragStart = e => {
+  const handleMouseDown = e => {
     uiEvents.onStageClick && uiEvents.onStageClick(e);
+  }
+
+  const handleDragStart = e => {
     e.preventDefault();
     dragData.current = {
       x: e.clientX,
@@ -222,12 +225,13 @@ const Stage = ({
     <Draggable
       data-flume-component="stage"
       data-testid="stage"
-      data-hasstageclick={!!uiEvents.onStageClick}
+      data-hasstageclick={uiEvents.onStageClick ? 'true' : 'false'}
       id={`${STAGE_ID}${editorId}`}
       className={styles.wrapper}
       innerRef={wrapper}
       onContextMenu={handleContextMenu}
       onMouseEnter={handleMouseEnter}
+      onMouseDown={handleMouseDown}
       onDragDelayStart={handleDragDelayStart}
       onDragStart={handleDragStart}
       onDrag={handleMouseDrag}

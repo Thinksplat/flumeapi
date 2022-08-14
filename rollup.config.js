@@ -45,7 +45,7 @@ export default {
     url(),
     svgr(),
     babel({
-      exclude: 'node_modules/**',
+      exclude: ['node_modules/**'],
       "plugins": ["@babel/plugin-transform-runtime"],
       babelHelpers: 'runtime'
     }),

@@ -1,4 +1,3 @@
-import APITest from "../example_api/src/App";
 
 export function CreateAPI(dispatchNodes, dispatchToasts) {
     const api = {
