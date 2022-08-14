@@ -246,3 +246,37 @@ test("uiEvents context menu asks node to be created when uiEvents is set", async
   expect(request).toBeTruthy();
   expect(request.type).toBe("number");
 });
+
+test("Right click delete node works through uiEvents", async () => {
+  const user = userEvent.setup();
+
+  let deleteid = null;
+
+  const uiEvents = {
+    deleteNodeRequest: id => deleteid = id
+  }
+
+  let api;
+  render(<NodeEditor apiCallback={a => api=a} uiEvents={uiEvents} />)
+
+  expectNoNodes();
+
+  let node = NewNode("ToRemove");
+  act(() => {
+    api.addNode(node)
+  })
+
+  const foonode = screen.getByText("ToRemove").closest("[data-testid='node']");
+  expect(foonode).toBeInTheDocument();
+
+  expect(deleteid).toBeNull();
+  fireEvent.contextMenu(foonode);
+  const deleteoption = screen.getByText("Delete Node");
+  expect(deleteoption).toBeInTheDocument();
+
+  await user.click(deleteoption);
+  // Doesn't actually delete, but is handled by uiEvents
+  expect(screen.getByText("ToRemove")).toBeInTheDocument();
+
+  expect(deleteid).toBe(node.id);
+})

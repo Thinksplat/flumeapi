@@ -6875,6 +6875,11 @@ const Node = ({
   };
 
   const deleteNode = () => {
+    if (uiEvents.deleteNodeRequest) {
+      uiEvents.deleteNodeRequest(id);
+      return;
+    }
+
     nodesDispatch({
       type: "REMOVE_NODE",
       nodeId: id
@@ -6915,7 +6920,7 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 168,
+      lineNumber: 172,
       columnNumber: 5
     }
   }), renderNodeHeader ? renderNodeHeader(NodeHeader, currentNodeType, {
@@ -6926,7 +6931,7 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 194,
+      lineNumber: 198,
       columnNumber: 9
     }
   }, label), /*#__PURE__*/React__default["default"].createElement(IoPorts, {
@@ -6939,14 +6944,14 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 196,
+      lineNumber: 200,
       columnNumber: 7
     }
   }), menuOpen ? /*#__PURE__*/React__default["default"].createElement(Portal$1, {
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 205,
+      lineNumber: 209,
       columnNumber: 9
     }
   }, /*#__PURE__*/React__default["default"].createElement(ContextMenu, {
@@ -6965,7 +6970,7 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 206,
+      lineNumber: 210,
       columnNumber: 11
     }
   })) : null);
@@ -6981,7 +6986,7 @@ const NodeHeader = ({
   __self: undefined,
   __source: {
     fileName: _jsxFileName$5,
-    lineNumber: 233,
+    lineNumber: 237,
     columnNumber: 3
   }
 }), children);

@@ -148,6 +148,10 @@ const Node = ({
   };
 
   const deleteNode = () => {
+    if(uiEvents.deleteNodeRequest) {
+      uiEvents.deleteNodeRequest(id);
+      return;
+    }
     nodesDispatch({
       type: "REMOVE_NODE",
       nodeId: id
