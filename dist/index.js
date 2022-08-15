@@ -4549,7 +4549,7 @@ const Stage = ({
   };
 
   const handleMouseDown = e => {
-    uiEvents.onStageClick && uiEvents.onStageClick(e);
+    uiEvents.stageClicked && uiEvents.stageClicked(e);
   };
 
   const handleDragStart = e => {
@@ -4683,7 +4683,7 @@ const Stage = ({
   return /*#__PURE__*/React__default["default"].createElement(Draggable, {
     "data-flume-component": "stage",
     "data-testid": "stage",
-    "data-hasstageclick": uiEvents.onStageClick ? 'true' : 'false',
+    "data-hasstageclick": uiEvents.stageClicked ? 'true' : 'false',
     id: `${STAGE_ID}${editorId}`,
     className: styles$d.wrapper,
     innerRef: wrapper,

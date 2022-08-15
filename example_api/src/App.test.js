@@ -137,7 +137,7 @@ test("uiEvents to not be injected", async () => {
 test("uiEvents to be injected", async () => {
   let stageclick = false;
   const uievents = {
-    onStageClick: () => stageclick = true
+    stageClicked: () => stageclick = true
   }
   render(<NodeEditor uiEvents={uievents} />)
 
@@ -163,7 +163,7 @@ test("clicky things work", async () => {
 test("uiEvents stage click to work", async () => {
   let stageclick = false;
   const uievents = {
-    onStageClick: () => stageclick = true
+    stageClicked: () => stageclick = true
   }
   const user = userEvent.setup();
   render(<NodeEditor uiEvents={uievents} />)
