@@ -280,3 +280,36 @@ test("Right click delete node works through uiEvents", async () => {
 
   expect(deleteid).toBe(node.id);
 })
+
+test("Node interactions work as expected", async () => {
+  const user = userEvent.setup();
+
+  let clicked = null;
+  let moved = null;
+
+  const uiEvents = {
+    nodeClicked: id => clicked = id,
+    nodeMoved: (id,x,y) => moved = {id,x,y}
+  }
+
+  let api;
+  render(<NodeEditor apiCallback={a => api=a} uiEvents={uiEvents} />)
+
+  expectNoNodes();
+
+  let node = NewNode("ToClick");
+  act(() => {
+    api.addNode(node)
+  })
+
+  expect(screen.getByText("ToClick")).toBeInTheDocument();
+
+  expect(clicked).toBeNull();
+  expect(moved).toBeNull();
+
+  await user.click(screen.getByText("ToClick"));
+
+  expect(clicked).toBe(node.id);
+
+  
+})

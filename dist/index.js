@@ -6836,6 +6836,7 @@ const Node = ({
   };
 
   const stopDrag = (e, coordinates) => {
+    uiEvents.nodeMoved && uiEvents.nodeMoved(id, e.x, e.y);
     nodesDispatch({
       type: "SET_NODE_COORDINATES",
       ...coordinates,
@@ -6920,7 +6921,7 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 172,
+      lineNumber: 173,
       columnNumber: 5
     }
   }), renderNodeHeader ? renderNodeHeader(NodeHeader, currentNodeType, {
@@ -6931,7 +6932,7 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 198,
+      lineNumber: 199,
       columnNumber: 9
     }
   }, label), /*#__PURE__*/React__default["default"].createElement(IoPorts, {
@@ -6944,14 +6945,14 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 200,
+      lineNumber: 201,
       columnNumber: 7
     }
   }), menuOpen ? /*#__PURE__*/React__default["default"].createElement(Portal$1, {
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 209,
+      lineNumber: 210,
       columnNumber: 9
     }
   }, /*#__PURE__*/React__default["default"].createElement(ContextMenu, {
@@ -6970,7 +6971,7 @@ const Node = ({
     __self: undefined,
     __source: {
       fileName: _jsxFileName$5,
-      lineNumber: 210,
+      lineNumber: 211,
       columnNumber: 11
     }
   })) : null);
@@ -6986,7 +6987,7 @@ const NodeHeader = ({
   __self: undefined,
   __source: {
     fileName: _jsxFileName$5,
-    lineNumber: 237,
+    lineNumber: 238,
     columnNumber: 3
   }
 }), children);

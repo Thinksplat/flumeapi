@@ -115,6 +115,7 @@ const Node = ({
   };
 
   const stopDrag = (e, coordinates) => {
+    uiEvents.nodeMoved && uiEvents.nodeMoved(id,e.x,e.y);
     nodesDispatch({
       type: "SET_NODE_COORDINATES",
       ...coordinates,
