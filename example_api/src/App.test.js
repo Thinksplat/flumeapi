@@ -311,5 +311,5 @@ test("Node interactions work as expected", async () => {
 
   expect(clicked).toBe(node.id);
 
-  
+
 })
