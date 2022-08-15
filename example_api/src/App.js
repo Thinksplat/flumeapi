@@ -81,8 +81,11 @@ function APIGraph() {
   }, [])
 
   const uiEvents = {
-    onStageClick: () => {
+    stageClicked: () => {
       console.log("onStageClick");
+    },
+    nodeMoved: (id,x,y) => {
+      console.log("onNodeMoved", id,x,y);
     }
   }
 
